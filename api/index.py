@@ -6,6 +6,7 @@ backend_path = Path(__file__).parent.parent / "backend"
 sys.path.insert(0, str(backend_path))
 
 from main import app
+from mangum import Mangum
 
-# Export the FastAPI app for Vercel
-handler = app
+# Mangum handler for AWS Lambda/Vercel
+handler = Mangum(app, lifespan="off")
