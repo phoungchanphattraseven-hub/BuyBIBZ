@@ -1,0 +1,32 @@
+{
+  "name": "BuyBIBZ - Premium E-Commerce",
+  "short_name": "BuyBIBZ",
+  "description": "Premium e-commerce marketplace for electronics, fashion, home & garden products",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06060a",
+  "theme_color": "#1B8C3D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo/logo-badge.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo/logo-transparent.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/logo/logo-transparent.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ]
+}
