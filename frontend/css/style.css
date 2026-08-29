@@ -98,7 +98,6 @@
 
     /* Layout */
     --nav-height: 72px;
-    --nav-total-height: calc(72px + env(safe-area-inset-top, 0px));
     --container-max: 1280px;
     --sidebar-width: 280px;
 }
@@ -110,18 +109,13 @@
     box-sizing: border-box;
 }
 
-/* Force full viewport coverage - eliminate any gray/white areas */
-:root {
-    background-color: #06060a;
-}
-
 html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: var(--bg-primary);
-    margin: 0;
-    padding: 0;
+    /* Support for notched devices (iPhone X, etc.) */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
 body {
@@ -130,8 +124,10 @@ body {
     line-height: 1.6;
     color: var(--text-primary);
     background-color: var(--bg-primary);
-    margin: 0;
-    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
 }
 
 /* Scrollbar Styling */
@@ -254,9 +250,6 @@ input, textarea, select {
     border-bottom: 1px solid var(--border-subtle);
     z-index: var(--z-sticky);
     transition: all var(--transition-base);
-    /* Extend navbar to safe area top */
-    padding-top: env(safe-area-inset-top);
-    height: calc(var(--nav-height) + env(safe-area-inset-top));
 }
 
 .navbar.scrolled {
@@ -268,8 +261,7 @@ input, textarea, select {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: var(--nav-height);
-    /* Don't include safe area in container height */
+    height: 100%;
 }
 
 .nav-brand {
@@ -897,10 +889,10 @@ svg:not([class*="width"]):not([class*="size"]) {
 /* ── Hero Section ─────────────────────────────────────────── */
 .hero {
     position: relative;
-    min-height: calc(100vh - var(--nav-total-height));
+    min-height: calc(100vh - var(--nav-height));
     display: flex;
     align-items: center;
-    padding-top: var(--nav-total-height);
+    padding-top: var(--nav-height);
     overflow: hidden;
 }
 
@@ -908,13 +900,11 @@ svg:not([class*="width"]):not([class*="size"]) {
     position: absolute;
     inset: 0;
     z-index: 0;
-    pointer-events: none;
 }
 
 .hero-bg-gradient {
     position: absolute;
     inset: 0;
-    pointer-events: none;
     background:
         radial-gradient(ellipse 80% 60% at 20% 50%, rgba(27, 140, 61, 0.12) 0%, transparent 60%),
         radial-gradient(ellipse 60% 50% at 80% 30%, rgba(13, 107, 46, 0.08) 0%, transparent 50%),
@@ -927,7 +917,6 @@ svg:not([class*="width"]):not([class*="size"]) {
     filter: blur(80px);
     opacity: 0.4;
     animation: float 20s ease-in-out infinite;
-    pointer-events: none;
 }
 
 .hero-orb-1 {
@@ -4935,94 +4924,5 @@ body { letter-spacing: -0.01em; }
     
     .pwa-prompt-message {
         font-size: var(--font-xs);
-    }
-}
-
-
-/* ── Native App Experience ────────────────────────────────── */
-/* Disable zoom and selection for app-like feel */
-body {
-    /* Prevent text size adjustment on orientation change */
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    
-    /* Disable tap highlight color */
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Touch action only on mobile/touch devices */
-@media (hover: none) and (pointer: coarse) {
-    body {
-        touch-action: pan-y pinch-zoom;
-        /* Prevent callout on long press (iOS) */
-        -webkit-touch-callout: none;
-    }
-}
-
-/* Allow text selection only in input fields */
-input,
-textarea,
-[contenteditable="true"] {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
-
-/* Prevent image drag */
-img {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
-}
-
-/* Re-enable pointer events for interactive elements */
-button,
-a,
-input,
-textarea,
-select,
-.product-card {
-    pointer-events: auto;
-}   pointer-events: auto;
-}
-
-/* Smooth momentum scrolling (iOS) */
-body,
-.modal,
-.dropdown {
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Prevent overscroll/bounce effect on mobile only */
-@media (hover: none) and (pointer: coarse) {
-    html {
-        overscroll-behavior: none;
-        overflow-x: hidden;
-        height: 100%;
-        min-height: 100%;
-        min-height: -webkit-fill-available;
-    }
-
-    body {
-        overscroll-behavior: none;
-        overflow-x: hidden;
-        min-height: 100%;
-        min-height: 100vh;
-        min-height: -webkit-fill-available;
-        overscroll-behavior-y: contain;
-    }
-}
-
-/* PWA safe area support */
-@supports (padding: max(0px)) {
-    body {
-        padding-left: max(0px, env(safe-area-inset-left));
-        padding-right: max(0px, env(safe-area-inset-right));
-        /* Don't add bottom padding - let content flow naturally */
     }
 }
