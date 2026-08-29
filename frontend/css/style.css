@@ -120,7 +120,7 @@ html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* Fix iOS viewport height issue */
-    height: 100%;
+    /* height: 100%; */
     min-height: 100%;
     min-height: -webkit-fill-available;
     background-color: var(--bg-primary);
@@ -921,11 +921,13 @@ svg:not([class*="width"]):not([class*="size"]) {
     position: absolute;
     inset: 0;
     z-index: 0;
+    pointer-events: none;
 }
 
 .hero-bg-gradient {
     position: absolute;
     inset: 0;
+    pointer-events: none;
     background:
         radial-gradient(ellipse 80% 60% at 20% 50%, rgba(27, 140, 61, 0.12) 0%, transparent 60%),
         radial-gradient(ellipse 60% 50% at 80% 30%, rgba(13, 107, 46, 0.08) 0%, transparent 50%),
@@ -938,6 +940,7 @@ svg:not([class*="width"]):not([class*="size"]) {
     filter: blur(80px);
     opacity: 0.4;
     animation: float 20s ease-in-out infinite;
+    pointer-events: none;
 }
 
 .hero-orb-1 {
@@ -4958,9 +4961,6 @@ body {
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
     
-    /* Prevent callout on long press (iOS) */
-    -webkit-touch-callout: none;
-    
     /* Disable tap highlight color */
     -webkit-tap-highlight-color: transparent;
 }
@@ -4969,6 +4969,8 @@ body {
 @media (hover: none) and (pointer: coarse) {
     body {
         touch-action: pan-y pinch-zoom;
+        /* Prevent callout on long press (iOS) */
+        -webkit-touch-callout: none;
     }
 }
 
@@ -4989,7 +4991,6 @@ img {
     -moz-user-drag: none;
     -o-user-drag: none;
     user-drag: none;
-    pointer-events: none;
 }
 
 /* Re-enable pointer events for interactive elements */
