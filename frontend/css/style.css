@@ -120,7 +120,7 @@ html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* Fix iOS viewport height issue */
-    /* height: 100%; */
+    height: 100%;
     min-height: 100%;
     min-height: -webkit-fill-available;
     background-color: var(--bg-primary);
@@ -5001,6 +5001,7 @@ textarea,
 select,
 .product-card {
     pointer-events: auto;
+}   pointer-events: auto;
 }
 
 /* Smooth momentum scrolling (iOS) */
@@ -5013,14 +5014,12 @@ body,
 /* Prevent overscroll/bounce effect */
 html {
     overscroll-behavior: none;
-    position: relative;
     overflow-x: hidden;
     overflow-y: auto;
 }
 
 body {
     overscroll-behavior: none;
-    position: relative;
     overflow-x: hidden;
     overflow-y: auto;
 }
