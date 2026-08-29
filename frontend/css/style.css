@@ -139,13 +139,12 @@ body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
     overflow-x: hidden;
+    overflow-y: auto;
     /* Prevent pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
     /* Remove any default margins/padding */
     margin: 0;
     padding: 0;
-    /* Explicitly enable touch scrolling */
-    touch-action: pan-y;
 }
 
 /* Scrollbar Styling */
@@ -4964,6 +4963,13 @@ body {
     
     /* Disable tap highlight color */
     -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch action only on mobile/touch devices */
+@media (hover: none) and (pointer: coarse) {
+    body {
+        touch-action: pan-y pinch-zoom;
+    }
 }
 
 /* Allow text selection only in input fields */
