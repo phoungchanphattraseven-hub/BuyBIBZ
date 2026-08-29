@@ -3,10 +3,12 @@
   "short_name": "BuyBIBZ",
   "description": "Premium e-commerce marketplace for electronics, fashion, home & garden products",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#06060a",
-  "theme_color": "#1B8C3D",
+  "theme_color": "#06060a",
   "orientation": "portrait-primary",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/logo/logo-badge.png",
