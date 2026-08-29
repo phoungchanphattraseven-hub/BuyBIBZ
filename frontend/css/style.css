@@ -4648,3 +4648,88 @@ body { letter-spacing: -0.01em; }
     .hero { min-height: 620px; }
     .hero h1 { font-size: clamp(2.75rem, 13vw, 4rem); }
 }
+
+
+/* ── Responsive Styles ────────────────────────────────────── */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+    .grid-4 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Mobile Large */
+@media (max-width: 768px) {
+    .grid-3,
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    
+    .product-card-body {
+        padding: var(--space-md);
+    }
+    
+    .product-card-name {
+        font-size: var(--font-sm);
+    }
+    
+    .price-current {
+        font-size: var(--font-lg);
+    }
+    
+    .product-card-add-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .product-card-add-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Mobile Small - Fix stretched add to cart button */
+@media (max-width: 480px) {
+    .product-card-body {
+        padding: 12px;
+    }
+    
+    .product-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+    
+    .product-card-add-btn {
+        width: 100%;
+        height: 44px;
+        border-radius: var(--radius-md);
+        font-size: var(--font-sm);
+        font-weight: 600;
+        gap: var(--space-xs);
+    }
+    
+    .product-card-add-btn::after {
+        content: 'Add to Cart';
+        display: inline;
+    }
+    
+    .product-card-add-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .product-card-name {
+        font-size: 0.875rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .product-card-category {
+        font-size: 0.7rem;
+    }
+    
+    .price-current {
+        font-size: var(--font-base);
+    }
+    
+    .price-compare {
+        font-size: var(--font-xs);
+    }
+}
