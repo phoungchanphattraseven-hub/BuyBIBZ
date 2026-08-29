@@ -4926,3 +4926,87 @@ body { letter-spacing: -0.01em; }
         font-size: var(--font-xs);
     }
 }
+
+
+/* ── Native App Experience ────────────────────────────────── */
+/* Disable zoom and selection for app-like feel */
+body {
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    
+    /* Prevent callout on long press (iOS) */
+    -webkit-touch-callout: none;
+    
+    /* Disable tap highlight color */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection only in input fields */
+input,
+textarea,
+[contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Prevent image drag */
+img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+}
+
+/* Re-enable pointer events for interactive elements */
+button,
+a,
+input,
+textarea,
+select,
+.product-card {
+    pointer-events: auto;
+}
+
+/* Smooth momentum scrolling (iOS) */
+body,
+.modal,
+.dropdown {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent overscroll/bounce effect */
+html,
+body {
+    overscroll-behavior: none;
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+/* Allow scrolling in main content */
+body {
+    position: static;
+    overflow: auto;
+}
+
+/* PWA safe area support */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+    
+    .navbar {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+}
