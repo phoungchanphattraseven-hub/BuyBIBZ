@@ -5006,11 +5006,14 @@ html {
     overscroll-behavior: none;
     position: relative;
     overflow-x: hidden;
+    overflow-y: auto;
 }
 
 body {
     overscroll-behavior: none;
     position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* PWA safe area support */
