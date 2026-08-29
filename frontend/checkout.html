@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — BuyBIBZ</title>
+    <meta name="description" content="Secure checkout for your BuyBIBZ order.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="navbar" id="navbar"></header>
+
+    <main class="checkout-page" id="checkout-main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Checkout</h1>
+                <p>Complete your order securely</p>
+            </div>
+
+            <div class="checkout-layout">
+                <!-- Shipping Form -->
+                <div class="checkout-form-card">
+                    <h2>Shipping Details</h2>
+                    
+                    <!-- Address from profile (if available) -->
+                    <div id="saved-address-display" style="display: none;">
+                        <div style="padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); margin-bottom: var(--space-lg);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
+                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    <h3 style="font-size: var(--font-base); font-weight: 700; margin: 0;">Delivery Address</h3>
+                                </div>
+                                <button type="button" class="btn btn-ghost btn-sm" id="btn-edit-address" style="font-size: var(--font-xs); padding: 4px 12px;">
+                                    Edit
+                                </button>
+                            </div>
+                            <div id="saved-address-content" style="font-size: var(--font-sm); line-height: 1.6; color: var(--text-secondary);">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                        
+                        <!-- Order Notes when using saved address -->
+                        <div class="form-group">
+                            <label class="form-label" for="notes-saved">Order Notes (Optional)</label>
+                            <textarea id="notes-saved" class="form-textarea" rows="3" placeholder="Special instructions for delivery..."></textarea>
+                        </div>
+                        
+                        <div style="margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-subtle);">
+                            <h3 style="font-size: var(--font-lg); margin-bottom: var(--space-md);">Payment Method</h3>
+                            
+                            <!-- Cash on Delivery -->
+                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); margin-bottom: var(--space-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('cod', this)">
+                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                                    <input type="radio" name="payment" value="cod" checked style="accent-color: var(--brand-primary);">
+                                    <span style="font-weight: 600;">Cash on Delivery (COD)</span>
+                                    <span class="badge-new" style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: var(--status-success); color: white;">Available</span>
+                                </div>
+                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;">
+                                    Pay with cash when your order is delivered
+                                </p>
+                            </label>
+                            
+                            <!-- KHQR Payment -->
+                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('khqr', this)">
+                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                                    <input type="radio" name="payment" value="khqr" style="accent-color: var(--brand-primary);">
+                                    <span style="font-weight: 600;">KHQR (Bakong)</span>
+                                    <span style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: rgba(255, 193, 7, 0.15); color: var(--status-warning); border: 1px solid var(--status-warning);">Instant</span>
+                                </div>
+                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;">
+                                    Scan QR code with any Cambodian banking app
+                                </p>
+                            </label>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-2xl);" id="submit-saved-btn">
+                            Place Order
+                        </button>
+                    </div>
+
+                    <form id="checkout-form">
+                        <div class="form-group">
+                            <label class="form-label" for="shipping_name">Full Name</label>
+                            <input type="text" id="shipping_name" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="shipping_phone">Phone Number</label>
+                            <input type="tel" id="shipping_phone" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="shipping_address">Street Address</label>
+                            <input type="text" id="shipping_address" class="form-input" required>
+                        </div>
+                        
+                        <div class="grid grid-2 gap-md">
+                            <div class="form-group">
+                                <label class="form-label" for="shipping_city">City</label>
+                                <input type="text" id="shipping_city" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="shipping_postal">Postal/Zip Code</label>
+                                <input type="text" id="shipping_postal" class="form-input" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="notes">Order Notes (Optional)</label>
+                            <textarea id="notes" class="form-textarea" rows="3" placeholder="Special instructions for delivery..."></textarea>
+                        </div>
+                        
+                        <div style="margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-subtle);">
+                            <h3 style="font-size: var(--font-lg); margin-bottom: var(--space-md);">Payment Method</h3>
+                            
+                            <!-- Cash on Delivery -->
+                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); margin-bottom: var(--space-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('cod', this)">
+                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                                    <input type="radio" name="payment" value="cod" checked style="accent-color: var(--brand-primary);">
+                                    <span style="font-weight: 600;">Cash on Delivery (COD)</span>
+                                    <span class="badge-new" style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: var(--status-success); color: white;">Available</span>
+                                </div>
+                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;">
+                                    Pay with cash when your order is delivered
+                                </p>
+                            </label>
+                            
+                            <!-- KHQR Payment -->
+                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('khqr', this)">
+                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                                    <input type="radio" name="payment" value="khqr" style="accent-color: var(--brand-primary);">
+                                    <span style="font-weight: 600;">KHQR (Bakong)</span>
+                                    <span style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: rgba(255, 193, 7, 0.15); color: var(--status-warning); border: 1px solid var(--status-warning);">Instant</span>
+                                </div>
+                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;">
+                                    Scan QR code with any Cambodian banking app
+                                </p>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-2xl);" id="submit-btn">
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-summary-card">
+                    <div class="cart-summary" style="position: static; padding: var(--space-xl);">
+                        <h3>Order Summary</h3>
+                        
+                        <div id="checkout-items" style="margin-bottom: var(--space-lg); max-height: 300px; overflow-y: auto; padding-right: 10px;">
+                            <!-- Items loaded dynamically -->
+                        </div>
+                        
+                        <div class="cart-summary-row" style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-md);">
+                            <span>Subtotal (<span id="summary-count">0</span> items)</span>
+                            <span id="summary-subtotal">$0.00</span>
+                        </div>
+                        <div class="cart-summary-row">
+                            <span>Shipping</span>
+                            <span style="color: var(--status-success);">Free</span>
+                        </div>
+                        <div class="cart-summary-total">
+                            <span>Total</span>
+                            <span id="summary-total" style="color: var(--text-brand);">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer" id="footer"></footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let selectedPaymentMethod = 'cod';
+        
+        function selectPayment(method, element) {
+            selectedPaymentMethod = method;
+            
+            // Update border styles
+            document.querySelectorAll('label[onclick^="selectPayment"]').forEach(label => {
+                label.style.borderColor = 'var(--border-default)';
+                label.style.background = 'var(--bg-tertiary)';
+            });
+            
+            element.style.borderColor = 'var(--border-brand)';
+            element.style.background = 'rgba(27, 140, 61, 0.05)';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!requireAuth()) return;
+            
+            let savedAddress = null;
+            
+            // Load profile to check for saved address
+            try {
+                const profileResult = await api.getProfile();
+                if (profileResult && profileResult.user) {
+                    const p = profileResult.user;
+                    
+                    // Check if user has complete address
+                    if (p.address && p.city && p.phone) {
+                        savedAddress = p;
+                        
+                        // Show the saved address display
+                        document.getElementById('saved-address-display').style.display = 'block';
+                        document.getElementById('saved-address-content').innerHTML = `
+                            <strong style="color: var(--text-primary);">${p.full_name || api.getUser()?.full_name || ''}</strong><br>
+                            ${p.phone}<br>
+                            ${p.address}<br>
+                            ${p.city}${p.postal_code ? ', ' + p.postal_code : ''}
+                        `;
+                        
+                        // Hide the form initially
+                        document.getElementById('checkout-form').style.display = 'none';
+                        
+                        // Edit button shows the form
+                        document.getElementById('btn-edit-address').addEventListener('click', () => {
+                            document.getElementById('saved-address-display').style.display = 'none';
+                            document.getElementById('checkout-form').style.display = 'block';
+                            
+                            // Pre-fill the form
+                            document.getElementById('shipping_name').value = p.full_name || api.getUser()?.full_name || '';
+                            document.getElementById('shipping_phone').value = p.phone || '';
+                            document.getElementById('shipping_address').value = p.address || '';
+                            document.getElementById('shipping_city').value = p.city || '';
+                            document.getElementById('shipping_postal').value = p.postal_code || '';
+                        });
+                    } else {
+                        // No complete address, show form with warning
+                        const user = api.getUser();
+                        if (user) {
+                            document.getElementById('shipping_name').value = user.full_name || '';
+                            if (user.phone) document.getElementById('shipping_phone').value = user.phone;
+                        }
+                        
+                        if (p.address) document.getElementById('shipping_address').value = p.address;
+                        if (p.city) document.getElementById('shipping_city').value = p.city;
+                        if (p.postal_code) document.getElementById('shipping_postal').value = p.postal_code;
+                        if (p.phone) document.getElementById('shipping_phone').value = p.phone;
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load profile address:', err);
+            }
+
+            loadCheckoutSummary();
+            initCheckoutForm(savedAddress);
+            
+            // Handle Place Order button for saved address
+            if (savedAddress) {
+                document.getElementById('submit-saved-btn')?.addEventListener('click', async () => {
+                    await processOrder(savedAddress, true);
+                });
+            }
+        });
+        
+        async function processOrder(savedAddress = null, isSavedAddress = false) {
+            const btn = isSavedAddress ? document.getElementById('submit-saved-btn') : document.getElementById('submit-btn');
+            
+            let orderData;
+            if (isSavedAddress && savedAddress) {
+                orderData = {
+                    shipping_name: savedAddress.full_name || api.getUser()?.full_name || '',
+                    shipping_phone: savedAddress.phone,
+                    shipping_address: savedAddress.address,
+                    shipping_city: savedAddress.city,
+                    shipping_postal: savedAddress.postal_code || '',
+                    notes: document.getElementById('notes-saved')?.value || null,
+                    payment_method: selectedPaymentMethod,
+                };
+            } else {
+                orderData = {
+                    shipping_name: document.getElementById('shipping_name').value,
+                    shipping_phone: document.getElementById('shipping_phone').value,
+                    shipping_address: document.getElementById('shipping_address').value,
+                    shipping_city: document.getElementById('shipping_city').value,
+                    shipping_postal: document.getElementById('shipping_postal').value,
+                    notes: document.getElementById('notes').value || null,
+                    payment_method: selectedPaymentMethod,
+                };
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = 'Processing... <svg style="animation: spin 1s linear infinite; margin-left: 8px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>';
+
+            try {
+                const res = await api.createOrder(orderData);
+                
+                // If KHQR payment, show QR code
+                if (selectedPaymentMethod === 'khqr') {
+                    showKHQRPayment(res, orderData);
+                } else {
+                    showOrderSuccess(res);
+                }
+                
+                updateCartBadge();
+            } catch (err) {
+                showToast(err.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Place Order';
+            }
+        }
+        
+        function showKHQRPayment(orderRes, orderData) {
+            const total = document.getElementById('summary-total').textContent;
+            
+            document.getElementById('checkout-main').innerHTML = `
+                <div class="container" style="max-width: 500px; text-align: center; padding: var(--space-2xl) var(--space-lg);">
+                    <div style="margin-bottom: var(--space-xl);">
+                        <div style="width: 64px; height: 64px; background: rgba(27, 140, 61, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01M7 12h.01M7 17h.01M12 7h.01M12 12h.01M12 17h.01M17 7h.01M17 12h.01M17 17h.01"/></svg>
+                        </div>
+                        <h1 style="font-size: var(--font-2xl); margin-bottom: var(--space-sm);">Scan to Pay</h1>
+                        <p style="color: var(--text-secondary);">Order #${orderRes.order_id}</p>
+                    </div>
+                    
+                    <div style="background: white; padding: var(--space-xl); border-radius: var(--radius-xl); margin-bottom: var(--space-xl); box-shadow: var(--shadow-lg);">
+                        <div id="khqr-code" style="display: flex; justify-content: center; margin-bottom: var(--space-md);"></div>
+                        <div style="font-size: var(--font-3xl); font-weight: 800; color: var(--text-inverse); margin-bottom: var(--space-xs);">${total}</div>
+                        <div style="font-size: var(--font-sm); color: #666;">Scan with any Cambodian bank app</div>
+                    </div>
+                    
+                    <div style="padding: var(--space-lg); background: var(--bg-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-lg); margin-bottom: var(--space-xl); text-align: left;">
+                        <div style="font-size: var(--font-sm); font-weight: 600; margin-bottom: var(--space-md); color: var(--text-primary);">Delivery to:</div>
+                        <div style="font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.6;">
+                            ${orderData.shipping_name}<br>
+                            ${orderData.shipping_phone}<br>
+                            ${orderData.shipping_address}<br>
+                            ${orderData.shipping_city}${orderData.shipping_postal ? ', ' + orderData.shipping_postal : ''}
+                        </div>
+                    </div>
+                    
+                    <p style="font-size: var(--font-sm); color: var(--text-tertiary); margin-bottom: var(--space-lg);">
+                        After payment, your order will be processed and delivered soon.
+                    </p>
+                    
+                    <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                        <a href="orders.html" class="btn btn-primary">View My Orders</a>
+                        <a href="products.html" class="btn btn-secondary">Continue Shopping</a>
+                    </div>
+                </div>
+            `;
+            
+            // Generate QR code (using a placeholder - integrate with real KHQR API)
+            generateKHQR(orderRes.order_id, total);
+        }
+        
+        function generateKHQR(orderId, amount) {
+            // Placeholder QR code generation
+            // In production, integrate with Cambodia's KHQR API
+            const qrContainer = document.getElementById('khqr-code');
+            const qrData = `KHQR:order_${orderId}:${amount}`;
+            
+            // Using a simple QR placeholder
+            qrContainer.innerHTML = `
+                <svg viewBox="0 0 200 200" width="200" height="200" style="background: white;">
+                    <rect width="200" height="200" fill="white"/>
+                    <rect x="20" y="20" width="40" height="40" fill="black"/>
+                    <rect x="140" y="20" width="40" height="40" fill="black"/>
+                    <rect x="20" y="140" width="40" height="40" fill="black"/>
+                    <rect x="80" y="80" width="40" height="40" fill="black"/>
+                    <text x="100" y="105" text-anchor="middle" font-size="10" fill="black">KHQR</text>
+                </svg>
+                <p style="font-size: var(--font-xs); color: #666; margin-top: var(--space-sm);">
+                    <strong>Note:</strong> QR code integration with KHQR/Bakong API required for production
+                </p>
+            `;
+        }
+        
+        function showOrderSuccess(res) {
+            document.getElementById('checkout-main').innerHTML = `
+                <div class="container order-success">
+                    <div class="success-checkmark">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h1 style="font-size: var(--font-3xl); margin-bottom: var(--space-md);">Order Confirmed!</h1>
+                    <p style="color: var(--text-secondary); font-size: var(--font-lg); margin-bottom: var(--space-xl);">
+                        Thank you for shopping with BuyBIBZ.<br>
+                        Your order #${res.order_id} has been placed successfully.
+                    </p>
+                    <div style="display: flex; gap: var(--space-md); justify-content: center;">
+                        <a href="orders.html" class="btn btn-primary btn-lg">View My Orders</a>
+                        <a href="products.html" class="btn btn-secondary btn-lg">Continue Shopping</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadCheckoutSummary() {
+            try {
+                const data = await api.getCart();
+                
+                if (!data.items || data.items.length === 0) {
+                    showToast('Your cart is empty', 'warning');
+                    window.location.href = 'cart.html';
+                    return;
+                }
+
+                document.getElementById('summary-count').textContent = data.count;
+                document.getElementById('summary-subtotal').textContent = formatPrice(data.total);
+                document.getElementById('summary-total').textContent = formatPrice(data.total);
+                
+                const itemsContainer = document.getElementById('checkout-items');
+                itemsContainer.innerHTML = data.items.map(item => {
+                    const product = item.products;
+                    return `
+                        <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-sm); align-items: center;">
+                            <div style="position: relative;">
+                                <img src="${product.image_url}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-sm);">
+                                <span style="position: absolute; top: -5px; right: -5px; background: var(--bg-elevated); color: var(--text-primary); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid var(--border-default); font-weight: 700;">${item.quantity}</span>
+                            </div>
+                            <div style="flex: 1; font-size: var(--font-sm);">
+                                <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${product.name}</div>
+                                <div style="color: var(--text-tertiary);">${formatPrice(product.price)}</div>
+                            </div>
+                            <div style="font-weight: 700; font-size: var(--font-sm);">
+                                ${formatPrice(product.price * item.quantity)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (err) {
+                showToast('Failed to load order summary', 'error');
+            }
+        }
+
+        function initCheckoutForm(savedAddress) {
+            document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await processOrder(savedAddress, false);
+            });
+        }
+    </script>
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>

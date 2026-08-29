@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders — BuyBIBZ</title>
+    <meta name="description" content="View your order history.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="navbar" id="navbar"></header>
+
+    <main class="orders-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Orders</h1>
+                <p>Track and view your past orders</p>
+            </div>
+
+            <div id="orders-list">
+                <!-- Loaded dynamically -->
+                <div class="skeleton" style="height: 80px; width: 100%; margin-bottom: 16px; border-radius: 10px;"></div>
+                <div class="skeleton" style="height: 80px; width: 100%; margin-bottom: 16px; border-radius: 10px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer" id="footer"></footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+            loadOrders();
+        });
+
+        async function loadOrders() {
+            const container = document.getElementById('orders-list');
+            
+            try {
+                const data = await api.getOrders();
+                
+                if (!data.orders || data.orders.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: var(--space-4xl); background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
+                            <div style="font-size: 3rem; margin-bottom: var(--space-md); opacity: 0.5;">📦</div>
+                            <h2 style="margin-bottom: var(--space-sm);">No orders yet</h2>
+                            <p class="text-secondary" style="margin-bottom: var(--space-xl);">When you place orders, they will appear here.</p>
+                            <a href="products.html" class="btn btn-primary">Start Shopping</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = data.orders.map(order => {
+                    const items = order.order_items || [];
+                    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+                    const orderJson = encodeURIComponent(JSON.stringify(order));
+                    
+                    return `
+                        <div class="order-card">
+                            <div class="order-card-header" onclick="toggleOrderDetails(${order.id})">
+                                <div>
+                                    <div class="order-id">Order #${order.id}</div>
+                                    <div class="order-date">${formatDate(order.created_at)} • ${itemCount} item${itemCount !== 1 ? 's' : ''}</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: var(--space-xl);">
+                                    <div style="font-weight: 700;">${formatPrice(order.total)}</div>
+                                    ${renderStatusBadge(order.status)}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><path d="m6 9 6 6 6-6"/></svg>
+                                </div>
+                            </div>
+                            
+                            <div class="order-card-body" id="order-details-${order.id}">
+                                ${renderOrderTracker(order.status)}
+                                <div class="order-details-grid">
+                                    
+                                    <!-- Items -->
+                                    <div>
+                                        <h4 style="font-size: var(--font-sm); color: var(--text-secondary); margin-bottom: var(--space-md); text-transform: uppercase; letter-spacing: 0.05em;">Items</h4>
+                                        ${items.map(item => `
+                                            <div class="order-item">
+                                                <div class="order-item-image">
+                                                    <img src="${item.product_image || 'https://via.placeholder.com/100?text=Img'}" alt="${item.product_name}">
+                                                </div>
+                                                <div style="flex: 1;">
+                                                    <a href="product-detail.html?id=${item.product_id}" style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 2px;">
+                                                        ${item.product_name}
+                                                    </a>
+                                                    <div style="color: var(--text-tertiary); font-size: var(--font-xs);">
+                                                        ${formatPrice(item.price)} × ${item.quantity}
+                                                    </div>
+                                                </div>
+                                                <div style="font-weight: 700;">
+                                                    ${formatPrice(item.subtotal)}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    
+                                    <!-- Shipping Info -->
+                                    <div style="background: var(--bg-tertiary); padding: var(--space-lg); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; min-height: 240px;">
+                                        <div>
+                                            <h4 style="font-size: var(--font-sm); color: var(--text-secondary); margin-bottom: var(--space-md); text-transform: uppercase; letter-spacing: 0.05em;">Shipping Details</h4>
+                                            
+                                            <div style="font-size: var(--font-sm); line-height: 1.6;">
+                                                <div style="font-weight: 600; color: var(--text-primary);">${order.shipping_name}</div>
+                                                <div>${order.shipping_address}</div>
+                                                <div>${order.shipping_city}, ${order.shipping_postal}</div>
+                                                <div style="margin-top: var(--space-xs); color: var(--text-tertiary);">📞 ${order.shipping_phone}</div>
+                                            </div>
+                                            
+                                            ${order.notes ? '<div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-default);"><div style="font-size: var(--font-xs); color: var(--text-tertiary); margin-bottom: 4px;">Notes</div><div style="font-size: var(--font-sm); font-style: italic;">' + order.notes + '</div></div>' : ''}
+                                        </div>
+                                        
+                                        <button class="btn btn-secondary btn-sm" onclick="printReceipt(${order.id}, '${orderJson}')" style="margin-top: var(--space-lg); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+                                            Print Receipt
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (err) {
+                container.innerHTML = `<p class="text-secondary">Failed to load orders: ${err.message}</p>`;
+            }
+        }
+
+        function toggleOrderDetails(orderId) {
+            const body = document.getElementById(`order-details-${orderId}`);
+            if (body.classList.contains('show')) {
+                body.classList.remove('show');
+            } else {
+                body.classList.add('show');
+            }
+        }
+
+        function renderOrderTracker(status) {
+            let statusText = '';
+            let pPercent = '0%';
+
+            if (status === 'cancelled') {
+                statusText = 'This order has been cancelled.';
+                return `
+                    <div class="order-tracker cancelled">
+                        <div class="tracker-steps" style="max-width: 300px; margin: 0 auto;">
+                            <div class="tracker-progress-wrapper">
+                                <div class="tracker-progress-bar" style="--progress: 100%;"></div>
+                            </div>
+                            <div class="tracker-step completed">
+                                <div class="step-icon">✓</div>
+                                <div class="step-label">Order Placed</div>
+                            </div>
+                            <div class="tracker-step active">
+                                <div class="step-icon">✕</div>
+                                <div class="step-label">Cancelled</div>
+                            </div>
+                        </div>
+                        <div class="tracker-description" style="color: var(--status-error); font-weight: 600;">
+                            ${statusText}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let s1 = '', s2 = '', s3 = '', s4 = '';
+            let icon1 = '1', icon2 = '2', icon3 = '3', icon4 = '4';
+
+            switch (status) {
+                case 'pending':
+                    s1 = 'active';
+                    icon1 = '🛒';
+                    pPercent = '0%';
+                    statusText = 'We have received your order and are preparing to process it.';
+                    break;
+                case 'processing':
+                    s1 = 'completed';
+                    icon1 = '✓';
+                    s2 = 'active';
+                    icon2 = '⚙️';
+                    pPercent = '33.33%';
+                    statusText = 'Your order is being processed and packaged.';
+                    break;
+                case 'shipped':
+                    s1 = 'completed';
+                    icon1 = '✓';
+                    s2 = 'completed';
+                    icon2 = '✓';
+                    s3 = 'active';
+                    icon3 = '🚚';
+                    pPercent = '66.66%';
+                    statusText = 'Your order has been shipped and is on the way!';
+                    break;
+                case 'delivered':
+                    s1 = 'completed';
+                    icon1 = '✓';
+                    s2 = 'completed';
+                    icon2 = '✓';
+                    s3 = 'completed';
+                    icon3 = '✓';
+                    s4 = 'completed';
+                    icon4 = '🎁';
+                    pPercent = '100%';
+                    statusText = 'Your order has been delivered. Thank you for shopping with us!';
+                    break;
+                default:
+                    s1 = 'active';
+                    icon1 = '🛒';
+                    pPercent = '0%';
+                    statusText = 'Order placed.';
+            }
+
+            return `
+                <div class="order-tracker">
+                    <div class="tracker-steps">
+                        <div class="tracker-progress-wrapper">
+                            <div class="tracker-progress-bar" style="--progress: ${pPercent};"></div>
+                        </div>
+                        <div class="tracker-step ${s1}">
+                            <div class="step-icon">${icon1}</div>
+                            <div class="step-label">Placed</div>
+                        </div>
+                        <div class="tracker-step ${s2}">
+                            <div class="step-icon">${icon2}</div>
+                            <div class="step-label">Processing</div>
+                        </div>
+                        <div class="tracker-step ${s3}">
+                            <div class="step-icon">${icon3}</div>
+                            <div class="step-label">Shipped</div>
+                        </div>
+                        <div class="tracker-step ${s4}">
+                            <div class="step-icon">${icon4}</div>
+                            <div class="step-label">Delivered</div>
+                        </div>
+                    </div>
+                    <div class="tracker-description">
+                        ${statusText}
+                    </div>
+                </div>
+            `;
+        }
+
+        function printReceipt(orderId, orderDataJson) {
+            const order = JSON.parse(decodeURIComponent(orderDataJson));
+            const items = order.order_items || [];
+            const printWindow = window.open('', '_blank', 'width=800,height=900');
+            
+            const itemsHtml = items.map(item => `
+                <tr>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: 600; color: #111;">${item.product_name}</div>
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center; color: #555;">
+                        ${formatPrice(item.price)}
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center; color: #555;">
+                        ${item.quantity}
+                    </td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: 600; color: #111;">
+                        ${formatPrice(item.subtotal)}
+                    </td>
+                </tr>
+            `).join('');
+
+            const receiptHtml = `
+                <!DOCTYPE html>
+                <html${''}>
+                <head${''}>
+                    <title>Receipt - Order #${order.id}</title>
+                    <style>
+                        body {
+                            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                            color: #333;
+                            margin: 0;
+                            padding: 40px;
+                            line-height: 1.6;
+                            background-color: #ffffff;
+                        }
+                        .invoice-box {
+                            max-width: 800px;
+                            margin: auto;
+                            background: #fff;
+                        }
+                        .header-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 40px;
+                        }
+                        .logo {
+                            font-size: 28px;
+                            font-weight: 800;
+                            color: #1B8C3D;
+                            text-decoration: none;
+                            letter-spacing: -0.5px;
+                        }
+                        .invoice-title {
+                            font-size: 24px;
+                            font-weight: 700;
+                            text-align: right;
+                            color: #111;
+                            text-transform: uppercase;
+                        }
+                        .details-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 40px;
+                        }
+                        .details-col {
+                            width: 50%;
+                            vertical-align: top;
+                        }
+                        .section-title {
+                            font-size: 12px;
+                            font-weight: 700;
+                            color: #888;
+                            text-transform: uppercase;
+                            margin-bottom: 10px;
+                            letter-spacing: 0.5px;
+                        }
+                        .info-text {
+                            font-size: 14px;
+                            color: #555;
+                        }
+                        .info-text strong {
+                            color: #111;
+                        }
+                        .items-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        .items-table th {
+                            border-bottom: 2px solid #1B8C3D;
+                            padding-bottom: 8px;
+                            text-align: left;
+                            font-size: 12px;
+                            color: #888;
+                            text-transform: uppercase;
+                            font-weight: 700;
+                        }
+                        .totals-table {
+                            width: 320px;
+                            margin-left: auto;
+                            border-collapse: collapse;
+                            margin-bottom: 40px;
+                        }
+                        .totals-table td {
+                            padding: 8px 0;
+                            font-size: 14px;
+                        }
+                        .totals-table tr.grand-total td {
+                            border-top: 2px solid #eee;
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: #1B8C3D;
+                            padding-top: 12px;
+                        }
+                        .footer {
+                            border-top: 1px solid #eee;
+                            padding-top: 20px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #888;
+                            margin-top: 50px;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                            }
+                            .no-print {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head${''}>
+                <body${''}>
+                    <div class="invoice-box">
+                        <table class="header-table">
+                            <tr>
+                                <td>
+                                    <div class="logo">BuyBIBZ</div>
+                                    <div style="font-size: 12px; color: #888; margin-top: 4px;">Premium E-Commerce Marketplace</div>
+                                </td>
+                                <td class="invoice-title">
+                                    Receipt / Invoice
+                                    <div style="font-size: 13px; font-weight: normal; color: #555; margin-top: 6px; text-transform: none;">
+                                        Order <strong>#${order.id}</strong><br>
+                                        Date: ${formatDate(order.created_at)}
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="details-table">
+                            <tr>
+                                <td class="details-col">
+                                    <div class="section-title">Billed To</div>
+                                    <div class="info-text">
+                                        <strong>${order.shipping_name}</strong><br>
+                                        ${order.shipping_address}<br>
+                                        ${order.shipping_city}, ${order.shipping_postal || ''}<br>
+                                        Phone: ${order.shipping_phone}
+                                        ${order.notes ? `<br><br><div style="margin-top: 8px; padding: 8px 12px; background: rgba(27, 140, 61, 0.05); border-left: 3px solid var(--brand-primary); border-radius: 4px;"><strong style="color: var(--brand-primary); font-size: 0.85rem;">📝 Delivery Notes:</strong><br><span style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">${order.notes}</span></div>` : ''}
+                                    </div>
+                                </td>
+                                <td class="details-col" style="text-align: right;">
+                                    <div class="section-title">Payment Details</div>
+                                    <div class="info-text">
+                                        Payment Method: <strong>Credit Card / Online</strong><br>
+                                        Status: <strong style="color: #1B8C3D;">Paid / ${order.status.toUpperCase()}</strong><br>
+                                        Currency: <strong>USD ($)</strong>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 55%;">Item</th>
+                                    <th style="width: 15%; text-align: center;">Price</th>
+                                    <th style="width: 15%; text-align: center;">Qty</th>
+                                    <th style="width: 15%; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+
+                        <table class="totals-table">
+                            <tr>
+                                <td style="color: #888;">Subtotal</td>
+                                <td style="text-align: right; font-weight: 600; color: #111;">${formatPrice(order.total)}</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #888;">Shipping & Handling</td>
+                                <td style="text-align: right; font-weight: 600; color: #111;">$0.00</td>
+                            </tr>
+                            <tr class="grand-total">
+                                <td>Total Paid</td>
+                                <td style="text-align: right;">${formatPrice(order.total)}</td>
+                            </tr>
+                        </table>
+
+                        ${order.notes ? '<div style="background-color: #f9f9f9; border-left: 3px solid #1B8C3D; padding: 15px; margin-bottom: 30px; border-radius: 4px;"><div class="section-title" style="margin-bottom: 5px;">Order Notes</div><div style="font-size: 13px; font-style: italic; color: #555;">"' + order.notes + '"</div></div>' : ''}
+
+                        <div class="footer">
+                            Thank you for shopping with BuyBIBZ!<br>
+                            For any support queries, please contact support@buybiz.com
+                        </div>
+                    </div>
+                </body${''}>
+                </html${''}>
+            `;
+
+            printWindow.document.write(receiptHtml);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+from fastapi import APIRouter, HTTPException, Depends
+from core.config import get_supabase
+from core.auth import get_current_user
+from models.schemas import ReviewCreate
+
+router = APIRouter(prefix="/api/reviews", tags=["Reviews"])
+
+
+@router.get("/{product_id}")
+async def get_reviews(product_id: int):
+    """Get all reviews for a product."""
+    try:
+        supabase = get_supabase()
+        response = (
+            supabase.table("reviews")
+            .select("*")
+            .eq("product_id", product_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        
+        # Enrich reviews with user profiles
+        reviews = response.data if response.data else []
+        for review in reviews:
+            try:
+                profile = (
+                    supabase.table("profiles")
+                    .select("full_name")
+                    .eq("id", review["user_id"])
+                    .single()
+                    .execute()
+                )
+                review["profiles"] = profile.data if profile.data else {"full_name": "Anonymous"}
+            except:
+                review["profiles"] = {"full_name": "Anonymous"}
+        
+        return {"reviews": reviews}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("")
+async def create_review(review: ReviewCreate, current_user=Depends(get_current_user)):
+    """Add a review for a product (one per user per product)."""
+    try:
+        from core.config import get_authenticated_client
+        supabase = get_authenticated_client(current_user["token"])
+        user_id = str(current_user["user"].id)
+
+        # Check if product exists
+        product = (
+            supabase.table("products")
+            .select("id, rating_avg, rating_count")
+            .eq("id", review.product_id)
+            .single()
+            .execute()
+        )
+        if not product.data:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        # Check if user already reviewed
+        existing = (
+            supabase.table("reviews")
+            .select("id")
+            .eq("user_id", user_id)
+            .eq("product_id", review.product_id)
+            .execute()
+        )
+        if existing.data:
+            raise HTTPException(status_code=400, detail="You already reviewed this product")
+
+        # Create review
+        response = (
+            supabase.table("reviews")
+            .insert({
+                "user_id": user_id,
+                "product_id": review.product_id,
+                "rating": review.rating,
+                "comment": review.comment,
+            })
+            .execute()
+        )
+
+        # Update product rating
+        old_avg = float(product.data.get("rating_avg", 0))
+        old_count = int(product.data.get("rating_count", 0))
+        new_count = old_count + 1
+        new_avg = round(((old_avg * old_count) + review.rating) / new_count, 1)
+
+        supabase.table("products").update({
+            "rating_avg": new_avg,
+            "rating_count": new_count,
+        }).eq("id", review.product_id).execute()
+
+        return {
+            "message": "Review added",
+            "review": response.data[0] if response.data else None,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

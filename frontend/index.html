@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuyBIBZ — E-Commerce Reimagined</title>
+    <meta name="description" content="Discover premium products at BuyBIBZ. Shop electronics, fashion, home essentials and more with a seamless modern shopping experience.">
+    <link rel="preconnect" href="http://localhost:8000">
+    <link rel="dns-prefetch" href="http://localhost:8000">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar" id="navbar"></header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="hero-bg-gradient"></div>
+            <div class="hero-orb hero-orb-1"></div>
+            <div class="hero-orb hero-orb-2"></div>
+            <div class="hero-orb hero-orb-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="pulse-dot"></span>
+                    <span data-i18n="hero.badge">New Collection Available</span>
+                </div>
+                <h1>
+                    <span data-i18n="hero.title_1">Shop The Future</span><br>
+                    <span data-i18n="hero.title_2">With</span> <span class="gradient-text">BuyBIBZ</span>
+                </h1>
+                <p data-i18n="hero.desc">
+                    Discover curated premium products across electronics, fashion,
+                    and lifestyle — all in one beautifully crafted marketplace.
+                </p>
+                <div class="hero-actions">
+                    <a href="products.html" class="btn btn-primary btn-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                        <span data-i18n="hero.shop_now">Shop Now</span>
+                    </a>
+                    <a href="products.html?featured=true" class="btn btn-secondary btn-lg">
+                        <span data-i18n="hero.explore">Explore Featured</span>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div>
+                        <div class="hero-stat-value" id="hero-products-count">—</div>
+                        <div class="hero-stat-label" data-i18n="hero.products">Products</div>
+                    </div>
+                    <div>
+                        <div class="hero-stat-value">5+</div>
+                        <div class="hero-stat-label" data-i18n="hero.categories">Categories</div>
+                    </div>
+                    <div>
+                        <div class="hero-stat-value">24/7</div>
+                        <div class="hero-stat-label" data-i18n="hero.support">Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 data-i18n="section.featured">Featured Products</h2>
+                <p data-i18n="section.featured_desc">Hand-picked premium items just for you</p>
+            </div>
+            <div class="products-grid stagger" id="featured-products">
+                <!-- Loading skeletons -->
+                <div class="product-card skeleton-card">
+                    <div class="skeleton" style="height: 280px;"></div>
+                    <div style="padding: var(--space-lg);">
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 80%; margin-bottom: 12px;"></div>
+                        <div class="skeleton" style="height: 24px; width: 40%;"></div>
+                    </div>
+                </div>
+                <div class="product-card skeleton-card">
+                    <div class="skeleton" style="height: 280px;"></div>
+                    <div style="padding: var(--space-lg);">
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 80%; margin-bottom: 12px;"></div>
+                        <div class="skeleton" style="height: 24px; width: 40%;"></div>
+                    </div>
+                </div>
+                <div class="product-card skeleton-card">
+                    <div class="skeleton" style="height: 280px;"></div>
+                    <div style="padding: var(--space-lg);">
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 80%; margin-bottom: 12px;"></div>
+                        <div class="skeleton" style="height: 24px; width: 40%;"></div>
+                    </div>
+                </div>
+                <div class="product-card skeleton-card">
+                    <div class="skeleton" style="height: 280px;"></div>
+                    <div style="padding: var(--space-lg);">
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 20px; width: 80%; margin-bottom: 12px;"></div>
+                        <div class="skeleton" style="height: 24px; width: 40%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center" style="margin-top: var(--space-2xl);">
+                <a href="products.html" class="btn btn-outline btn-lg" data-i18n="section.view_all">View All Products →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 data-i18n="section.categories">Shop By Category</h2>
+                <p data-i18n="section.categories_desc">Find exactly what you're looking for</p>
+            </div>
+            <div class="grid grid-5 stagger" id="categories-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                <!-- Categories loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="section">
+        <div class="container">
+            <div class="newsletter animate-on-scroll">
+                <div class="newsletter-content">
+                    <h2 data-i18n="section.newsletter">Stay In The Loop</h2>
+                    <p data-i18n="section.newsletter_desc">Get exclusive deals, new arrivals, and insider updates delivered to your inbox.</p>
+                    <form class="newsletter-form" onsubmit="event.preventDefault(); showToast('Thank you for subscribing!', 'success'); this.reset();">
+                        <input type="email" placeholder="Enter your email" data-i18n-placeholder="section.newsletter_placeholder" required>
+                        <button type="submit" class="btn btn-primary" data-i18n="section.newsletter_btn">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer"></footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load featured products and categories in parallel for faster page load
+            const [productsResult, categoriesResult, totalResult] = await Promise.allSettled([
+                api.getProducts({ featured: true, limit: 8 }),
+                api.getCategories(),
+                api.getProducts({ limit: 1 })
+            ]);
+
+            // Handle featured products
+            const container = document.getElementById('featured-products');
+            if (productsResult.status === 'fulfilled' && productsResult.value.products?.length > 0) {
+                container.innerHTML = productsResult.value.products.map(renderProductCard).join('');
+                
+                // Update hero stat
+                if (totalResult.status === 'fulfilled') {
+                    document.getElementById('hero-products-count').textContent = totalResult.value.total || '16';
+                }
+            } else {
+                container.innerHTML = '<p class="text-center text-secondary" style="grid-column:1/-1;">No featured products yet.</p>';
+            }
+
+            // Handle categories
+            const catContainer = document.getElementById('categories-grid');
+            if (categoriesResult.status === 'fulfilled' && categoriesResult.value.categories) {
+                catContainer.innerHTML = categoriesResult.value.categories.map(cat => `
+                    <a href="products.html?category=${cat.id}" class="category-card">
+                        <span class="category-card-icon">${cat.icon || '📦'}</span>
+                        <span class="category-card-name">${cat.name}</span>
+                        <span class="category-card-desc">${cat.description || ''}</span>
+                    </a>
+                `).join('');
+            }
+
+            initScrollAnimations();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart — BuyBIBZ</title>
+    <meta name="description" content="View items in your shopping cart and proceed to checkout.">
+    <link rel="stylesheet" href="css/style.css?v=4.0">
+</head>
+<body>
+
+    <header class="navbar" id="navbar"></header>
+
+    <main class="cart-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Shopping Cart</h1>
+                <p>Review your items before checkout</p>
+            </div>
+
+            <div class="cart-layout">
+                <!-- Cart Items -->
+                <div id="cart-items-container">
+                    <!-- Loaded dynamically -->
+                    <div style="padding: var(--space-4xl); text-align: center;">
+                        <span class="skeleton" style="display:inline-block; width:50px; height:50px; border-radius:50%; margin-bottom:16px;"></span>
+                        <div class="skeleton" style="height:20px; width:200px; margin:0 auto;"></div>
+                    </div>
+                </div>
+
+                <!-- Cart Summary -->
+                <aside class="cart-summary" id="cart-summary" style="display: none;">
+                    <h3>Order Summary</h3>
+                    <div class="cart-summary-row">
+                        <span>Subtotal (<span id="summary-count">0</span> items)</span>
+                        <span id="summary-subtotal">$0.00</span>
+                    </div>
+                    <div class="cart-summary-row">
+                        <span>Shipping</span>
+                        <span style="color: var(--status-success);">Free</span>
+                    </div>
+                    <div class="cart-summary-row">
+                        <span>Tax</span>
+                        <span>Calculated at checkout</span>
+                    </div>
+                    <div class="cart-summary-total">
+                        <span>Total</span>
+                        <span id="summary-total" style="color: var(--text-brand);">$0.00</span>
+                    </div>
+                    
+                    <a href="checkout.html" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-xl);">
+                        Proceed to Checkout
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </a>
+                    
+                    <div style="text-align: center; margin-top: var(--space-lg);">
+                        <button class="btn btn-ghost btn-sm" onclick="clearCart()">Clear Cart</button>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer" id="footer"></footer>
+
+    <!-- Modern Confirmation Modal -->
+    <div class="modal-overlay" id="confirm-modal" style="display: none;">
+        <div class="modal-card confirm-modal">
+            <div class="modal-header">
+                <h3 id="confirm-title">Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+                <button class="btn btn-danger" id="confirm-ok">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Store pending updates to prevent conflicts
+        const pendingUpdates = new Map();
+        const updateTimeouts = new Map();
+
+        // Modern confirm dialog
+        function showConfirmModal(title, message, onConfirm) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-title');
+            const messageEl = document.getElementById('confirm-message');
+            const cancelBtn = document.getElementById('confirm-cancel');
+            const okBtn = document.getElementById('confirm-ok');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            // Remove old listeners
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            const newOkBtn = okBtn.cloneNode(true);
+            cancelBtn.replaceWith(newCancelBtn);
+            okBtn.replaceWith(newOkBtn);
+            
+            // Close modal function
+            const closeModal = () => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            };
+            
+            // Add new listeners
+            newCancelBtn.addEventListener('click', closeModal);
+            newOkBtn.addEventListener('click', () => {
+                closeModal();
+                onConfirm();
+            });
+            
+            // Close on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+            loadCart();
+        });
+
+        async function loadCart() {
+            const container = document.getElementById('cart-items-container');
+            const summary = document.getElementById('cart-summary');
+            
+            try {
+                const data = await api.getCart();
+                
+                if (!data.items || data.items.length === 0) {
+                    container.innerHTML = `
+                        <div class="cart-empty">
+                            <div class="cart-empty-icon">🛒</div>
+                            <h2>Your cart is empty</h2>
+                            <p>Looks like you haven't added anything to your cart yet.</p>
+                            <a href="products.html" class="btn btn-primary btn-lg">Continue Shopping</a>
+                        </div>
+                    `;
+                    summary.style.display = 'none';
+                    return;
+                }
+
+                summary.style.display = 'block';
+                document.getElementById('summary-count').textContent = data.count;
+                document.getElementById('summary-subtotal').textContent = formatPrice(data.total);
+                document.getElementById('summary-total').textContent = formatPrice(data.total);
+                
+                container.innerHTML = data.items.map(item => {
+                    const product = item.products;
+                    if (!product) return '';
+                    
+                    // Calculate original price (assuming 20% markup for demo, adjust as needed)
+                    const originalPrice = product.compare_at_price || product.price * 1.25;
+                    const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+                    
+                    // Use pending quantity if exists, otherwise use server quantity
+                    const displayQty = pendingUpdates.has(item.id) ? pendingUpdates.get(item.id) : item.quantity;
+                    
+                    return `
+                        <div class="cart-item" id="cart-item-${item.id}" data-item-id="${item.id}" data-price="${product.price}">
+                            <a href="product-detail.html?id=${product.id}" class="cart-item-image">
+                                <img src="${product.image_url || 'https://via.placeholder.com/200x200?text=No+Image'}" alt="${product.name}">
+                            </a>
+                            <div class="cart-item-details">
+                                <a href="product-detail.html?id=${product.id}" class="cart-item-link">
+                                    <div class="cart-item-name">${product.name}</div>
+                                </a>
+                                <div class="cart-item-footer">
+                                    <div class="cart-item-pricing">
+                                        ${hasDiscount ? `<div class="cart-item-price-compare">${formatPrice(originalPrice)}</div>` : ''}
+                                        <div class="cart-item-price">${formatPrice(product.price)}</div>
+                                    </div>
+                                    <div class="cart-qty-controls">
+                                        <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, -1)">−</button>
+                                        <span class="cart-qty-value" data-quantity="${displayQty}">${displayQty}</span>
+                                        <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="cart-item-remove" onclick="removeItem(${item.id})" title="Remove item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (err) {
+                container.innerHTML = `
+                    <div style="padding: var(--space-4xl); text-align: center;">
+                        <p class="text-secondary">${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function changeQuantity(itemId, delta) {
+            const itemElement = document.querySelector(`#cart-item-${itemId}`);
+            if (!itemElement) return;
+            
+            const qtyElement = itemElement.querySelector('.cart-qty-value');
+            const currentQty = parseInt(qtyElement.dataset.quantity);
+            const newQty = currentQty + delta;
+            
+            if (newQty < 1) {
+                removeItem(itemId);
+                return;
+            }
+            
+            // Update UI immediately
+            qtyElement.textContent = newQty;
+            qtyElement.dataset.quantity = newQty;
+            
+            // Store pending update
+            pendingUpdates.set(itemId, newQty);
+            
+            // Update totals immediately
+            updateTotalsUI();
+            
+            // Clear existing timeout for this item
+            if (updateTimeouts.has(itemId)) {
+                clearTimeout(updateTimeouts.get(itemId));
+            }
+            
+            // Debounce API call - wait 500ms after last click
+            const timeoutId = setTimeout(() => {
+                saveQuantityToServer(itemId, newQty);
+            }, 500);
+            
+            updateTimeouts.set(itemId, timeoutId);
+        }
+
+        function updateTotalsUI() {
+            let totalPrice = 0;
+            let totalItems = 0;
+            
+            document.querySelectorAll('.cart-item').forEach(itemElement => {
+                const qtyElement = itemElement.querySelector('.cart-qty-value');
+                const quantity = parseInt(qtyElement.dataset.quantity);
+                const price = parseFloat(itemElement.dataset.price);
+                
+                totalPrice += price * quantity;
+                totalItems++;
+            });
+            
+            document.getElementById('summary-count').textContent = totalItems;
+            document.getElementById('summary-subtotal').textContent = formatPrice(totalPrice);
+            document.getElementById('summary-total').textContent = formatPrice(totalPrice);
+        }
+
+        async function saveQuantityToServer(itemId, quantity) {
+            try {
+                await api.updateCartItem(itemId, quantity);
+                
+                // Remove from pending updates
+                pendingUpdates.delete(itemId);
+                updateTimeouts.delete(itemId);
+                
+                // Sync with server to get accurate totals
+                const cartData = await api.getCart();
+                
+                // Update summary with server data
+                document.getElementById('summary-count').textContent = cartData.count;
+                document.getElementById('summary-subtotal').textContent = formatPrice(cartData.total);
+                document.getElementById('summary-total').textContent = formatPrice(cartData.total);
+                
+                updateCartBadge();
+            } catch (err) {
+                // On error, reload cart to sync with server
+                showToast(err.message, 'error');
+                pendingUpdates.delete(itemId);
+                updateTimeouts.delete(itemId);
+                loadCart();
+            }
+        }
+
+        async function removeItem(itemId) {
+            showConfirmModal(
+                'Remove Item',
+                'Remove this item from your cart?',
+                async () => {
+                    // Optimistically remove from UI
+                    const itemElement = document.querySelector(`#cart-item-${itemId}`);
+                    const itemPrice = parseFloat(itemElement.dataset.price);
+                    const itemQty = parseInt(itemElement.querySelector('.cart-qty-value').dataset.quantity);
+                    
+                    // Fade out animation
+                    itemElement.style.opacity = '0.5';
+                    itemElement.style.pointerEvents = 'none';
+                    
+                    // Update totals immediately
+                    const summaryCount = document.getElementById('summary-count');
+                    const summarySubtotal = document.getElementById('summary-subtotal');
+                    const summaryTotal = document.getElementById('summary-total');
+                    
+                    const currentTotal = parseFloat(summarySubtotal.textContent.replace(/[^0-9.]/g, ''));
+                    const newTotal = currentTotal - (itemPrice * itemQty);
+                    const newCount = parseInt(summaryCount.textContent) - 1;
+                    
+                    if (newCount === 0) {
+                        // Show empty cart immediately
+                        document.getElementById('cart-items-container').innerHTML = `
+                            <div class="cart-empty">
+                                <div class="cart-empty-icon">🛒</div>
+                                <h2>Your cart is empty</h2>
+                                <p>Looks like you haven't added anything to your cart yet.</p>
+                                <a href="products.html" class="btn btn-primary btn-lg">Continue Shopping</a>
+                            </div>
+                        `;
+                        document.getElementById('cart-summary').style.display = 'none';
+                    } else {
+                        summaryCount.textContent = newCount;
+                        summarySubtotal.textContent = formatPrice(Math.max(0, newTotal));
+                        summaryTotal.textContent = formatPrice(Math.max(0, newTotal));
+                        
+                        // Remove element after fade
+                        setTimeout(() => itemElement.remove(), 200);
+                    }
+                    
+                    try {
+                        // Make API call in background
+                        await api.removeCartItem(itemId);
+                        showToast('Item removed', 'success');
+                        updateCartBadge();
+                        
+                        // Clear pending updates for this item
+                        pendingUpdates.delete(itemId);
+                        if (updateTimeouts.has(itemId)) {
+                            clearTimeout(updateTimeouts.get(itemId));
+                            updateTimeouts.delete(itemId);
+                        }
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                        // Reload on error
+                        loadCart();
+                    }
+                }
+            );
+        }
+
+        async function clearCart() {
+            showConfirmModal(
+                'Clear Cart',
+                'Are you sure you want to clear your entire cart?',
+                async () => {
+                    // Optimistically clear UI
+                    const container = document.getElementById('cart-items-container');
+                    const summary = document.getElementById('cart-summary');
+                    
+                    container.innerHTML = `
+                        <div class="cart-empty">
+                            <div class="cart-empty-icon">🛒</div>
+                            <h2>Your cart is empty</h2>
+                            <p>Looks like you haven't added anything to your cart yet.</p>
+                            <a href="products.html" class="btn btn-primary btn-lg">Continue Shopping</a>
+                        </div>
+                    `;
+                    summary.style.display = 'none';
+                    
+                    try {
+                        // Make API call in background
+                        await api.clearCart();
+                        showToast('Cart cleared', 'success');
+                        updateCartBadge();
+                        
+                        // Clear all pending updates
+                        pendingUpdates.clear();
+                        updateTimeouts.forEach(timeout => clearTimeout(timeout));
+                        updateTimeouts.clear();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                        // Reload on error
+                        loadCart();
+                    }
+                }
+            );
+        }
+    </script>
+</body>
+</html>

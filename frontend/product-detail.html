@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product — BuyBIBZ</title>
+    <meta name="description" content="View product details, customer reviews, and add to cart.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="navbar" id="navbar"></header>
+
+    <main class="product-detail">
+        <div class="container">
+            <!-- Loading skeleton -->
+            <div class="product-detail-grid" id="product-content">
+                <div class="product-detail-image skeleton" style="aspect-ratio: 1;"></div>
+                <div>
+                    <div class="skeleton" style="height: 40px; width: 80%; margin-bottom: 16px;"></div>
+                    <div class="skeleton" style="height: 30px; width: 40%; margin-bottom: 24px;"></div>
+                    <div class="skeleton" style="height: 100px; margin-bottom: 24px;"></div>
+                    <div class="skeleton" style="height: 50px; width: 60%;"></div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="reviews-section" id="reviews-section" style="display: none;">
+                <h2>Customer Reviews</h2>
+                <div id="reviews-list"></div>
+
+                <div class="review-form" id="review-form-container" style="display: none;">
+                    <h3>Write a Review</h3>
+                    <form id="review-form">
+                        <div class="form-group">
+                            <label class="form-label">Rating</label>
+                            <div class="star-rating-input" id="star-rating">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <input type="hidden" id="review-rating" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="review-comment">Your Review</label>
+                            <textarea id="review-comment" class="form-textarea" placeholder="Share your experience with this product..." rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer" id="footer"></footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let productId = null;
+        let selectedQty = 1;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            productId = parseInt(params.get('id'));
+
+            if (!productId) {
+                document.getElementById('product-content').innerHTML = `
+                    <div style="grid-column:1/-1; text-align: center; padding: var(--space-4xl);">
+                        <h2>Product not found</h2>
+                        <p class="text-secondary" style="margin-top: var(--space-sm); margin-bottom: var(--space-xl);">The product you're looking for doesn't exist.</p>
+                        <a href="products.html" class="btn btn-primary">Browse Products</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const product = await api.getProduct(productId);
+                renderProduct(product);
+                renderReviews(product.reviews || []);
+
+                document.title = `${product.name} — BuyBIBZ`;
+            } catch (err) {
+                document.getElementById('product-content').innerHTML = `
+                    <div style="grid-column:1/-1; text-align: center; padding: var(--space-4xl);">
+                        <h2>Unable to load product</h2>
+                        <p class="text-secondary" style="margin-top: var(--space-sm);">${err.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+        function renderProduct(product) {
+            const category = product.categories;
+            const discount = product.compare_price
+                ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
+                : 0;
+            const inStock = product.stock > 0;
+
+            document.getElementById('product-content').innerHTML = `
+                <div class="product-detail-image">
+                    <img src="${product.image_url || 'https://via.placeholder.com/600x600?text=No+Image'}" alt="${product.name}">
+                </div>
+                <div class="product-detail-info">
+                    ${category ? `<div class="product-card-category" style="margin-bottom: var(--space-md);">${category.icon || ''} ${category.name}</div>` : ''}
+                    <h1>${product.name}</h1>
+
+                    <div class="product-card-rating" style="margin-bottom: var(--space-lg); font-size: 1.1rem;">
+                        ${renderStars(product.rating_avg || 0, product.rating_count || 0)}
+                    </div>
+
+                    <div class="product-detail-price">
+                        <span class="price-current">${formatPrice(product.price)}</span>
+                        ${product.compare_price ? `
+                            <span class="price-compare">${formatPrice(product.compare_price)}</span>
+                            <span class="discount-tag">-${discount}% OFF</span>
+                        ` : ''}
+                    </div>
+
+                    <p class="product-detail-desc">${product.description || 'No description available.'}</p>
+
+                    <div class="product-detail-meta">
+                        <div class="product-detail-meta-item">
+                            <span class="label">Availability</span>
+                            <span class="value" style="color: ${inStock ? 'var(--status-success)' : 'var(--status-error)'};">
+                                ${inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+                            </span>
+                        </div>
+                        ${category ? `
+                        <div class="product-detail-meta-item">
+                            <span class="label">Category</span>
+                            <span class="value">${category.name}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    ${inStock ? `
+                    <div class="product-detail-actions">
+                        <div class="qty-selector">
+                            <button onclick="updateQty(-1)">−</button>
+                            <span class="qty-value" id="qty-display">1</span>
+                            <button onclick="updateQty(1)">+</button>
+                        </div>
+                        <button class="btn btn-primary btn-lg" onclick="addToCart(${product.id}, selectedQty)" style="flex:1;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                            Add to Cart
+                        </button>
+                    </div>
+                    ` : `
+                    <button class="btn btn-secondary btn-lg" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        Out of Stock
+                    </button>
+                    `}
+                </div>
+            `;
+        }
+
+        function updateQty(delta) {
+            selectedQty = Math.max(1, selectedQty + delta);
+            document.getElementById('qty-display').textContent = selectedQty;
+        }
+
+        function renderReviews(reviews) {
+            const section = document.getElementById('reviews-section');
+            const list = document.getElementById('reviews-list');
+            section.style.display = 'block';
+
+            if (reviews.length > 0) {
+                list.innerHTML = reviews.map(review => {
+                    const userName = review.profiles?.full_name || 'Anonymous';
+                    return `
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-user">
+                                    <div class="review-avatar">${userName.charAt(0).toUpperCase()}</div>
+                                    <div>
+                                        <div class="review-name">${userName}</div>
+                                        <div class="review-date">${formatDate(review.created_at)}</div>
+                                    </div>
+                                </div>
+                                <div class="product-card-rating">
+                                    ${renderStars(review.rating)}
+                                </div>
+                            </div>
+                            ${review.comment ? `<p class="review-comment">${review.comment}</p>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                list.innerHTML = '<p class="text-secondary" style="margin-bottom: var(--space-lg);">No reviews yet. Be the first to review this product!</p>';
+            }
+
+            // Show review form if logged in
+            if (api.isLoggedIn()) {
+                document.getElementById('review-form-container').style.display = 'block';
+                initStarRating();
+                initReviewForm();
+            }
+        }
+
+        function initStarRating() {
+            const stars = document.querySelectorAll('#star-rating .star');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const value = parseInt(star.dataset.value);
+                    document.getElementById('review-rating').value = value;
+                    stars.forEach(s => {
+                        s.classList.toggle('active', parseInt(s.dataset.value) <= value);
+                    });
+                });
+
+                star.addEventListener('mouseover', () => {
+                    const value = parseInt(star.dataset.value);
+                    stars.forEach(s => {
+                        s.style.color = parseInt(s.dataset.value) <= value ? 'var(--status-warning)' : '';
+                    });
+                });
+
+                star.addEventListener('mouseout', () => {
+                    const currentRating = parseInt(document.getElementById('review-rating').value);
+                    stars.forEach(s => {
+                        s.style.color = '';
+                    });
+                });
+            });
+        }
+
+        function initReviewForm() {
+            document.getElementById('review-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const rating = parseInt(document.getElementById('review-rating').value);
+                const comment = document.getElementById('review-comment').value;
+
+                if (rating === 0) {
+                    showToast('Please select a rating', 'warning');
+                    return;
+                }
+
+                try {
+                    await api.createReview(productId, rating, comment);
+                    showToast('Review submitted!', 'success');
+                    // Reload product to show new review
+                    setTimeout(() => window.location.reload(), 500);
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
