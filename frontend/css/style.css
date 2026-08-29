@@ -144,6 +144,8 @@ body {
     /* Remove any default margins/padding */
     margin: 0;
     padding: 0;
+    /* Explicitly enable touch scrolling */
+    touch-action: pan-y;
 }
 
 /* Scrollbar Styling */
