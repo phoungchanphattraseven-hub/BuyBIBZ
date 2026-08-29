@@ -110,13 +110,23 @@
     box-sizing: border-box;
 }
 
+/* Force full viewport coverage - eliminate any gray/white areas */
+:root {
+    background-color: #06060a;
+}
+
 html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* Fix iOS viewport height issue */
-    height: -webkit-fill-available;
+    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     background-color: var(--bg-primary);
+    /* Prevent any white gaps */
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -125,12 +135,15 @@ body {
     line-height: 1.6;
     color: var(--text-primary);
     background-color: var(--bg-primary);
+    min-height: 100%;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     overflow-x: hidden;
     /* Prevent pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
-    /* Ensure full viewport height on mobile */
-    min-height: -webkit-fill-available;
+    /* Remove any default margins/padding */
+    margin: 0;
+    padding: 0;
 }
 
 /* Scrollbar Styling */
