@@ -37,13 +37,8 @@
         }
     }, false);
 
-    // Prevent zoom via mouse wheel + Ctrl/Cmd ONLY
-    // Normal scrolling without Ctrl/Cmd is allowed
-    document.addEventListener('wheel', function(event) {
-        if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
-        }
-    }, { passive: false });
+    // Note: Mouse wheel zoom prevention removed to allow normal scrolling
+    // Zoom via Ctrl+Wheel is already prevented by viewport meta tag with user-scalable=no
 
     // Prevent gesturestart, gesturechange, gestureend (iOS only)
     if (isMobile) {
