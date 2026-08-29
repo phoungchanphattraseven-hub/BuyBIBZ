@@ -4810,7 +4810,7 @@ body { letter-spacing: -0.01em; }
 .pwa-prompt-message {
     font-size: var(--font-sm);
     color: var(--text-secondary);
-    line-height: 1.4;
+    line-height: 1.6;
 }
 
 .pwa-prompt-actions {

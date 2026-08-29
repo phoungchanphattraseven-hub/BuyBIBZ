@@ -200,15 +200,11 @@ function showMobileFallback() {
                                 </svg>
                             </div>
                             <div class="pwa-prompt-text">
-                                <div class="pwa-prompt-title">Install BuyBIBZ</div>
+                                <div class="pwa-prompt-title">Install BuyBIBZ App</div>
                                 <div class="pwa-prompt-message">
-                                    Tap 
-                                    <svg style="display: inline; width: 16px; height: 16px; vertical-align: middle; margin: 0 2px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="currentColor">
-                                        <path d="M25 2L25 35L25 2z"/>
-                                        <path d="M15 15L25 2 35 15z"/>
-                                        <path d="M6 42L6 48 44 48 44 42 38 42 38 45 12 45 12 42z"/>
-                                    </svg>
-                                    then "Add to Home Screen"
+                                    1. Tap the Share button in Safari<br>
+                                    2. Scroll and tap "Add to Home Screen"<br>
+                                    3. Tap "Add" to install
                                 </div>
                             </div>
                             <button id="pwa-dismiss-btn" class="pwa-btn pwa-btn-dismiss">
@@ -233,9 +229,11 @@ function showMobileFallback() {
                                 </svg>
                             </div>
                             <div class="pwa-prompt-text">
-                                <div class="pwa-prompt-title">Install BuyBIBZ</div>
+                                <div class="pwa-prompt-title">Install BuyBIBZ App</div>
                                 <div class="pwa-prompt-message">
-                                    Open menu (⋮) and tap "Add to Home screen" or "Install app"
+                                    1. Tap menu (⋮) in your browser<br>
+                                    2. Select "Install app" or "Add to Home screen"<br>
+                                    3. Tap "Install" to add
                                 </div>
                             </div>
                             <button id="pwa-dismiss-btn" class="pwa-btn pwa-btn-dismiss">
