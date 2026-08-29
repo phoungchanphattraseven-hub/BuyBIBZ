@@ -3,7 +3,10 @@
  * Central fetch wrapper with JWT authentication
  */
 
-const API_BASE = 'http://localhost:8000';
+// Auto-detect API base URL
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000'
+    : window.location.origin;
 
 class ApiClient {
     constructor() {
