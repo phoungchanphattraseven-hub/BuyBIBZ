@@ -1,19 +1,10 @@
 {
-  "version": 2,
-  "builds": [
+  "buildCommand": "echo 'Build complete'",
+  "outputDirectory": "frontend",
+  "rewrites": [
     {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
+      "source": "/api/:path*",
+      "destination": "/api"
     }
   ]
 }
