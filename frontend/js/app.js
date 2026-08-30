@@ -248,11 +248,6 @@ function renderNavbar() {
             </nav>
 
             <div class="nav-actions">
-                <div class="nav-search">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    <input type="text" placeholder="${_t('nav.search_placeholder')}" id="nav-search-input" data-i18n-placeholder="nav.search_placeholder">
-                </div>
-
                 <a href="${prefix}cart.html" class="nav-icon-btn" id="cart-icon-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                     <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
@@ -293,16 +288,6 @@ function renderNavbar() {
     window.addEventListener('scroll', () => {
         nav.classList.toggle('scrolled', window.scrollY > 20);
     });
-
-    // Nav search
-    const searchInput = document.getElementById('nav-search-input');
-    if (searchInput) {
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && searchInput.value.trim()) {
-                window.location.href = `${prefix}products.html?search=${encodeURIComponent(searchInput.value.trim())}`;
-            }
-        });
-    }
 
     // Update cart badge
     updateCartBadge();
