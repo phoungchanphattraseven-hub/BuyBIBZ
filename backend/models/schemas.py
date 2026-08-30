@@ -48,6 +48,7 @@ class ProductCreate(BaseModel):
     stock: int = Field(default=0, ge=0)
     is_featured: bool = False
     is_active: bool = True
+    attributes: Optional[dict] = {}
 
 
 class ProductUpdate(BaseModel):
@@ -61,6 +62,7 @@ class ProductUpdate(BaseModel):
     stock: Optional[int] = Field(default=None, ge=0)
     is_featured: Optional[bool] = None
     is_active: Optional[bool] = None
+    attributes: Optional[dict] = None
 
 
 class ProductResponse(BaseModel):
@@ -78,6 +80,7 @@ class ProductResponse(BaseModel):
     is_active: bool = True
     rating_avg: float = 0
     rating_count: int = 0
+    attributes: Optional[dict] = {}
     created_at: Optional[str] = None
 
 
