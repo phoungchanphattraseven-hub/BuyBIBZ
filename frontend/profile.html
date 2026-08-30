@@ -2,10 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem('buybibz-theme');
+                if (theme !== 'dark' && theme !== 'light') theme = 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.style.colorScheme = theme;
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        html, body { background-color: #fcfdfb; }
+        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Profile Settings — BuyBIBZ</title>
     <meta name="description" content="Manage your account profile and shipping address.">
-    <link rel="manifest" href="manifest.json">`n    <meta name="theme-color" content="#06060a">`n    <meta name="apple-mobile-web-app-capable" content="yes">`n    <link rel="apple-touch-icon" href="logo/logo-badge.png">`n    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#06060a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="logo/logo-badge.png">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -161,10 +179,12 @@
 
     <footer class="footer" id="footer"></footer>
 
-    <script src="js/disable-zoom.js"></script>`n    <script src="js/api.js"></script>
+    <script src="js/disable-zoom.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/app.js"></script>`n    <script src="js/pwa-install.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/pwa-install.js"></script>
     <script src="js/profile.js"></script>
 </body>
 </html>

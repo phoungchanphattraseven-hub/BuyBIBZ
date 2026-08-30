@@ -2,6 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem('buybibz-theme');
+                if (theme !== 'dark' && theme !== 'light') theme = 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.style.colorScheme = theme;
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        html, body { background-color: #fcfdfb; }
+        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>BuyBIBZ — E-Commerce Reimagined</title>
     <meta name="description" content="Discover premium products at BuyBIBZ. Shop electronics, fashion, home essentials and more with a seamless modern shopping experience.">
@@ -10,7 +24,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`n    <style>html,body{background-color:#06060a;}</style>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BuyBIBZ">
     <link rel="apple-touch-icon" href="logo/logo-badge.png">
     
@@ -152,7 +166,8 @@
     <!-- Footer -->
     <footer class="footer" id="footer"></footer>
 
-    <script src="js/disable-zoom.js"></script>`n    <script src="js/api.js"></script>
+    <script src="js/disable-zoom.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/pwa-install.js"></script>

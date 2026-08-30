@@ -4,8 +4,8 @@
   "description": "Premium e-commerce marketplace for electronics, fashion, home & garden products",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#06060a",
-  "theme_color": "#1B8C3D",
+  "background_color": "#fcfdfb",
+  "theme_color": "#fcfdfb",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -13,11 +13,21 @@ function getPreferredTheme() {
 }
 
 function setTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem('buybibz-theme', theme);
+    const next = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    document.documentElement.style.colorScheme = next;
+    localStorage.setItem('buybibz-theme', next);
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) {
+        themeColor.setAttribute('content', next === 'dark' ? '#101713' : '#fcfdfb');
+    }
+    const statusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (statusBar) {
+        statusBar.setAttribute('content', next === 'dark' ? 'black-translucent' : 'default');
+    }
     const button = document.getElementById('theme-toggle');
     if (button) {
-        const isDark = theme === 'dark';
+        const isDark = next === 'dark';
         button.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
         button.setAttribute('title', isDark ? 'Light mode' : 'Dark mode');
         button.innerHTML = isDark

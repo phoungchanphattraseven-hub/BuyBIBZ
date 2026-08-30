@@ -1,14 +1,24 @@
 /**
  * BuyBIBZ - PWA Install Prompt
- * Shows "Add to Home Screen" prompt that can be dismissed but reappears on refresh
+ * Smart install prompt that respects user dismissals:
+ * - Persists dismissal in localStorage with a 7-day cooldown
+ * - Stops showing permanently after 3 dismissals
+ * - Only shows on the 2nd+ page visit (not on first visit)
  */
 
 let deferredPrompt;
 const PROMPT_DISMISSED_KEY = 'buybibz_install_dismissed';
 const PROMPT_INSTALLED_KEY = 'buybibz_pwa_installed';
+const PROMPT_DISMISS_COUNT_KEY = 'buybibz_dismiss_count';
+const PROMPT_VISIT_COUNT_KEY = 'buybibz_visit_count';
+const DISMISS_COOLDOWN_DAYS = 7;
+const MAX_DISMISSALS = 3;
 
-// Check if already dismissed in this session
-let dismissedThisSession = false;
+// Track visits - increment on each page load
+(function trackVisit() {
+    const visits = parseInt(localStorage.getItem(PROMPT_VISIT_COUNT_KEY) || '0', 10);
+    localStorage.setItem(PROMPT_VISIT_COUNT_KEY, String(visits + 1));
+})();
 
 // Check if currently running as PWA
 function isRunningAsPWA() {
@@ -19,7 +29,6 @@ function isRunningAsPWA() {
 // Clear installed flag if app was uninstalled
 function checkUninstallStatus() {
     if (localStorage.getItem(PROMPT_INSTALLED_KEY) === 'true' && !isRunningAsPWA()) {
-        // App was installed but now not running as PWA - user likely uninstalled
         console.log('App was uninstalled, clearing installed flag');
         localStorage.removeItem(PROMPT_INSTALLED_KEY);
     }
@@ -27,6 +36,38 @@ function checkUninstallStatus() {
 
 // Run uninstall check on load
 checkUninstallStatus();
+
+/**
+ * Determine whether the install prompt should be shown right now.
+ * Returns false if:
+ *  - Already installed / running as PWA
+ *  - User dismissed it and the cooldown hasn't expired
+ *  - User has dismissed it MAX_DISMISSALS times (permanent opt-out)
+ *  - This is the user's first ever visit
+ */
+function shouldShowPrompt() {
+    // Already installed
+    if (isPWAInstalled()) return false;
+
+    // First visit – don't nag newcomers
+    const visits = parseInt(localStorage.getItem(PROMPT_VISIT_COUNT_KEY) || '0', 10);
+    if (visits <= 1) return false;
+
+    // Permanently opted out after too many dismissals
+    const dismissCount = parseInt(localStorage.getItem(PROMPT_DISMISS_COUNT_KEY) || '0', 10);
+    if (dismissCount >= MAX_DISMISSALS) return false;
+
+    // Still within cooldown period
+    const dismissedAt = localStorage.getItem(PROMPT_DISMISSED_KEY);
+    if (dismissedAt) {
+        const dismissDate = new Date(dismissedAt);
+        const now = new Date();
+        const daysSinceDismiss = (now - dismissDate) / (1000 * 60 * 60 * 24);
+        if (daysSinceDismiss < DISMISS_COOLDOWN_DAYS) return false;
+    }
+
+    return true;
+}
 
 // Listen for the beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -36,10 +77,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Stash the event so it can be triggered later
     deferredPrompt = e;
     
-    // Don't show if already installed or dismissed this session
-    if (isPWAInstalled() || dismissedThisSession) {
-        return;
-    }
+    if (!shouldShowPrompt()) return;
     
     // Show the install prompt after a short delay
     setTimeout(() => {
@@ -57,25 +95,14 @@ window.addEventListener('appinstalled', () => {
 
 // Check if PWA is already installed
 function isPWAInstalled() {
-    // Check if app is running in standalone mode
-    if (isRunningAsPWA()) {
-        return true;
-    }
-    
-    // Check if user has already installed (and hasn't uninstalled)
-    if (localStorage.getItem(PROMPT_INSTALLED_KEY) === 'true') {
-        return true;
-    }
-    
+    if (isRunningAsPWA()) return true;
+    if (localStorage.getItem(PROMPT_INSTALLED_KEY) === 'true') return true;
     return false;
 }
 
 // Create and show install prompt
 function showInstallPrompt() {
-    // Don't show if prompt doesn't exist or already dismissed
-    if (!deferredPrompt || dismissedThisSession) {
-        return;
-    }
+    if (!deferredPrompt || !shouldShowPrompt()) return;
     
     // Create prompt HTML
     const promptHTML = `
@@ -123,9 +150,7 @@ function showInstallPrompt() {
 
 // Handle install button click
 async function handleInstall() {
-    if (!deferredPrompt) {
-        return;
-    }
+    if (!deferredPrompt) return;
     
     // Show the install prompt
     deferredPrompt.prompt();
@@ -140,16 +165,19 @@ async function handleInstall() {
         localStorage.setItem(PROMPT_INSTALLED_KEY, 'true');
     }
     
-    // Hide the prompt
     hideInstallPrompt();
-    
-    // Clear the deferredPrompt
     deferredPrompt = null;
 }
 
-// Handle dismiss button click
+// Handle dismiss button click – persist to localStorage
 function handleDismiss() {
-    dismissedThisSession = true;
+    // Save the timestamp of this dismissal
+    localStorage.setItem(PROMPT_DISMISSED_KEY, new Date().toISOString());
+
+    // Increment dismiss counter
+    const count = parseInt(localStorage.getItem(PROMPT_DISMISS_COUNT_KEY) || '0', 10);
+    localStorage.setItem(PROMPT_DISMISS_COUNT_KEY, String(count + 1));
+
     hideInstallPrompt();
 }
 
@@ -172,19 +200,14 @@ function showMobileFallback() {
     const isMobile = isIOS || isAndroid || /Mobile|Tablet/.test(navigator.userAgent);
     const isStandalone = window.navigator.standalone === true || isRunningAsPWA();
     
-    // Don't show if already running as PWA or dismissed this session
-    if (isStandalone || dismissedThisSession || isPWAInstalled()) {
-        return;
-    }
+    // Use the same smart check
+    if (isStandalone || !shouldShowPrompt()) return;
     
     // For iOS or mobile devices without beforeinstallprompt
     if (isMobile) {
         setTimeout(() => {
             // Check if deferredPrompt was triggered (Android Chrome)
-            if (deferredPrompt) {
-                // Native prompt is available, don't show fallback
-                return;
-            }
+            if (deferredPrompt) return;
             
             let instructionsHTML = '';
             
