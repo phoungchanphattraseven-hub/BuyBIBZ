@@ -2799,6 +2799,78 @@ input:checked + .toggle-slider:before {
     line-height: 1;
 }
 
+/* ── Mobile Search Bar ──────────────────────────────────── */
+.mobile-search-bar {
+    display: none;
+    padding: var(--space-md) var(--space-md) 0;
+    background: var(--bg-primary);
+}
+
+.mobile-search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.mobile-search-input-wrapper .search-icon {
+    position: absolute;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.mobile-search-input-wrapper input {
+    width: 100%;
+    padding: 12px 44px 12px 44px;
+    font-size: var(--font-md);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--bg-glass);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.mobile-search-input-wrapper input:focus {
+    outline: none;
+    border-color: var(--border-brand);
+    box-shadow: 0 0 0 3px var(--brand-primary-glow);
+}
+
+.mobile-search-input-wrapper input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.mobile-search-input-wrapper .search-clear-btn {
+    position: absolute;
+    right: 8px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-search-input-wrapper .search-clear-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.mobile-search-input-wrapper .search-clear-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
 /* ── Mobile Catalog Toolbar ──────────────────────────────── */
 .mobile-catalog-bar {
     display: none;
@@ -3606,6 +3678,10 @@ input:checked + .toggle-slider:before {
 
     .mobile-catalog-bar {
         display: flex;
+    }
+
+    .mobile-search-bar {
+        display: block;
     }
 
     .category-pills-container {

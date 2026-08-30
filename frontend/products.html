@@ -46,6 +46,22 @@
                 </div>
             </div>
 
+            <!-- Mobile Search Bar -->
+            <div class="mobile-search-bar">
+                <div class="mobile-search-input-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="mobile-search-input" placeholder="Search products..." aria-label="Search products">
+                    <button type="button" class="search-clear-btn" id="mobile-search-clear" aria-label="Clear search" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
             <!-- Modern Mobile Filter & Sort Toolbar -->
             <div class="mobile-catalog-bar">
                 <div class="mobile-catalog-info">
@@ -272,6 +288,9 @@
                     setSortFilter(input.value);
                 });
             });
+
+            // Setup Mobile Search Input
+            setupMobileSearch();
 
             // Initial products load
             loadProducts();
@@ -586,6 +605,97 @@
                     setSortFilter(chip.dataset.sort || 'newest');
                 });
             });
+        }
+
+        function setupMobileSearch() {
+            const searchInput = document.getElementById('mobile-search-input');
+            const clearBtn = document.getElementById('mobile-search-clear');
+            let searchTimeout;
+
+            if (searchInput) {
+                // Set initial value if search param exists
+                if (currentFilters.search) {
+                    searchInput.value = currentFilters.search;
+                    if (clearBtn) clearBtn.style.display = 'flex';
+                }
+
+                // Handle input with debounce
+                searchInput.addEventListener('input', (e) => {
+                    const value = e.target.value.trim();
+                    
+                    // Show/hide clear button
+                    if (clearBtn) {
+                        clearBtn.style.display = value ? 'flex' : 'none';
+                    }
+
+                    // Debounce search
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.search = value;
+                        currentPage = 1;
+                        
+                        // Update title
+                        const title = document.getElementById('catalog-title');
+                        if (title) {
+                            if (value) {
+                                title.textContent = `Search: "${value}"`;
+                            } else if (currentFilters.featured) {
+                                title.textContent = 'Featured Products';
+                            } else {
+                                title.textContent = 'All Products';
+                            }
+                        }
+                        
+                        loadProducts();
+                    }, 500);
+                });
+
+                // Handle enter key
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        clearTimeout(searchTimeout);
+                        const value = searchInput.value.trim();
+                        currentFilters.search = value;
+                        currentPage = 1;
+                        
+                        const title = document.getElementById('catalog-title');
+                        if (title) {
+                            if (value) {
+                                title.textContent = `Search: "${value}"`;
+                            } else if (currentFilters.featured) {
+                                title.textContent = 'Featured Products';
+                            } else {
+                                title.textContent = 'All Products';
+                            }
+                        }
+                        
+                        loadProducts();
+                        searchInput.blur(); // Hide mobile keyboard
+                    }
+                });
+
+                // Handle clear button
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        searchInput.value = '';
+                        clearBtn.style.display = 'none';
+                        currentFilters.search = '';
+                        currentPage = 1;
+                        
+                        const title = document.getElementById('catalog-title');
+                        if (title) {
+                            if (currentFilters.featured) {
+                                title.textContent = 'Featured Products';
+                            } else {
+                                title.textContent = 'All Products';
+                            }
+                        }
+                        
+                        loadProducts();
+                    });
+                }
+            }
         }
 
         async function loadProducts() {
