@@ -3791,13 +3791,13 @@ input:checked + .toggle-slider:before {
     top: var(--nav-height);
     z-index: 10;
     background: var(--bg-primary);
-    padding: var(--space-md) 0;
-    margin: 0 calc(-1 * var(--space-lg));
-    padding-left: var(--space-lg);
-    padding-right: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
     transition: box-shadow 0.2s ease;
     display: none;
+    width: 100%;
+    left: 0;
+    right: 0;
 }
 
 .sticky-search-wrapper.visible {
@@ -5218,7 +5218,6 @@ input:checked + .toggle-slider:before {
         right: 0;
         background: var(--bg-primary);
         padding: var(--space-md);
-        margin: 0 calc(-1 * var(--space-sm));
         border-top: 1px solid var(--border-subtle);
         box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
         z-index: var(--z-sticky);
