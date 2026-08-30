@@ -38,6 +38,12 @@
                     <path d="m21 21-4.3-4.3"/>
                 </svg>
                 <input type="text" id="sticky-search-input" placeholder="Search..." aria-label="Search products">
+                <button type="button" class="search-submit-btn" id="sticky-search-submit" aria-label="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                </button>
                 <button type="button" class="search-clear-btn" id="sticky-search-clear" aria-label="Clear search" style="display: none;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 6 6 18M6 6l12 12"/>
@@ -60,6 +66,12 @@
                         <path d="m21 21-4.3-4.3"/>
                     </svg>
                     <input type="text" id="page-search-input" placeholder="Search..." aria-label="Search products">
+                    <button type="button" class="search-submit-btn" id="search-submit-btn" aria-label="Search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                        </svg>
+                    </button>
                     <button type="button" class="search-clear-btn" id="search-clear-btn" aria-label="Clear search" style="display: none;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 6 6 18M6 6l12 12"/>
@@ -629,7 +641,28 @@
         function setupMobileSearch() {
             const searchInput = document.getElementById('page-search-input');
             const clearBtn = document.getElementById('search-clear-btn');
-            let searchTimeout;
+            const submitBtn = document.getElementById('search-submit-btn');
+
+            function performSearch() {
+                const value = searchInput.value.trim();
+                currentFilters.search = value;
+                currentPage = 1;
+                
+                // Update title
+                const title = document.getElementById('catalog-title');
+                if (title) {
+                    if (value) {
+                        title.textContent = `Search: "${value}"`;
+                    } else if (currentFilters.featured) {
+                        title.textContent = 'Featured Products';
+                    } else {
+                        title.textContent = 'All Products';
+                    }
+                }
+                
+                updateApplyButtonText();
+                loadProducts();
+            }
 
             if (searchInput) {
                 // Set initial value if search param exists
@@ -638,63 +671,27 @@
                     if (clearBtn) clearBtn.style.display = 'flex';
                 }
 
-                // Handle input with debounce
+                // Show/hide buttons based on input
                 searchInput.addEventListener('input', (e) => {
                     const value = e.target.value.trim();
-                    
-                    // Show/hide clear button
-                    if (clearBtn) {
-                        clearBtn.style.display = value ? 'flex' : 'none';
-                    }
-
-                    // Debounce search
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        currentFilters.search = value;
-                        currentPage = 1;
-                        
-                        // Update title
-                        const title = document.getElementById('catalog-title');
-                        if (title) {
-                            if (value) {
-                                title.textContent = `Search: "${value}"`;
-                            } else if (currentFilters.featured) {
-                                title.textContent = 'Featured Products';
-                            } else {
-                                title.textContent = 'All Products';
-                            }
-                        }
-                        
-                        updateApplyButtonText();
-                        loadProducts();
-                    }, 500);
+                    if (clearBtn) clearBtn.style.display = value ? 'flex' : 'none';
                 });
 
                 // Handle enter key
                 searchInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        clearTimeout(searchTimeout);
-                        const value = searchInput.value.trim();
-                        currentFilters.search = value;
-                        currentPage = 1;
-                        
-                        const title = document.getElementById('catalog-title');
-                        if (title) {
-                            if (value) {
-                                title.textContent = `Search: "${value}"`;
-                            } else if (currentFilters.featured) {
-                                title.textContent = 'Featured Products';
-                            } else {
-                                title.textContent = 'All Products';
-                            }
-                        }
-                        
-                        updateApplyButtonText();
-                        loadProducts();
+                        performSearch();
                         searchInput.blur();
                     }
                 });
+
+                // Handle search button click
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', () => {
+                        performSearch();
+                    });
+                }
 
                 // Handle clear button
                 if (clearBtn) {
@@ -729,20 +726,18 @@
             const stickyWrapper = document.getElementById('sticky-search-wrapper');
             const stickyInput = document.getElementById('sticky-search-input');
             const stickyClearBtn = document.getElementById('sticky-search-clear');
+            const stickySubmitBtn = document.getElementById('sticky-search-submit');
             const pageInput = document.getElementById('page-search-input');
             const pageClearBtn = document.getElementById('search-clear-btn');
             const pageHeader = document.querySelector('.page-header');
-            let searchTimeout;
 
             if (!stickyWrapper || !stickyInput || !pageInput || !pageHeader) return;
 
             // Show/hide sticky search based on scroll
-            let lastScrollY = window.scrollY;
             window.addEventListener('scroll', () => {
                 const pageHeaderRect = pageHeader.getBoundingClientRect();
                 const navHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 64;
                 
-                // Show sticky search when page header is scrolled past navbar
                 if (pageHeaderRect.bottom < navHeight) {
                     stickyWrapper.classList.add('visible');
                     stickyWrapper.classList.add('scrolled');
@@ -750,16 +745,35 @@
                     stickyWrapper.classList.remove('visible');
                     stickyWrapper.classList.remove('scrolled');
                 }
-                
-                lastScrollY = window.scrollY;
             });
 
-            // Sync sticky input with page input
+            // Sync inputs
             function syncInputs(sourceInput, targetInput, sourceClear, targetClear) {
                 targetInput.value = sourceInput.value;
                 const hasValue = sourceInput.value.trim().length > 0;
                 if (sourceClear) sourceClear.style.display = hasValue ? 'flex' : 'none';
                 if (targetClear) targetClear.style.display = hasValue ? 'flex' : 'none';
+            }
+
+            function performStickySearch() {
+                const value = stickyInput.value.trim();
+                currentFilters.search = value;
+                currentPage = 1;
+                syncInputs(stickyInput, pageInput, stickyClearBtn, pageClearBtn);
+                
+                const title = document.getElementById('catalog-title');
+                if (title) {
+                    if (value) {
+                        title.textContent = `Search: "${value}"`;
+                    } else if (currentFilters.featured) {
+                        title.textContent = 'Featured Products';
+                    } else {
+                        title.textContent = 'All Products';
+                    }
+                }
+                
+                updateApplyButtonText();
+                loadProducts();
             }
 
             // Set initial values
@@ -768,60 +782,29 @@
                 if (stickyClearBtn) stickyClearBtn.style.display = 'flex';
             }
 
-            // Handle sticky input
+            // Handle input changes (just for showing clear button)
             stickyInput.addEventListener('input', (e) => {
                 const value = e.target.value.trim();
                 syncInputs(stickyInput, pageInput, stickyClearBtn, pageClearBtn);
-                
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    currentFilters.search = value;
-                    currentPage = 1;
-                    
-                    const title = document.getElementById('catalog-title');
-                    if (title) {
-                        if (value) {
-                            title.textContent = `Search: "${value}"`;
-                        } else if (currentFilters.featured) {
-                            title.textContent = 'Featured Products';
-                        } else {
-                            title.textContent = 'All Products';
-                        }
-                    }
-                    
-                    updateApplyButtonText();
-                    loadProducts();
-                }, 500);
             });
 
-            // Handle sticky enter key
+            // Handle enter key
             stickyInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    clearTimeout(searchTimeout);
-                    const value = stickyInput.value.trim();
-                    currentFilters.search = value;
-                    currentPage = 1;
-                    syncInputs(stickyInput, pageInput, stickyClearBtn, pageClearBtn);
-                    
-                    const title = document.getElementById('catalog-title');
-                    if (title) {
-                        if (value) {
-                            title.textContent = `Search: "${value}"`;
-                        } else if (currentFilters.featured) {
-                            title.textContent = 'Featured Products';
-                        } else {
-                            title.textContent = 'All Products';
-                        }
-                    }
-                    
-                    updateApplyButtonText();
-                    loadProducts();
+                    performStickySearch();
                     stickyInput.blur();
                 }
             });
 
-            // Handle sticky clear button
+            // Handle search button
+            if (stickySubmitBtn) {
+                stickySubmitBtn.addEventListener('click', () => {
+                    performStickySearch();
+                });
+            }
+
+            // Handle clear button
             if (stickyClearBtn) {
                 stickyClearBtn.addEventListener('click', () => {
                     stickyInput.value = '';

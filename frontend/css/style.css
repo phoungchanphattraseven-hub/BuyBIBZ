@@ -3356,7 +3356,7 @@ input:checked + .toggle-slider:before {
 
 .page-header-search input {
     width: 100%;
-    padding: 9px 36px 9px 36px;
+    padding: 9px 68px 9px 36px;
     font-size: var(--font-sm);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-lg);
@@ -3374,6 +3374,38 @@ input:checked + .toggle-slider:before {
 
 .page-header-search input::placeholder {
     color: var(--text-tertiary);
+}
+
+.page-header-search .search-submit-btn {
+    position: absolute;
+    right: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--brand-primary);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.page-header-search .search-submit-btn:hover {
+    background: var(--brand-hover);
+    transform: scale(1.05);
+}
+
+.page-header-search .search-submit-btn:active {
+    transform: scale(0.95);
+}
+
+.page-header-search .search-submit-btn svg {
+    width: 14px;
+    height: 14px;
 }
 
 .page-header-search .search-clear-btn {
