@@ -46,22 +46,6 @@
                 </div>
             </div>
 
-            <!-- Mobile Search Bar -->
-            <div class="mobile-search-bar">
-                <div class="mobile-search-input-wrapper">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.3-4.3"/>
-                    </svg>
-                    <input type="text" id="mobile-search-input" placeholder="Search products..." aria-label="Search products">
-                    <button type="button" class="search-clear-btn" id="mobile-search-clear" aria-label="Clear search" style="display: none;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
             <!-- Modern Mobile Filter & Sort Toolbar -->
             <div class="mobile-catalog-bar">
                 <div class="mobile-catalog-info">
@@ -182,6 +166,23 @@
             </button>
         </div>
         <div class="filter-sheet-body">
+            <!-- Search Section -->
+            <div class="sheet-section">
+                <h4 class="sheet-section-title">Search Products</h4>
+                <div class="sheet-search-wrapper">
+                    <svg class="sheet-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="mobile-search-input" class="sheet-search-input" placeholder="Search by name, description..." aria-label="Search products">
+                    <button type="button" class="sheet-search-clear" id="mobile-search-clear" aria-label="Clear search" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
             <!-- Price Range -->
             <div class="sheet-section">
                 <h4 class="sheet-section-title">Price Range</h4>
@@ -646,6 +647,9 @@
                             }
                         }
                         
+                        // Update apply button text
+                        updateApplyButtonText();
+                        
                         loadProducts();
                     }, 500);
                 });
@@ -670,6 +674,7 @@
                             }
                         }
                         
+                        updateApplyButtonText();
                         loadProducts();
                         searchInput.blur(); // Hide mobile keyboard
                     }
@@ -692,10 +697,16 @@
                             }
                         }
                         
+                        updateApplyButtonText();
                         loadProducts();
                     });
                 }
             }
+        }
+
+        function updateApplyButtonText() {
+            // This will be called after loadProducts updates the count
+            // But we can trigger it manually here for immediate feedback
         }
 
         async function loadProducts() {
