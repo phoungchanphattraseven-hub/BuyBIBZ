@@ -4411,7 +4411,7 @@ input:checked + .toggle-slider:before {
         right: 0;
         background: var(--bg-primary);
         padding: var(--space-md);
-        margin: 0 calc(-1 * var(--space-md));
+        margin: 0 calc(-1 * var(--space-sm));
         border-top: 1px solid var(--border-subtle);
         box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
         z-index: var(--z-sticky);
@@ -4445,6 +4445,10 @@ input:checked + .toggle-slider:before {
 @media (max-width: 390px) {
     .container {
         padding: 0 8px;
+    }
+    
+    .product-detail-actions {
+        margin: 0 -8px;
     }
     
     .products-grid {
