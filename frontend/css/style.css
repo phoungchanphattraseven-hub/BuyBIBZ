@@ -3340,9 +3340,15 @@ input:checked + .toggle-slider:before {
     height: 40px;
     background: var(--bg-glass);
     border: 1px solid var(--border-default);
-    border-radius: var(--radius-full);
+    border-radius: 20px;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                opacity 0.2s ease,
+                visibility 0.2s ease;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -3351,13 +3357,13 @@ input:checked + .toggle-slider:before {
 
 .page-header-search.expanded {
     width: 380px;
+    border-radius: 12px;
     opacity: 1;
     visibility: visible;
     pointer-events: all;
     background: var(--bg-elevated);
     border-color: var(--brand-primary);
     box-shadow: 0 0 0 3px var(--brand-primary-glow), 0 8px 24px rgba(0, 0, 0, 0.12);
-    border-radius: var(--radius-lg);
 }
 
 .page-header-search .search-icon {
