@@ -116,7 +116,21 @@ async def get_product(product_id: int):
                 .order("display_order", desc=False)
                 .execute()
             )
-            product.data["product_images"] = images.data if images and images.data else []
+            product_images = images.data if images and images.data else []
+            
+            # If no product_images rows but image_url exists, create a synthetic entry
+            # so the gallery always has at least one image
+            if not product_images and product.data.get("image_url"):
+                product_images = [{
+                    "id": None,
+                    "product_id": product_id,
+                    "image_url": product.data["image_url"],
+                    "alt_text": product.data.get("name", ""),
+                    "display_order": 0,
+                    "is_primary": True,
+                }]
+            
+            product.data["product_images"] = product_images
         except:
             product.data["product_images"] = []
 
