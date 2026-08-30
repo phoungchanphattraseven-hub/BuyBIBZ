@@ -13,8 +13,8 @@
         })();
     </script>
     <style>
-        html, body { background-color: #fcfdfb; }
-        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
+        html, body { background-color: #f6f8fb; }
+        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #090d16; }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin Dashboard — BuyBIBZ</title>
@@ -23,82 +23,133 @@
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo-badge.png">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
 
-    <header class="navbar" id="navbar"></header>
-
-    <main class="admin-page">
-        <div class="container">
-            <div class="admin-header">
-                <h1>Admin Dashboard</h1>
-                <p>Manage your store overview, products, and orders.</p>
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <img src="../logo/logo-badge.png" alt="BuyBIBZ Logo">
+                <span>BuyBIBZ Admin</span>
             </div>
+            <nav class="sidebar-menu">
+                <button class="sidebar-item active" onclick="switchSection('dashboard')">
+                    📊 <span>Overview</span>
+                </button>
+                <button class="sidebar-item" onclick="switchSection('orders')">
+                    📦 <span>Orders</span>
+                </button>
+                <button class="sidebar-item" onclick="switchSection('products')">
+                    🏷️ <span>Products</span>
+                </button>
+                <div class="sidebar-spacer"></div>
+                <a href="../index.html" class="sidebar-item exit-btn">
+                    🚪 <span>Exit Storefront</span>
+                </a>
+            </nav>
+        </aside>
 
-            <!-- Stats -->
-            <div class="stats-grid" id="admin-stats">
-                <div class="stat-card skeleton" style="height: 140px;"></div>
-                <div class="stat-card skeleton" style="height: 140px;"></div>
-                <div class="stat-card skeleton" style="height: 140px;"></div>
-                <div class="stat-card skeleton" style="height: 140px;"></div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="admin-tabs">
-                <div class="admin-tab active" onclick="switchTab('orders')">Orders</div>
-                <div class="admin-tab" onclick="switchTab('products')">Products</div>
-            </div>
-
-            <!-- Orders Panel -->
-            <div class="admin-panel active" id="panel-orders">
-                <div class="admin-table-wrapper">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Date</th>
-                                <th>Customer</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-orders-table">
-                            <tr><td colspan="6" class="text-center" style="padding: var(--space-2xl);">Loading...</td></tr>
-                        </tbody>
-                    </table>
+        <!-- Main Content Area -->
+        <div class="admin-main">
+            <!-- Topbar Header -->
+            <header class="admin-topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2 id="page-title">Dashboard Overview</h2>
                 </div>
-            </div>
+                <div class="topbar-right">
+                    <button class="admin-theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌓</button>
+                    <div class="admin-user">
+                        <div class="admin-avatar" id="admin-avatar">A</div>
+                        <span class="admin-username" id="admin-username">Admin User</span>
+                    </div>
+                    <button class="admin-logout-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </header>
 
-            <!-- Products Panel -->
-            <div class="admin-panel" id="panel-products">
-                <div style="margin-bottom: var(--space-lg); text-align: right;">
-                    <button class="btn btn-primary" onclick="openProductModal()">+ Add New Product</button>
-                </div>
-                <div class="admin-table-wrapper">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Category</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-products-table">
-                            <tr><td colspan="6" class="text-center" style="padding: var(--space-2xl);">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Dashboard Content Panels -->
+            <div class="admin-content">
+                <!-- 1. Overview Section -->
+                <section id="section-dashboard" class="content-section active">
+                    <div class="stats-grid" id="admin-stats">
+                        <div class="stat-card skeleton" style="height: 104px;"></div>
+                        <div class="stat-card skeleton" style="height: 104px;"></div>
+                        <div class="stat-card skeleton" style="height: 104px;"></div>
+                        <div class="stat-card skeleton" style="height: 104px;"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+                        <div class="admin-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">System Status</h3>
+                            </div>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                Welcome to the BuyBIBZ store administration workspace. Use the left sidebar to navigate between orders and inventory listings.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Orders Management Section -->
+                <section id="section-orders" class="content-section">
+                    <div class="admin-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Orders Directory</h3>
+                        </div>
+                        <div class="admin-table-wrapper">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-orders-table">
+                                    <tr><td colspan="6" class="text-center" style="padding: 40px; text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Products Management Section -->
+                <section id="section-products" class="content-section">
+                    <div class="admin-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Inventory Directory</h3>
+                            <button class="btn btn-primary" onclick="openProductModal()">+ Add New Product</button>
+                        </div>
+                        <div class="admin-table-wrapper">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-products-table">
+                                    <tr><td colspan="6" class="text-center" style="padding: 40px; text-align: center; color: var(--text-muted);">Loading products...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
-    </main>
+    </div>
 
     <!-- Product Modal -->
-    <div class="modal-backdrop" id="product-modal-backdrop"></div>
+    <div class="modal-backdrop" id="product-modal-backdrop" onclick="closeProductModal()"></div>
     <div class="modal" id="product-modal">
         <div class="modal-header">
             <h2 id="modal-title">Add Product</h2>
@@ -147,41 +198,50 @@
                 <textarea id="p_desc" class="form-textarea" rows="4"></textarea>
             </div>
             
-            <div class="form-group" style="display: flex; gap: var(--space-xl);">
+            <div class="form-group" style="display: flex; gap: 24px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="p_featured" style="width: 18px; height: 18px; accent-color: var(--brand-primary);">
-                    <span style="font-weight: 600; font-size: var(--font-sm);">Featured Product</span>
+                    <input type="checkbox" id="p_featured" style="width: 18px; height: 18px; accent-color: var(--accent);">
+                    <span style="font-weight: 600; font-size: 0.85rem;">Featured Product</span>
                 </label>
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="p_active" checked style="width: 18px; height: 18px; accent-color: var(--brand-primary);">
-                    <span style="font-weight: 600; font-size: var(--font-sm);">Active (Visible)</span>
+                    <input type="checkbox" id="p_active" checked style="width: 18px; height: 18px; accent-color: var(--accent);">
+                    <span style="font-weight: 600; font-size: 0.85rem;">Active (Visible)</span>
                 </label>
             </div>
             
-            <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-top: var(--space-xl);">
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
                 <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary" id="p_submit">Save Product</button>
             </div>
         </form>
     </div>
 
+    <!-- UI Notification System -->
+    <div class="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: 12px; font-family: var(--font-family);"></div>
+
     <script src="../js/disable-zoom.js"></script>
     <script src="../js/api.js"></script>
-    <script src="../js/i18n.js"></script>
     <script src="../js/auth.js"></script>
-    <script src="../js/app.js"></script>
     <script src="../js/pwa-install.js"></script>
     <script>
         let allCategories = [];
+        let rawProducts = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!requireAdmin()) return;
+
+            // Load admin details
+            const user = api.getUser();
+            if (user) {
+                document.getElementById('admin-avatar').textContent = (user.full_name || user.email || 'A').charAt(0).toUpperCase();
+                document.getElementById('admin-username').textContent = user.full_name || user.email.split('@')[0];
+            }
             
             loadDashboard();
             loadOrders();
             loadProducts();
             
-            // Fetch categories for the form select
+            // Fetch categories for form
             try {
                 const catData = await api.getCategories();
                 allCategories = catData.categories || [];
@@ -222,7 +282,7 @@
                     }
                     closeProductModal();
                     loadProducts();
-                    loadDashboard(); // update stats
+                    loadDashboard();
                 } catch (err) {
                     showToast(err.message, 'error');
                     btn.disabled = false;
@@ -231,12 +291,91 @@
             });
         });
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+        // Toast notification system helper
+        function showToast(message, type = 'info') {
+            const container = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: var(--bg-card);
+                color: var(--text-main);
+                border: 1px solid var(--border);
+                border-left: 4px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                padding: 14px 20px;
+                border-radius: var(--radius-sm);
+                box-shadow: var(--shadow-md);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 0.9rem;
+                min-width: 280px;
+                animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transition: all 0.3s ease;
+            `;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Section switcher
+        function switchSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`section-${sectionId}`).classList.add('active');
             
-            event.target.classList.add('active');
-            document.getElementById(`panel-${tabName}`).classList.add('active');
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const titles = {
+                dashboard: 'Dashboard Overview',
+                orders: 'Orders Management',
+                products: 'Products Directory'
+            };
+            document.getElementById('page-title').textContent = titles[sectionId] || 'Overview';
+            
+            // Close mobile sidebar if open
+            document.querySelector('.admin-sidebar').classList.remove('active');
+        }
+
+        function toggleSidebar() {
+            document.querySelector('.admin-sidebar').classList.toggle('active');
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('buybibz-theme', next);
+        }
+
+        async function handleLogout() {
+            try {
+                await api.logout();
+                setTimeout(() => window.location.href = '../index.html', 500);
+            } catch (err) {
+                api.clearSession();
+                window.location.href = '../index.html';
+            }
+        }
+
+        // Formatting utilities
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+        
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         async function loadDashboard() {
@@ -245,29 +384,35 @@
                 
                 document.getElementById('admin-stats').innerHTML = `
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">💵</div>
-                        <div class="stat-card-value">${formatPrice(data.total_revenue)}</div>
-                        <div class="stat-card-label">Total Revenue</div>
+                        <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent);">💵</div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-value">${formatPrice(data.total_revenue)}</span>
+                            <span class="stat-card-label">Total Revenue</span>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">📦</div>
-                        <div class="stat-card-value">${data.total_orders}</div>
-                        <div class="stat-card-label">Total Orders</div>
+                        <div class="stat-card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">📦</div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-value">${data.total_orders}</span>
+                            <span class="stat-card-label">Total Orders</span>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--status-success);">🏷️</div>
-                        <div class="stat-card-value">${data.total_products}</div>
-                        <div class="stat-card-label">Products</div>
+                        <div class="stat-card-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">🏷️</div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-value">${data.total_products}</span>
+                            <span class="stat-card-label">Products</span>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning);">👥</div>
-                        <div class="stat-card-value">${data.total_customers}</div>
-                        <div class="stat-card-label">Customers</div>
+                        <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">👥</div>
+                        <div class="stat-card-info">
+                            <span class="stat-card-value">${data.total_customers}</span>
+                            <span class="stat-card-label">Customers</span>
+                        </div>
                     </div>
                 `;
-            } catch (err) {
-                console.error("Dashboard err", err);
-            }
+            } catch (err) {}
         }
 
         async function loadOrders() {
@@ -276,7 +421,7 @@
                 const tbody = document.getElementById('admin-orders-table');
                 
                 if (!data.orders || data.orders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">No orders found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--text-muted);">No orders found.</td></tr>';
                     return;
                 }
                 
@@ -284,41 +429,39 @@
                 
                 tbody.innerHTML = data.orders.map(o => `
                     <tr>
-                        <td style="font-weight: 700;">#${o.id}</td>
+                        <td style="font-weight: 700; color: var(--accent);">#${o.id}</td>
                         <td>${formatDate(o.created_at)}</td>
                         <td>
-                            <div>${o.shipping_name}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-tertiary);">${o.profiles?.full_name || 'User'}</div>
+                            <div style="font-weight: 600;">${o.shipping_name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${o.profiles?.full_name || 'User'}</div>
                         </td>
-                        <td style="font-weight: 600;">${formatPrice(o.total)}</td>
+                        <td style="font-weight: 700;">${formatPrice(o.total)}</td>
                         <td>
-                            <select onchange="updateOrderStatus(${o.id}, this.value)" class="form-select" style="padding: 4px 24px 4px 8px; font-size: 0.75rem; width: auto; background-position: right 4px center;">
+                            <select onchange="updateOrderStatus(${o.id}, this.value)" class="form-select" style="padding: 4px 28px 4px 8px; font-size: 0.75rem; width: auto; background-position: right 4px center;">
                                 ${statuses.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s.toUpperCase()}</option>`).join('')}
                             </select>
                         </td>
                         <td>
-                            <button class="btn btn-ghost btn-sm" onclick="window.location.href='../orders.html'">View User Side</button>
+                            <a class="btn btn-secondary btn-ghost" style="padding: 4px 12px; font-size: 0.75rem;" href="../orders.html">View User Side</a>
                         </td>
                     </tr>
                 `).join('');
                 
             } catch (err) {
-                document.getElementById('admin-orders-table').innerHTML = `<tr><td colspan="6" class="text-error">${err.message}</td></tr>`;
+                document.getElementById('admin-orders-table').innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 20px;">${err.message}</td></tr>`;
             }
         }
 
         async function updateOrderStatus(orderId, newStatus) {
             try {
                 await api.updateOrderStatus(orderId, newStatus);
-                showToast(`Order #${orderId} updated to ${newStatus}`, 'success');
-                loadDashboard(); // Update stats if cancelled
+                showToast(`Order #${orderId} status set to ${newStatus}`, 'success');
+                loadDashboard();
             } catch (err) {
                 showToast(err.message, 'error');
-                loadOrders(); // Reset dropdown
+                loadOrders();
             }
         }
-
-        let rawProducts = [];
         
         async function loadProducts() {
             try {
@@ -327,43 +470,45 @@
                 rawProducts = data.products || [];
                 
                 if (rawProducts.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary">No products found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--text-muted);">No products found.</td></tr>';
                     return;
                 }
                 
                 tbody.innerHTML = rawProducts.map(p => `
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: var(--space-md);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
                                 <img src="${p.image_url || 'https://via.placeholder.com/40'}" class="admin-table-image">
                                 <div>
-                                    <div style="font-weight: 600; max-width: 250px; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">ID: ${p.id}</div>
+                                    <div style="font-weight: 600; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">ID: ${p.id}</div>
                                 </div>
                             </div>
                         </td>
                         <td>${p.categories?.name || '—'}</td>
-                        <td style="font-weight: 600;">${formatPrice(p.price)}</td>
+                        <td style="font-weight: 700;">${formatPrice(p.price)}</td>
                         <td>
-                            <span style="color: ${p.stock < 10 ? (p.stock === 0 ? 'var(--status-error)' : 'var(--status-warning)') : 'var(--text-primary)'}; font-weight: 600;">
+                            <span style="color: ${p.stock < 10 ? (p.stock === 0 ? '#ef4444' : '#f59e0b') : 'inherit'}; font-weight: 600;">
                                 ${p.stock}
                             </span>
                         </td>
                         <td>
-                            ${p.is_active ? renderStatusBadge('delivered') : renderStatusBadge('cancelled')}
-                            ${p.is_featured ? '<span class="status-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--status-warning); margin-left: 4px;">Featured</span>' : ''}
+                            <span class="status-badge ${p.is_active ? 'success' : 'error'}">
+                                ${p.is_active ? 'Active' : 'Hidden'}
+                            </span>
+                            ${p.is_featured ? '<span class="status-badge pending" style="margin-left: 4px;">Featured</span>' : ''}
                         </td>
                         <td>
-                            <div style="display: flex; gap: var(--space-xs);">
-                                <button class="btn-icon" style="background: var(--bg-glass); border: 1px solid var(--border-default);" onclick="editProduct(${p.id})" title="Edit">✏️</button>
-                                <button class="btn-icon" style="background: var(--bg-glass); border: 1px solid var(--border-default); color: var(--status-error);" onclick="deleteProduct(${p.id})" title="Delete">🗑️</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-icon" onclick="editProduct(${p.id})" title="Edit Product">✏️</button>
+                                <button class="btn-icon" style="color: #ef4444; border-color: rgba(239,68,68,0.2);" onclick="deleteProduct(${p.id})" title="Delete Product">🗑️</button>
                             </div>
                         </td>
                     </tr>
                 `).join('');
                 
             } catch (err) {
-                document.getElementById('admin-products-table').innerHTML = `<tr><td colspan="6" class="text-error">${err.message}</td></tr>`;
+                document.getElementById('admin-products-table').innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 20px;">${err.message}</td></tr>`;
             }
         }
 
@@ -411,7 +556,7 @@
             
             try {
                 await api.deleteProduct(id);
-                showToast('Product deleted', 'success');
+                showToast('Product deleted successfully', 'success');
                 loadProducts();
                 loadDashboard();
             } catch (err) {
