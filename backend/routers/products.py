@@ -173,12 +173,17 @@ async def create_product(product: ProductCreate, admin=Depends(get_admin_user)):
     """Create a new product (admin only)."""
     try:
         supabase = get_authenticated_client(admin["token"])
-        slug = slugify(product.name)
+        base_slug = slugify(product.name)
 
-        # Check for duplicate slug
-        existing = supabase.table("products").select("id").eq("slug", slug).execute()
-        if existing and existing.data:
-            slug = f"{slug}-{len(existing.data if existing and existing.data else []) + 1}"
+        # Generate a unique slug by appending a number if needed
+        slug = base_slug
+        counter = 1
+        while True:
+            existing = supabase.table("products").select("id").eq("slug", slug).execute()
+            if not existing.data:
+                break
+            slug = f"{base_slug}-{counter}"
+            counter += 1
 
         data = product.model_dump()
         data["slug"] = slug
@@ -197,7 +202,17 @@ async def update_product(product_id: int, product: ProductUpdate, admin=Depends(
         data = product.model_dump(exclude_none=True)
 
         if "name" in data:
-            data["slug"] = slugify(data["name"])
+            base_slug = slugify(data["name"])
+            slug = base_slug
+            counter = 1
+            while True:
+                existing = supabase.table("products").select("id").eq("slug", slug).execute()
+                # Allow the slug if no conflict, or if it belongs to this same product
+                if not existing.data or existing.data[0]["id"] == product_id:
+                    break
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            data["slug"] = slug
 
         response = (
             supabase.table("products")
