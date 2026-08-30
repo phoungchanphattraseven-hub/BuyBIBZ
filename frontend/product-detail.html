@@ -224,22 +224,21 @@
         function renderAttributes(attrs) {
             if (!attrs || typeof attrs !== 'object' || Object.keys(attrs).length === 0) return '';
 
-            // Colors and sizes are purchasable variants, not just product facts.
-            // The remaining attributes stay as concise product information.
+            // Known attributes config: label, icon, how to render
             const ATTR_CONFIG = {
-                colors:         { label: 'Colors',          icon: '🎨', type: 'color-swatches' },
-                sizes:          { label: 'Sizes',            icon: '📐', type: 'chips' },
-                material:       { label: 'Material',         icon: '🧵', type: 'text' },
-                weight:         { label: 'Weight',           icon: '⚖️',  type: 'text' },
-                warranty:       { label: 'Warranty',         icon: '🛡️',  type: 'text' },
-                free_shipping:  { label: 'Free Shipping',    icon: '🚚', type: 'badge' },
-                brand:          { label: 'Brand',            icon: '🏷️',  type: 'text' },
-                model:          { label: 'Model',            icon: '📦', type: 'text' },
-                dimensions:     { label: 'Dimensions',       icon: '📏', type: 'text' },
-                gender:         { label: 'Gender',           icon: '👤', type: 'text' },
-                age_group:      { label: 'Age Group',        icon: '👶', type: 'text' },
-                condition:      { label: 'Condition',        icon: '✅', type: 'text' },
-                country_origin: { label: 'Made In',          icon: '🌍', type: 'text' },
+                colors:         { label: 'Colors',      type: 'color-swatches' },
+                sizes:          { label: 'Sizes',        type: 'chips' },
+                material:       { label: 'Material',     type: 'text' },
+                weight:         { label: 'Weight',       type: 'text' },
+                warranty:       { label: 'Warranty',     type: 'text' },
+                free_shipping:  { label: 'Free Shipping',type: 'badge' },
+                brand:          { label: 'Brand',        type: 'text' },
+                model:          { label: 'Model',        type: 'text' },
+                dimensions:     { label: 'Dimensions',   type: 'text' },
+                gender:         { label: 'Gender',       type: 'text' },
+                age_group:      { label: 'Age Group',    type: 'text' },
+                condition:      { label: 'Condition',    type: 'text' },
+                country_origin: { label: 'Made In',      type: 'text' },
             };
 
             // Color name → CSS color
@@ -251,11 +250,20 @@
             };
 
             const ATTRIBUTE_ICONS = {
-                colors: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13.5" cy="8.5" r="3.5"/><circle cx="7" cy="15" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/><path d="M12 3a9 9 0 1 0 8.7 11.3c-.3-1.1-1.6-1.5-2.7-1.2-1.7.5-2.6-.9-1.7-2.2.8-1.2.3-3.1-1.2-3.3A9 9 0 0 0 12 3Z"/></svg>',
-                sizes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 16-16"/><path d="m7 17 2 2M11 13l2 2M15 9l2 2M5 7l2 2M9 3l2 2"/></svg>',
-                free_shipping: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
-                country_origin: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
-                default: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg>',
+                colors:         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="13" r="2.5"/><circle cx="6.5" cy="19" r="2.5"/><circle cx="13.5" cy="17.5" r="2.5"/><circle cx="8" cy="10" r="2.5"/></svg>',
+                sizes:          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+                material:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>',
+                weight:         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
+                warranty:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+                free_shipping:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+                brand:          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+                model:          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+                dimensions:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3H3v7c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V3z"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="12" y1="9" x2="12" y2="15"/></svg>',
+                gender:         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>',
+                age_group:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                condition:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
+                country_origin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+                default:        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>',
             };
 
             let optionSections = '';
