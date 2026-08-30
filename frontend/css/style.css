@@ -3271,6 +3271,7 @@ input:checked + .toggle-slider:before {
     justify-content: space-between;
     gap: var(--space-xl);
     position: relative;
+    overflow: visible;
 }
 
 .page-header-text {
@@ -3293,6 +3294,8 @@ input:checked + .toggle-slider:before {
     display: flex;
     align-items: center;
     position: relative;
+    min-width: 40px;
+    flex-shrink: 0;
 }
 
 /* Search Toggle Button */
