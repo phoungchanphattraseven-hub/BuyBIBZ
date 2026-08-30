@@ -36,27 +36,17 @@
                     <h1 id="catalog-title">All Products</h1>
                     <p id="catalog-subtitle">Discover our premium collection</p>
                 </div>
-                <div class="page-header-actions">
-                    <!-- Search Icon Button -->
-                    <button type="button" class="search-toggle-btn" id="search-toggle-btn" aria-label="Search products">
+                <div class="page-header-search">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="page-search-input" placeholder="Search..." aria-label="Search products">
+                    <button type="button" class="search-clear-btn" id="search-clear-btn" aria-label="Clear search" style="display: none;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.3-4.3"/>
+                            <path d="M18 6 6 18M6 6l12 12"/>
                         </svg>
                     </button>
-                    <!-- Expandable Search Bar -->
-                    <div class="page-header-search" id="page-header-search">
-                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.3-4.3"/>
-                        </svg>
-                        <input type="text" id="page-search-input" placeholder="Search products..." aria-label="Search products">
-                        <button type="button" class="search-close-btn" id="search-close-btn" aria-label="Close search">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 6 6 18M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -617,69 +607,24 @@
 
         function setupMobileSearch() {
             const searchInput = document.getElementById('page-search-input');
-            const searchContainer = document.getElementById('page-header-search');
-            const toggleBtn = document.getElementById('search-toggle-btn');
-            const closeBtn = document.getElementById('search-close-btn');
+            const clearBtn = document.getElementById('search-clear-btn');
             let searchTimeout;
-
-            // Toggle search expansion
-            if (toggleBtn && searchContainer) {
-                toggleBtn.addEventListener('click', () => {
-                    searchContainer.classList.add('expanded');
-                    toggleBtn.style.display = 'none';
-                    setTimeout(() => {
-                        searchInput?.focus();
-                    }, 300);
-                });
-            }
-
-            // Close search
-            if (closeBtn && searchContainer) {
-                closeBtn.addEventListener('click', () => {
-                    if (!currentFilters.search) {
-                        searchContainer.classList.remove('expanded');
-                        toggleBtn.style.display = 'flex';
-                        searchInput.value = '';
-                    } else {
-                        // If there's an active search, clear it
-                        searchInput.value = '';
-                        currentFilters.search = '';
-                        currentPage = 1;
-                        
-                        const title = document.getElementById('catalog-title');
-                        if (title) {
-                            if (currentFilters.featured) {
-                                title.textContent = 'Featured Products';
-                            } else {
-                                title.textContent = 'All Products';
-                            }
-                        }
-                        
-                        loadProducts();
-                        searchContainer.classList.remove('expanded');
-                        toggleBtn.style.display = 'flex';
-                    }
-                });
-            }
-
-            // Close on escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && searchContainer?.classList.contains('expanded')) {
-                    closeBtn?.click();
-                }
-            });
 
             if (searchInput) {
                 // Set initial value if search param exists
                 if (currentFilters.search) {
                     searchInput.value = currentFilters.search;
-                    searchContainer?.classList.add('expanded');
-                    if (toggleBtn) toggleBtn.style.display = 'none';
+                    if (clearBtn) clearBtn.style.display = 'flex';
                 }
 
                 // Handle input with debounce
                 searchInput.addEventListener('input', (e) => {
                     const value = e.target.value.trim();
+                    
+                    // Show/hide clear button
+                    if (clearBtn) {
+                        clearBtn.style.display = value ? 'flex' : 'none';
+                    }
 
                     // Debounce search
                     clearTimeout(searchTimeout);
@@ -729,6 +674,28 @@
                         searchInput.blur();
                     }
                 });
+
+                // Handle clear button
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        searchInput.value = '';
+                        clearBtn.style.display = 'none';
+                        currentFilters.search = '';
+                        currentPage = 1;
+                        
+                        const title = document.getElementById('catalog-title');
+                        if (title) {
+                            if (currentFilters.featured) {
+                                title.textContent = 'Featured Products';
+                            } else {
+                                title.textContent = 'All Products';
+                            }
+                        }
+                        
+                        updateApplyButtonText();
+                        loadProducts();
+                    });
+                }
             }
         }
 
