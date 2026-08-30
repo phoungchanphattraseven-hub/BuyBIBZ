@@ -3331,8 +3331,7 @@ input:checked + .toggle-slider:before {
 .page-header-search {
     position: absolute;
     right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
     display: flex;
     align-items: center;
     width: 40px;
@@ -3356,6 +3355,7 @@ input:checked + .toggle-slider:before {
     background: var(--bg-elevated);
     border-color: var(--brand-primary);
     box-shadow: 0 0 0 3px var(--brand-primary-glow), 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-radius: var(--radius-lg);
 }
 
 .page-header-search .search-icon {
