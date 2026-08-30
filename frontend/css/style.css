@@ -726,6 +726,7 @@ svg:not([class*="width"]):not([class*="size"]) {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    white-space: nowrap;
     z-index: 2;
     line-height: 1.4;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -763,8 +764,13 @@ svg:not([class*="width"]):not([class*="size"]) {
     top: auto;
     bottom: var(--space-sm);
     display: inline-flex;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 4px;
+    height: 22px;
+    min-height: 22px;
+    padding: 0 8px;
     color: #eafff1;
     background: rgba(13, 107, 46, 0.93);
 }
@@ -773,6 +779,10 @@ svg:not([class*="width"]):not([class*="size"]) {
 .product-free-shipping-badge svg {
     width: 12px;
     height: 12px;
+    max-width: 12px;
+    max-height: 12px;
+    flex-shrink: 0;
+    display: block;
     fill: none;
     stroke: currentColor;
     stroke-linecap: round;
@@ -1939,6 +1949,8 @@ input:checked + .toggle-slider:before {
 .product-detail-image-gallery {
     position: sticky;
     top: calc(var(--nav-height) + var(--space-lg));
+    min-width: 0;
+    width: 100%;
 }
 
 .main-image-container {
@@ -1971,6 +1983,7 @@ input:checked + .toggle-slider:before {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
+    max-width: 100%;
     /* hide scrollbar but keep scrolling */
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -3787,21 +3800,25 @@ input:checked + .toggle-slider:before {
 
 /* Sticky Search Container */
 .sticky-search-wrapper {
-    position: sticky;
+    position: fixed;
     top: var(--nav-height);
-    z-index: 10;
+    left: 0;
+    right: 0;
+    z-index: var(--z-dropdown);
     background: var(--bg-primary);
     padding: var(--space-md) var(--space-lg);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
-    transition: box-shadow 0.2s ease;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease, box-shadow 0.2s ease;
     width: 100%;
-    left: 0;
-    right: 0;
 }
 
 .sticky-search-wrapper.visible {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .sticky-search-wrapper.scrolled {
@@ -4142,7 +4159,6 @@ input:checked + .toggle-slider:before {
     .btn:hover {
         transform: none;
     }
-}
 }
 
 .animate-on-scroll {
@@ -5251,10 +5267,6 @@ input:checked + .toggle-slider:before {
 @media (max-width: 390px) {
     .container {
         padding: 0 8px;
-    }
-    
-    .product-detail-actions {
-        margin: 0 -8px;
     }
     
     .products-grid {
