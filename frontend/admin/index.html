@@ -224,8 +224,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="p_image">Image URL</label>
-                        <input type="url" id="p_image" class="form-input" placeholder="https://...">
+                        <label class="form-label">Images</label>
+                        <div class="image-manager" id="image-manager">
+                            <div class="image-slots" id="image-slots"></div>
+                            <div class="image-add-row">
+                                <input type="url" id="image-url-input" class="form-input" placeholder="Paste image URL...">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="addImageSlot()">+ Add</button>
+                            </div>
+                            <p class="image-manager-hint">First image is the primary/thumbnail. Drag to reorder.</p>
+                        </div>
+                        <!-- hidden fallback for primary image_url -->
+                        <input type="hidden" id="p_image">
                     </div>
 
                     <div class="form-group">
@@ -374,14 +383,18 @@
                 e.preventDefault();
                 const btn = document.getElementById('p_submit');
                 const id = document.getElementById('p_id').value;
-                
+
+                // Collect images from manager
+                const imageSlots = getImageSlots();
+                const primaryImage = imageSlots[0]?.url || null;
+
                 const data = {
                     name: document.getElementById('p_name').value,
                     price: parseFloat(document.getElementById('p_price').value),
                     compare_price: document.getElementById('p_compare').value ? parseFloat(document.getElementById('p_compare').value) : null,
                     category_id: parseInt(document.getElementById('p_category').value),
                     stock: parseInt(document.getElementById('p_stock').value),
-                    image_url: document.getElementById('p_image').value || null,
+                    image_url: primaryImage,
                     description: document.getElementById('p_desc').value,
                     is_featured: document.getElementById('p_featured').checked,
                     is_active: document.getElementById('p_active').checked,
@@ -392,13 +405,24 @@
                 btn.textContent = 'Saving...';
 
                 try {
+                    let productId = id;
                     if (id) {
                         await api.updateProduct(id, data);
-                        showToast('Product updated successfully', 'success');
                     } else {
-                        await api.createProduct(data);
-                        showToast('Product created successfully', 'success');
+                        const res = await api.createProduct(data);
+                        productId = res.product?.id;
                     }
+
+                    // Save product_images rows if we have a productId
+                    if (productId && imageSlots.length > 0) {
+                        try {
+                            await api.saveProductImages(productId, imageSlots);
+                        } catch (imgErr) {
+                            console.warn('Images saved partially:', imgErr.message);
+                        }
+                    }
+
+                    showToast(id ? 'Product updated successfully' : 'Product created successfully', 'success');
                     closeProductModal();
                     loadProducts();
                     loadDashboard();
@@ -787,6 +811,7 @@
             document.getElementById('p_submit').textContent = 'Save Product';
             document.getElementById('p_submit').disabled = false;
             populateAttributes({});
+            loadImageSlots([]);
             
             document.getElementById('product-modal').classList.add('active');
             document.getElementById('product-modal-backdrop').classList.add('active');
@@ -797,10 +822,11 @@
             document.getElementById('product-modal-backdrop').classList.remove('active');
         }
 
-        function editProduct(id) {
+        async function editProduct(id) {
             const product = rawProducts.find(p => p.id === id);
             if (!product) return;
-            
+
+            // Open modal immediately with basic data
             document.getElementById('p_id').value = product.id;
             document.getElementById('p_name').value = product.name;
             document.getElementById('p_price').value = product.price;
@@ -811,16 +837,28 @@
             document.getElementById('p_desc').value = product.description || '';
             document.getElementById('p_featured').checked = product.is_featured;
             document.getElementById('p_active').checked = product.is_active;
-
-            // Populate attribute fields
             populateAttributes(product.attributes || {});
-            
+
+            // Start with what we know for images
+            const basicImages = product.image_url ? [{ url: product.image_url, alt: '' }] : [];
+            loadImageSlots(basicImages);
+
             document.getElementById('modal-title').textContent = 'Edit Product';
             document.getElementById('p_submit').textContent = 'Update Product';
             document.getElementById('p_submit').disabled = false;
-            
             document.getElementById('product-modal').classList.add('active');
             document.getElementById('product-modal-backdrop').classList.add('active');
+
+            // Fetch full product detail to get product_images
+            try {
+                const full = await api.getProduct(product.id);
+                if (full.product_images && full.product_images.length > 0) {
+                    const imgs = full.product_images
+                        .sort((a, b) => a.display_order - b.display_order)
+                        .map(img => ({ url: img.image_url, alt: img.alt_text || '' }));
+                    loadImageSlots(imgs);
+                }
+            } catch (e) { /* keep basic */ }
         }
 
         function populateAttributes(attrs) {
@@ -835,8 +873,81 @@
             if (freeShipping) freeShipping.checked = attrs.free_shipping === true;
         }
 
-        function buildAttributes() {
-            const attrs = {};
+        // ── Image Manager ────────────────────────────────────────
+        function loadImageSlots(images) {
+            const container = document.getElementById('image-slots');
+            container.innerHTML = '';
+            images.forEach((img, i) => addImageSlotWithData(img.url, img.alt, i));
+        }
+
+        function addImageSlot() {
+            const input = document.getElementById('image-url-input');
+            const url = input.value.trim();
+            if (!url) return;
+            const slots = document.getElementById('image-slots');
+            addImageSlotWithData(url, '', slots.children.length);
+            input.value = '';
+        }
+
+        function addImageSlotWithData(url, alt, index) {
+            const slots = document.getElementById('image-slots');
+            const div = document.createElement('div');
+            div.className = 'image-slot' + (index === 0 ? ' primary' : '');
+            div.dataset.index = index;
+            div.innerHTML = `
+                <div class="image-slot-preview">
+                    <img src="${url}" alt="${alt}" onerror="this.src='https://via.placeholder.com/80x80?text=Error'">
+                    ${index === 0 ? '<span class="image-slot-badge">Primary</span>' : ''}
+                </div>
+                <div class="image-slot-info">
+                    <input type="url" class="form-input image-slot-url" value="${url}" placeholder="Image URL" onchange="updatePrimaryHidden()">
+                    <input type="text" class="form-input image-slot-alt" value="${alt}" placeholder="Alt text (optional)">
+                </div>
+                <button type="button" class="image-slot-remove" onclick="removeImageSlot(this)" aria-label="Remove image">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+            `;
+            slots.appendChild(div);
+            updatePrimaryHidden();
+        }
+
+        function removeImageSlot(btn) {
+            btn.closest('.image-slot').remove();
+            // Re-mark first slot as primary
+            const slots = document.getElementById('image-slots').querySelectorAll('.image-slot');
+            slots.forEach((slot, i) => {
+                slot.classList.toggle('primary', i === 0);
+                const badge = slot.querySelector('.image-slot-badge');
+                if (i === 0 && !badge) {
+                    const preview = slot.querySelector('.image-slot-preview');
+                    const b = document.createElement('span');
+                    b.className = 'image-slot-badge';
+                    b.textContent = 'Primary';
+                    preview.appendChild(b);
+                } else if (i !== 0 && badge) {
+                    badge.remove();
+                }
+                slot.dataset.index = i;
+            });
+            updatePrimaryHidden();
+        }
+
+        function getImageSlots() {
+            const slots = document.getElementById('image-slots').querySelectorAll('.image-slot');
+            return Array.from(slots).map((slot, i) => ({
+                url: slot.querySelector('.image-slot-url').value.trim(),
+                alt: slot.querySelector('.image-slot-alt').value.trim(),
+                display_order: i,
+                is_primary: i === 0
+            })).filter(s => s.url);
+        }
+
+        function updatePrimaryHidden() {
+            const first = document.querySelector('#image-slots .image-slot .image-slot-url');
+            document.getElementById('p_image').value = first ? first.value.trim() : '';
+        }
+
+        function buildAttributes() {            const attrs = {};
             const parseList = id => {
                 const val = document.getElementById(id)?.value.trim();
                 if (!val) return null;

@@ -196,6 +196,10 @@ class ApiClient {
         return this.delete(`/api/products/${id}`);
     }
 
+    async saveProductImages(productId, images) {
+        return this.post(`/api/products/${productId}/images`, { images });
+    }
+
     // ── Categories ──────────────────────────
     async getCategories() {
         return this.get('/api/categories');

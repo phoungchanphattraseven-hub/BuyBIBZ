@@ -920,8 +920,129 @@ body {
     background: var(--danger-bg);
 }
 
-/* ── Product Editor Modal (2-col layout) ─────────────────── */
-.product-editor-modal {
+/* ── Image Manager ──────────────────────────────────────── */
+.image-manager {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.image-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.image-slot {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    transition: border-color 0.15s;
+}
+
+.image-slot.primary {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.image-slot-preview {
+    position: relative;
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+}
+
+.image-slot-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-slot-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--accent);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 2px 0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.image-slot-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.image-slot-url,
+.image-slot-alt {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+}
+
+.image-slot-remove {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 2px;
+}
+
+.image-slot-remove:hover {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.4);
+    color: #ef4444;
+}
+
+.image-add-row {
+    display: flex;
+    gap: 8px;
+}
+
+.image-add-row .form-input {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+}
+
+.btn-sm {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.image-manager-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ── Product Editor Modal (2-col layout) ─────────────────── */.product-editor-modal {
     width: min(1400px, 98vw);
     max-width: 1400px;
     max-height: 92vh;

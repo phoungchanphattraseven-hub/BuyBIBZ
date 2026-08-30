@@ -216,3 +216,36 @@ async def delete_product(product_id: int, admin=Depends(get_admin_user)):
         return {"message": "Product deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{product_id}/images")
+async def save_product_images(product_id: int, payload: dict, admin=Depends(get_admin_user)):
+    """Replace all images for a product (admin only)."""
+    try:
+        supabase = get_authenticated_client(admin["token"])
+
+        # Delete existing images for this product
+        supabase.table("product_images").delete().eq("product_id", product_id).execute()
+
+        images = payload.get("images", [])
+        if not images:
+            return {"message": "Images cleared"}
+
+        rows = [
+            {
+                "product_id": product_id,
+                "image_url": img["url"],
+                "alt_text": img.get("alt", ""),
+                "display_order": img.get("display_order", i),
+                "is_primary": img.get("is_primary", i == 0),
+            }
+            for i, img in enumerate(images)
+            if img.get("url")
+        ]
+
+        if rows:
+            supabase.table("product_images").insert(rows).execute()
+
+        return {"message": f"{len(rows)} image(s) saved"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
