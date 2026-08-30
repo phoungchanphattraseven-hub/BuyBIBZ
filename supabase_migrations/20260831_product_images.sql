@@ -17,22 +17,28 @@ CREATE INDEX IF NOT EXISTS idx_product_images_display_order ON product_images(pr
 
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Anyone can view product images"
+-- Drop existing policies if they exist before recreating
+DROP POLICY IF EXISTS "Anyone can view product images" ON product_images;
+DROP POLICY IF EXISTS "Admin can insert product images" ON product_images;
+DROP POLICY IF EXISTS "Admin can update product images" ON product_images;
+DROP POLICY IF EXISTS "Admin can delete product images" ON product_images;
+
+CREATE POLICY "Anyone can view product images"
     ON product_images FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Admin can insert product images"
+CREATE POLICY "Admin can insert product images"
     ON product_images FOR INSERT
     WITH CHECK (EXISTS (
         SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
     ));
 
-CREATE POLICY IF NOT EXISTS "Admin can update product images"
+CREATE POLICY "Admin can update product images"
     ON product_images FOR UPDATE
     USING (EXISTS (
         SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
     ));
 
-CREATE POLICY IF NOT EXISTS "Admin can delete product images"
+CREATE POLICY "Admin can delete product images"
     ON product_images FOR DELETE
     USING (EXISTS (
         SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
