@@ -3,6 +3,8 @@
 -- Run this in Supabase Dashboard → SQL Editor
 -- ============================================================
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- 1. PROFILES (extends Supabase Auth users)
 CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -89,6 +91,7 @@ CREATE INDEX IF NOT EXISTS idx_cart_user ON cart_items(user_id);
 -- 5. ORDERS
 CREATE TABLE IF NOT EXISTS orders (
     id BIGSERIAL PRIMARY KEY,
+    order_uid UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
     total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
@@ -193,6 +196,11 @@ CREATE POLICY "Reviews are viewable by everyone" ON reviews FOR SELECT USING (tr
 CREATE POLICY "Users can create reviews" ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own reviews" ON reviews FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own reviews" ON reviews FOR DELETE USING (auth.uid() = user_id);
+
+-- Enforce RLS for the two customer-owned order tables.  This protects the
+-- data even if an application endpoint is modified in the future.
+ALTER TABLE orders FORCE ROW LEVEL SECURITY;
+ALTER TABLE order_items FORCE ROW LEVEL SECURITY;
 
 -- ============================================================
 -- SEED DATA — Categories & Sample Products

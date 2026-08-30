@@ -22,7 +22,7 @@ async def get_cart(current_user=Depends(get_current_user)):
             .execute()
         )
 
-        items = response.data if response.data else []
+        items = response.data if response and response.data else []
         total = sum(
             item["products"]["price"] * item["quantity"]
             for item in items
@@ -54,7 +54,7 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             .maybe_single()
             .execute()
         )
-        if not product.data or not product.data.get("is_active"):
+        if not product or not product.data or not product.data.get("is_active"):
             raise HTTPException(status_code=404, detail="Product not found")
         if product.data["stock"] < item.quantity:
             raise HTTPException(status_code=400, detail="Insufficient stock")
@@ -68,7 +68,7 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             .execute()
         )
 
-        if existing.data:
+        if existing and existing.data:
             new_qty = existing.data[0]["quantity"] + item.quantity
             if new_qty > product.data["stock"]:
                 raise HTTPException(status_code=400, detail="Insufficient stock")
@@ -112,7 +112,7 @@ async def update_cart_item(item_id: int, item: CartItemUpdate, current_user=Depe
             .execute()
         )
 
-        if not response.data:
+        if not response or not response.data:
             raise HTTPException(status_code=404, detail="Cart item not found")
 
         return {"message": "Cart item updated", "item": response.data[0]}

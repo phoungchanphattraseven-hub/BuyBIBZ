@@ -22,7 +22,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="logo/logo-badge.png">
+    <link rel="apple-touch-icon" href="../logo/logo.jpg">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -80,22 +80,37 @@
                     const items = order.order_items || [];
                     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
                     const orderJson = encodeURIComponent(JSON.stringify(order));
+                    const orderUid = order.order_uid || `#${order.id}`;
+                    const shortOrderUid = order.order_uid
+                        ? `${order.order_uid.slice(0, 8)}…${order.order_uid.slice(-4)}`
+                        : orderUid;
                     
                     return `
                         <div class="order-card">
                             <div class="order-card-header" onclick="toggleOrderDetails(${order.id})">
-                                <div>
-                                    <div class="order-id">Order #${order.id}</div>
+                                <div class="order-card-identity">
+                                    <span class="order-eyebrow">Order UID</span>
+                                    <div class="order-uid-row">
+                                        <code class="order-uid" title="${orderUid}">${shortOrderUid}</code>
+                                        <button class="order-copy-btn" type="button" onclick="event.stopPropagation(); copyOrderUid('${orderUid}')" aria-label="Copy order UID" title="Copy order UID">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        </button>
+                                    </div>
                                     <div class="order-date">${formatDate(order.created_at)} • ${itemCount} item${itemCount !== 1 ? 's' : ''}</div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: var(--space-xl);">
-                                    <div style="font-weight: 700;">${formatPrice(order.total)}</div>
+                                <div class="order-card-summary">
+                                    <div class="order-total">${formatPrice(order.total)}</div>
                                     ${renderStatusBadge(order.status)}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><path d="m6 9 6 6 6-6"/></svg>
+                                    <span class="order-expand-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
                                 </div>
                             </div>
                             
                             <div class="order-card-body" id="order-details-${order.id}">
+                                <div class="order-uid-detail">
+                                    <span>Order UID</span>
+                                    <code>${orderUid}</code>
+                                    <button type="button" onclick="copyOrderUid('${orderUid}')">Copy</button>
+                                </div>
                                 ${renderOrderTracker(order.status)}
                                 <div class="order-details-grid">
                                     
@@ -113,6 +128,9 @@
                                                     </a>
                                                     <div style="color: var(--text-tertiary); font-size: var(--font-xs);">
                                                         ${formatPrice(item.price)} × ${item.quantity}
+                                                    </div>
+                                                    <div style="color: var(--text-tertiary); font-size: var(--font-xs); margin-top: 2px;">
+                                                        Product ID: ${item.product_id}
                                                     </div>
                                                 </div>
                                                 <div style="font-weight: 700;">
@@ -160,6 +178,15 @@
                 body.classList.remove('show');
             } else {
                 body.classList.add('show');
+            }
+        }
+
+        async function copyOrderUid(orderUid) {
+            try {
+                await navigator.clipboard.writeText(orderUid);
+                showToast('Order UID copied', 'success');
+            } catch {
+                showToast('Unable to copy the order UID', 'error');
             }
         }
 
@@ -294,7 +321,7 @@
                 <!DOCTYPE html>
                 <html${''}>
                 <head${''}>
-                    <title>Receipt - Order #${order.id}</title>
+                    <title>Receipt - Order UID ${order.order_uid || order.id}</title>
                     <style>
                         body {
                             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -412,7 +439,7 @@
                                 <td class="invoice-title">
                                     Receipt / Invoice
                                     <div style="font-size: 13px; font-weight: normal; color: #555; margin-top: 6px; text-transform: none;">
-                                        Order <strong>#${order.id}</strong><br>
+                                        Order UID <strong>${order.order_uid || order.id}</strong><br>
                                         Date: ${formatDate(order.created_at)}
                                     </div>
                                 </td>
@@ -490,10 +517,5 @@
     </script>
 </body>
 </html>
-
-
-
-
-
 
 

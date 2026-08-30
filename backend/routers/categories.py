@@ -32,7 +32,7 @@ async def get_category(category_id: int):
             .maybe_single()
             .execute()
         )
-        if not response.data:
+        if not response or not response.data:
             raise HTTPException(status_code=404, detail="Category not found")
         return response.data
     except HTTPException:

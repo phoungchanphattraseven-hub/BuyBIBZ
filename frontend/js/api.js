@@ -84,9 +84,12 @@ class ApiClient {
                     const prefix = isSubfolder ? '../' : '';
                     const protectedPages = ['cart.html', 'profile.html', 'checkout.html', 'orders.html', 'admin.html'];
                     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-                    if (protectedPages.includes(currentPage) || isSubfolder) {
-                        const redirectUrl = isSubfolder ? `admin/${currentPage}` : currentPage;
-                        window.location.href = `${prefix}auth.html?redirect=${encodeURIComponent(redirectUrl)}`;
+                    
+                    if (isSubfolder) {
+                        window.location.href = 'login.html';
+                        return;
+                    } else if (protectedPages.includes(currentPage)) {
+                        window.location.href = `auth.html?redirect=${encodeURIComponent(currentPage)}`;
                         return;
                     } else if (typeof renderNavbar === 'function') {
                         renderNavbar();

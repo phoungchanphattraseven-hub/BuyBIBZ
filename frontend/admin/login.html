@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Area — BuyBIBZ</title>
+    
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/login.css">
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    
+    <!-- Animated Background Blobs -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="glass-panel">
+            <div class="login-header">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h1>Admin Area</h1>
+                <p>Secure access for authorized personnel only.</p>
+            </div>
+
+            <form id="admin-login-form" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="email" placeholder="admin@example.com" required autocomplete="email">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submit-btn">
+                    Authenticate
+                </button>
+            </form>
+
+            <div class="back-link">
+                <a href="../index.html"><i class="fa-solid fa-arrow-left"></i> Return to Storefront</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Toast -->
+    <div id="toast" class="toast-container"></div>
+
+    <!-- Core Scripts -->
+    <script src="../js/api.js?v=2"></script>
+    <script src="../js/auth.js?v=2"></script>
+    
+    <script>
+        // Setup simple toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast-container show ${type}`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Handle Admin Login
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('submit-btn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
+
+            try {
+                // Perform login
+                await api.login(email, password);
+                
+                // Verify admin status
+                const isAdmin = await api.isAdmin();
+                if (!isAdmin) {
+                    throw new Error('Access denied. You do not have administrator privileges.');
+                }
+                
+                showToast('Authentication successful', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 800);
+            } catch (err) {
+                // If they logged in but aren't admin, logout immediately
+                if (err.message.includes('privileges')) {
+                    api.logout().catch(() => {});
+                }
+                
+                showToast(err.message || 'Invalid credentials', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Authenticate';
+            }
+        });
+
+        // If already logged in as admin, redirect to dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (api.isLoggedIn()) {
+                const isAdmin = await api.isAdmin();
+                if (isAdmin) {
+                    window.location.href = 'index.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

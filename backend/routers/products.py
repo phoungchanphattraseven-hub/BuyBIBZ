@@ -76,7 +76,7 @@ async def list_products(
             count_query = count_query.eq("is_featured", featured)
 
         count_response = count_query.execute()
-        total = count_response.count if count_response.count else len(response.data)
+        total = count_response.count if count_response.count else len(response.data if response and response.data else [])
 
         return {
             "products": response.data,
@@ -104,7 +104,7 @@ async def get_product(product_id: int):
             .execute()
         )
 
-        if not product.data:
+        if not product or not product.data:
             raise HTTPException(status_code=404, detail="Product not found")
 
         # Get reviews for this product
@@ -117,8 +117,8 @@ async def get_product(product_id: int):
         )
 
         # Enrich reviews with user profiles
-        if reviews.data:
-            for review in reviews.data:
+        if reviews and reviews.data:
+            for review in (reviews.data if reviews and reviews.data else []):
                 try:
                     profile = (
                         supabase.table("profiles")
@@ -127,12 +127,12 @@ async def get_product(product_id: int):
                         .maybe_single()
                         .execute()
                     )
-                    review["profiles"] = profile.data if profile.data else {"full_name": "Anonymous"}
+                    review["profiles"] = profile.data if profile and profile.data else {"full_name": "Anonymous"}
                 except:
                     review["profiles"] = {"full_name": "Anonymous"}
 
         product_data = product.data
-        product_data["reviews"] = reviews.data if reviews.data else []
+        product_data["reviews"] = reviews.data if reviews and reviews.data else []
 
         return product_data
     except HTTPException:
@@ -145,13 +145,13 @@ async def get_product(product_id: int):
 async def create_product(product: ProductCreate, admin=Depends(get_admin_user)):
     """Create a new product (admin only)."""
     try:
-        supabase = get_supabase()
+        supabase = get_authenticated_client(admin["token"])
         slug = slugify(product.name)
 
         # Check for duplicate slug
         existing = supabase.table("products").select("id").eq("slug", slug).execute()
-        if existing.data:
-            slug = f"{slug}-{len(existing.data) + 1}"
+        if existing and existing.data:
+            slug = f"{slug}-{len(existing.data if existing and existing.data else []) + 1}"
 
         data = product.model_dump()
         data["slug"] = slug
@@ -166,7 +166,7 @@ async def create_product(product: ProductCreate, admin=Depends(get_admin_user)):
 async def update_product(product_id: int, product: ProductUpdate, admin=Depends(get_admin_user)):
     """Update a product (admin only)."""
     try:
-        supabase = get_supabase()
+        supabase = get_authenticated_client(admin["token"])
         data = product.model_dump(exclude_none=True)
 
         if "name" in data:
@@ -179,7 +179,7 @@ async def update_product(product_id: int, product: ProductUpdate, admin=Depends(
             .execute()
         )
 
-        if not response.data:
+        if not response or not response.data:
             raise HTTPException(status_code=404, detail="Product not found")
 
         return {"message": "Product updated", "product": response.data[0]}
@@ -193,7 +193,7 @@ async def update_product(product_id: int, product: ProductUpdate, admin=Depends(
 async def delete_product(product_id: int, admin=Depends(get_admin_user)):
     """Delete a product (admin only)."""
     try:
-        supabase = get_supabase()
+        supabase = get_authenticated_client(admin["token"])
         response = (
             supabase.table("products")
             .delete()

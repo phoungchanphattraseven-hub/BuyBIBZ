@@ -20,7 +20,7 @@ async def get_reviews(product_id: int):
         )
         
         # Enrich reviews with user profiles
-        reviews = response.data if response.data else []
+        reviews = response.data if response and response.data else []
         for review in reviews:
             try:
                 profile = (
@@ -30,7 +30,7 @@ async def get_reviews(product_id: int):
                     .maybe_single()
                     .execute()
                 )
-                review["profiles"] = profile.data if profile.data else {"full_name": "Anonymous"}
+                review["profiles"] = profile.data if profile and profile.data else {"full_name": "Anonymous"}
             except:
                 review["profiles"] = {"full_name": "Anonymous"}
         
@@ -55,7 +55,7 @@ async def create_review(review: ReviewCreate, current_user=Depends(get_current_u
             .maybe_single()
             .execute()
         )
-        if not product.data:
+        if not product or not product.data:
             raise HTTPException(status_code=404, detail="Product not found")
 
         # Check if user already reviewed
@@ -66,7 +66,7 @@ async def create_review(review: ReviewCreate, current_user=Depends(get_current_u
             .eq("product_id", review.product_id)
             .execute()
         )
-        if existing.data:
+        if existing and existing.data:
             raise HTTPException(status_code=400, detail="You already reviewed this product")
 
         # Create review

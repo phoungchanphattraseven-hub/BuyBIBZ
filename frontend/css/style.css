@@ -2166,34 +2166,179 @@ input:checked + .toggle-slider:before {
     border-radius: var(--radius-lg);
     margin-bottom: var(--space-md);
     overflow: hidden;
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .order-card:hover {
     border-color: var(--border-hover);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
 }
 
 .order-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-lg);
+    padding: 1.15rem 1.25rem;
     cursor: pointer;
+    gap: var(--space-lg);
 }
 
 .order-card-header:hover {
     background: var(--bg-glass-hover);
 }
 
-.order-id {
-    font-weight: 700;
+.order-card-identity {
+    min-width: 0;
+}
+
+.order-eyebrow {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--text-tertiary);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.order-uid-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.order-uid {
+    overflow: hidden;
+    color: var(--text-primary);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
     font-size: var(--font-sm);
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order-copy-btn {
+    display: inline-grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    padding: 0;
+    place-items: center;
+    flex: 0 0 auto;
+    color: var(--text-tertiary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.order-copy-btn:hover,
+.order-copy-btn:focus-visible {
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    outline: none;
+}
+
+.order-copy-btn svg {
+    width: 0.9rem;
+    height: 0.9rem;
 }
 
 .order-date {
     color: var(--text-tertiary);
     font-size: var(--font-xs);
     margin-top: 2px;
+}
+
+.order-card-summary {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    flex: 0 0 auto;
+}
+
+.order-total {
+    color: var(--text-primary);
+    font-size: var(--font-base);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+
+.order-expand-icon {
+    display: grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    color: var(--text-tertiary);
+}
+
+.order-uid-detail {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-tertiary);
+    font-size: var(--font-xs);
+}
+
+.order-uid-detail code {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order-uid-detail button {
+    margin-left: auto;
+    padding: 0.25rem 0.45rem;
+    color: var(--text-secondary);
+    font: inherit;
+    font-weight: 700;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.order-uid-detail button:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+}
+
+@media (max-width: 540px) {
+    .order-card-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: var(--space-lg);
+        gap: var(--space-md);
+    }
+
+    .order-card-summary {
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-items: end;
+        gap: 0.45rem 0.6rem;
+    }
+
+    .order-total {
+        grid-column: 1 / -1;
+    }
+
+    .order-card-summary .status-badge {
+        font-size: 0.65rem;
+    }
+
+    .order-expand-icon {
+        grid-column: 2;
+        grid-row: 2;
+    }
 }
 
 .order-card-body {
@@ -4089,8 +4234,18 @@ input:checked + .toggle-slider:before {
         position: absolute !important;
         top: 10px !important;
         right: 10px !important;
-        width: 28px !important;
-        height: 28px !important;
+        /* Override the global 44px touch-target minimum on both axes.
+           Equal dimensions keep the remove control genuinely circular. */
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        max-height: 44px !important;
+        aspect-ratio: 1 / 1 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        flex: 0 0 44px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -4636,10 +4791,49 @@ body { letter-spacing: -0.01em; }
 
 .navbar.scrolled { background: color-mix(in srgb, var(--bg-primary) 96%, transparent); box-shadow: var(--shadow-sm); }
 .nav-brand img, .footer-brand img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    object-position: center;
     filter: saturate(0.9) contrast(1.05);
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(20, 35, 26, 0.14);
+}
+
+.brand-wordmark {
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.nav-brand .brand-wordmark {
+    margin-left: 0.15rem;
+}
+
+.footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.footer-brand .brand-wordmark {
+    font-size: 1.35rem;
+}
+
+@media (max-width: 640px) {
+    .nav-brand img, .footer-brand img {
+        width: 37px;
+        height: 37px;
+    }
+
+    .brand-wordmark {
+        font-size: 1.05rem;
+    }
 }
 .nav-links a { text-transform: none; letter-spacing: 0; font-size: var(--font-base); }
 .nav-links a:hover, .nav-links a.active { color: var(--brand-primary); }

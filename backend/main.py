@@ -89,7 +89,7 @@ async def update_current_user_profile(
             .execute()
         )
         
-        if not response.data:
+        if not response or not response.data:
             raise HTTPException(status_code=400, detail="Profile update failed")
             
         return {"message": "Profile updated successfully", "profile": response.data[0]}

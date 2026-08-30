@@ -22,7 +22,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="logo/logo-badge.png">
+    <link rel="apple-touch-icon" href="../logo/logo.jpg">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -339,7 +339,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01M7 12h.01M7 17h.01M12 7h.01M12 12h.01M12 17h.01M17 7h.01M17 12h.01M17 17h.01"/></svg>
                         </div>
                         <h1 style="font-size: var(--font-2xl); margin-bottom: var(--space-sm);">Scan to Pay</h1>
-                        <p style="color: var(--text-secondary);">Order #${orderRes.order_id}</p>
+                        <p style="color: var(--text-secondary);">Order UID: ${orderRes.order_uid || orderRes.order_id}</p>
                     </div>
                     
                     <div style="background: white; padding: var(--space-xl); border-radius: var(--radius-xl); margin-bottom: var(--space-xl); box-shadow: var(--shadow-lg);">
@@ -370,14 +370,14 @@
             `;
             
             // Generate QR code (using a placeholder - integrate with real KHQR API)
-            generateKHQR(orderRes.order_id, total);
+            generateKHQR(orderRes.order_uid || orderRes.order_id, total);
         }
         
-        function generateKHQR(orderId, amount) {
+        function generateKHQR(orderUid, amount) {
             // Placeholder QR code generation
             // In production, integrate with Cambodia's KHQR API
             const qrContainer = document.getElementById('khqr-code');
-            const qrData = `KHQR:order_${orderId}:${amount}`;
+            const qrData = `KHQR:order_${orderUid}:${amount}`;
             
             // Using a simple QR placeholder
             qrContainer.innerHTML = `
@@ -404,7 +404,7 @@
                     <h1 style="font-size: var(--font-3xl); margin-bottom: var(--space-md);">Order Confirmed!</h1>
                     <p style="color: var(--text-secondary); font-size: var(--font-lg); margin-bottom: var(--space-xl);">
                         Thank you for shopping with BuyBIBZ.<br>
-                        Your order #${res.order_id} has been placed successfully.
+                        Your order UID ${res.order_uid || res.order_id} has been placed successfully.
                     </p>
                     <div style="display: flex; gap: var(--space-md); justify-content: center;">
                         <a href="orders.html" class="btn btn-primary btn-lg">View My Orders</a>
@@ -465,10 +465,6 @@
     </style>
 </body>
 </html>
-
-
-
-
 
 
 

@@ -62,8 +62,8 @@ async def login(user: UserLogin):
                 "user": {
                     "id": str(response.user.id),
                     "email": response.user.email,
-                    "full_name": profile.data.get("full_name", "") if profile.data else "",
-                    "role": profile.data.get("role", "customer") if profile.data else "customer",
+                    "full_name": profile.data.get("full_name", "") if profile and profile.data else "",
+                    "role": profile.data.get("role", "customer") if profile and profile.data else "customer",
                 },
                 "session": {
                     "access_token": response.session.access_token,

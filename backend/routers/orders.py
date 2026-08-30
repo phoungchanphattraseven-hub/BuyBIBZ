@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from uuid import uuid4
 from core.config import get_supabase
 from core.auth import get_current_user, get_admin_user
 from models.schemas import OrderCreate, OrderStatusUpdate
@@ -22,13 +23,13 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             .execute()
         )
 
-        if not cart.data:
+        if not cart or not cart.data:
             raise HTTPException(status_code=400, detail="Cart is empty")
 
         # 2. Validate stock availability
         order_items_data = []
         total = 0
-        for item in cart.data:
+        for item in (cart.data if cart and cart.data else []):
             product = item["products"]
             if not product:
                 continue
@@ -53,6 +54,9 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             supabase.table("orders")
             .insert({
                 "user_id": user_id,
+                # `id` is the internal database key; this UUID is the stable
+                # public identifier shown to customers and administrators.
+                "order_uid": str(uuid4()),
                 "total": round(total, 2),
                 "shipping_name": order.shipping_name,
                 "shipping_address": order.shipping_address,
@@ -65,7 +69,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             .execute()
         )
 
-        if not order_response.data:
+        if not order_response or not order_response.data:
             raise HTTPException(status_code=500, detail="Failed to create order")
 
         order_id = order_response.data[0]["id"]
@@ -77,7 +81,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
         supabase.table("order_items").insert(order_items_data).execute()
 
         # 5. Update product stock
-        for item in cart.data:
+        for item in (cart.data if cart and cart.data else []):
             product = item["products"]
             if product:
                 new_stock = product["stock"] - item["quantity"]
@@ -92,6 +96,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             "message": "Order placed successfully",
             "order": order_response.data[0],
             "order_id": order_id,
+            "order_uid": order_response.data[0]["order_uid"],
         }
     except HTTPException:
         raise
@@ -115,7 +120,11 @@ async def list_orders(current_user=Depends(get_current_user)):
             .execute()
         )
 
-        return {"orders": response.data if response.data else []}
+        # Keep the API boundary user-scoped even if a database policy is changed
+        # accidentally.  A customer must never receive another customer's order.
+        orders = response.data if response and response.data else []
+        own_orders = [order for order in orders if order.get("user_id") == user_id]
+        return {"orders": own_orders}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -137,7 +146,7 @@ async def get_order(order_id: int, current_user=Depends(get_current_user)):
             .execute()
         )
 
-        if not response.data:
+        if not response or not response.data:
             raise HTTPException(status_code=404, detail="Order not found")
 
         return response.data
@@ -155,7 +164,10 @@ async def update_order_status(
 ):
     """Update order status (admin only)."""
     try:
-        supabase = get_supabase()
+        # Use the verified admin's token so Supabase RLS evaluates this request as
+        # that admin, rather than as the anonymous application client.
+        from core.config import get_authenticated_client
+        supabase = get_authenticated_client(admin["token"])
 
         response = (
             supabase.table("orders")
@@ -164,7 +176,7 @@ async def update_order_status(
             .execute()
         )
 
-        if not response.data:
+        if not response or not response.data:
             raise HTTPException(status_code=404, detail="Order not found")
 
         return {"message": "Order status updated", "order": response.data[0]}

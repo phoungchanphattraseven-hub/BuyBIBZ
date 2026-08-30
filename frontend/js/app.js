@@ -236,6 +236,7 @@ function renderNavbar() {
         <div class="container">
             <a href="${prefix}index.html" class="nav-brand">
                 <img src="${prefix}../logo/logo.jpg" alt="BuyBIBZ">
+                <span class="brand-wordmark">BuyBIBZ</span>
             </a>
 
             <nav class="nav-links" id="nav-links">
@@ -443,6 +444,7 @@ function renderFooter() {
                 <div>
                     <div class="footer-brand">
                         <img src="${prefix}../logo/logo.jpg" alt="BuyBIBZ">
+                        <span class="brand-wordmark">BuyBIBZ</span>
                     </div>
                     <p class="footer-desc" data-i18n="footer.desc">${_t('footer.desc')}</p>
                     <div class="footer-social">

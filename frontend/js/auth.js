@@ -110,10 +110,12 @@ function redirectIfLoggedIn() {
 function requireAuth() {
     if (!api.isLoggedIn()) {
         const isSubfolder = window.location.pathname.includes('/admin/');
-        const prefix = isSubfolder ? '../' : '';
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        const redirectUrl = isSubfolder ? `admin/${currentPage}` : currentPage;
-        window.location.href = `${prefix}auth.html?redirect=${encodeURIComponent(redirectUrl)}`;
+        if (isSubfolder) {
+            window.location.href = 'login.html';
+        } else {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            window.location.href = `auth.html?redirect=${encodeURIComponent(currentPage)}`;
+        }
         return false;
     }
     return true;
@@ -125,9 +127,13 @@ function requireAdmin() {
     if (!api.isAdmin()) {
         showToast('Admin access required', 'error');
         const isSubfolder = window.location.pathname.includes('/admin/');
-        const prefix = isSubfolder ? '../' : '';
-        window.location.href = `${prefix}index.html`;
+        if (isSubfolder) {
+            window.location.href = 'login.html';
+        } else {
+            window.location.href = 'index.html';
+        }
         return false;
     }
     return true;
 }
+

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
-from core.config import get_supabase
+from datetime import datetime, timedelta, timezone
+from core.config import get_authenticated_client
 from core.auth import get_admin_user
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
@@ -9,19 +10,43 @@ router = APIRouter(prefix="/api/admin", tags=["Admin"])
 async def get_dashboard(admin=Depends(get_admin_user)):
     """Get admin dashboard statistics."""
     try:
-        supabase = get_supabase()
+        supabase = get_authenticated_client(admin["token"])
 
         # Total products
         products = supabase.table("products").select("id", count="exact").execute()
         total_products = products.count if products.count else 0
 
         # Total orders & revenue
-        orders = supabase.table("orders").select("id, total, status", count="exact").execute()
+        orders = supabase.table("orders").select("id, total, status, created_at", count="exact").execute()
         total_orders = orders.count if orders.count else 0
+        order_data = orders.data or []
         total_revenue = sum(
-            float(o.get("total", 0)) for o in (orders.data or [])
+            float(o.get("total", 0)) for o in order_data
             if o.get("status") != "cancelled"
         )
+
+        # Overview analytics: daily revenue for the last seven UTC calendar
+        # days and a current status distribution.  Keeping aggregation here
+        # avoids introducing an extra client-side dependency.
+        today = datetime.now(timezone.utc).date()
+        dates = [today - timedelta(days=offset) for offset in range(6, -1, -1)]
+        revenue_by_date = {day: 0.0 for day in dates}
+        status_breakdown = {status: 0 for status in ("pending", "processing", "shipped", "delivered", "cancelled")}
+        for order in order_data:
+            status = order.get("status", "pending")
+            if status in status_breakdown:
+                status_breakdown[status] += 1
+            try:
+                order_date = datetime.fromisoformat(order["created_at"].replace("Z", "+00:00")).date()
+                if order_date in revenue_by_date and status != "cancelled":
+                    revenue_by_date[order_date] += float(order.get("total", 0))
+            except (KeyError, TypeError, ValueError):
+                continue
+
+        daily_revenue = [
+            {"label": day.strftime("%b %d"), "revenue": round(revenue_by_date[day], 2)}
+            for day in dates
+        ]
 
         # Total customers
         customers = (
@@ -42,7 +67,7 @@ async def get_dashboard(admin=Depends(get_admin_user)):
         )
         
         # Enrich with profiles
-        recent_orders = recent.data if recent.data else []
+        recent_orders = recent.data if recent and recent.data else []
         for order in recent_orders:
             try:
                 profile = (
@@ -52,7 +77,7 @@ async def get_dashboard(admin=Depends(get_admin_user)):
                     .maybe_single()
                     .execute()
                 )
-                order["profiles"] = profile.data if profile.data else {"full_name": "Unknown"}
+                order["profiles"] = profile.data if profile and profile.data else {"full_name": "Unknown"}
             except:
                 order["profiles"] = {"full_name": "Unknown"}
 
@@ -62,6 +87,10 @@ async def get_dashboard(admin=Depends(get_admin_user)):
             "total_revenue": round(total_revenue, 2),
             "total_customers": total_customers,
             "recent_orders": recent_orders,
+            "analytics": {
+                "daily_revenue": daily_revenue,
+                "status_breakdown": status_breakdown,
+            },
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,7 +100,7 @@ async def get_dashboard(admin=Depends(get_admin_user)):
 async def get_all_orders(admin=Depends(get_admin_user)):
     """Get all orders (admin view)."""
     try:
-        supabase = get_supabase()
+        supabase = get_authenticated_client(admin["token"])
         response = (
             supabase.table("orders")
             .select("*, order_items(*)")
@@ -80,7 +109,7 @@ async def get_all_orders(admin=Depends(get_admin_user)):
         )
         
         # Enrich orders with profiles
-        orders = response.data if response.data else []
+        orders = response.data if response and response.data else []
         for order in orders:
             try:
                 profile = (
@@ -90,7 +119,7 @@ async def get_all_orders(admin=Depends(get_admin_user)):
                     .maybe_single()
                     .execute()
                 )
-                order["profiles"] = profile.data if profile.data else {"full_name": "Unknown"}
+                order["profiles"] = profile.data if profile and profile.data else {"full_name": "Unknown"}
             except:
                 order["profiles"] = {"full_name": "Unknown"}
         
@@ -103,13 +132,13 @@ async def get_all_orders(admin=Depends(get_admin_user)):
 async def get_all_products(admin=Depends(get_admin_user)):
     """Get all products including inactive ones (admin view)."""
     try:
-        supabase = get_supabase()
+        supabase = get_authenticated_client(admin["token"])
         response = (
             supabase.table("products")
             .select("*, categories(name)")
             .order("created_at", desc=True)
             .execute()
         )
-        return {"products": response.data if response.data else []}
+        return {"products": response.data if response and response.data else []}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

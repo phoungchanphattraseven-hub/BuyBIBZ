@@ -133,6 +133,7 @@ class OrderItemResponse(BaseModel):
 
 class OrderResponse(BaseModel):
     id: int
+    order_uid: str
     user_id: str
     status: str
     total: float

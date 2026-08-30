@@ -6,23 +6,23 @@
         (function () {
             try {
                 var theme = localStorage.getItem('buybibz-theme');
-                if (theme !== 'dark' && theme !== 'light') theme = 'light';
+                if (theme !== 'dark' && theme !== 'light') theme = 'dark';
                 document.documentElement.setAttribute('data-theme', theme);
                 document.documentElement.style.colorScheme = theme;
             } catch (e) {}
         })();
     </script>
     <style>
-        html, body { background-color: #f6f8fb; }
-        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #090d16; }
+        html, body { background-color: #f1f5f9; }
+        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #0a0f1a; }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin Dashboard — BuyBIBZ</title>
     <meta name="description" content="Manage products and orders.">
     <link rel="manifest" href="../manifest.json">
-    <meta name="theme-color" content="#06060a">
+    <meta name="theme-color" content="#0a0f1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="../logo/logo-badge.png">
+    <link rel="apple-touch-icon" href="../logo/logo.jpg">
     <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
@@ -31,22 +31,26 @@
         <!-- Sidebar Navigation -->
         <aside class="admin-sidebar">
             <div class="sidebar-brand">
-                <img src="../logo/logo-badge.png" alt="BuyBIBZ Logo">
+                <img src="../logo/logo.jpg" alt="BuyBIBZ Logo">
                 <span>BuyBIBZ Admin</span>
             </div>
             <nav class="sidebar-menu">
                 <button class="sidebar-item active" onclick="switchSection('dashboard')">
-                    📊 <span>Overview</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>Overview</span>
                 </button>
                 <button class="sidebar-item" onclick="switchSection('orders')">
-                    📦 <span>Orders</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    <span>Orders</span>
                 </button>
                 <button class="sidebar-item" onclick="switchSection('products')">
-                    🏷️ <span>Products</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <span>Products</span>
                 </button>
                 <div class="sidebar-spacer"></div>
                 <a href="../index.html" class="sidebar-item exit-btn">
-                    🚪 <span>Exit Storefront</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Back to Store</span>
                 </a>
             </nav>
         </aside>
@@ -57,15 +61,20 @@
             <header class="admin-topbar">
                 <div class="topbar-left">
                     <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-                    <h2 id="page-title">Dashboard Overview</h2>
+                    <h2 id="page-title">Overview</h2>
                 </div>
                 <div class="topbar-right">
-                    <button class="admin-theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌓</button>
+                    <button class="admin-theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </button>
                     <div class="admin-user">
                         <div class="admin-avatar" id="admin-avatar">A</div>
-                        <span class="admin-username" id="admin-username">Admin User</span>
+                        <span class="admin-username" id="admin-username">Admin</span>
                     </div>
-                    <button class="admin-logout-btn" onclick="handleLogout()">Logout</button>
+                    <button class="admin-logout-btn" onclick="handleLogout()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Logout
+                    </button>
                 </div>
             </header>
 
@@ -74,21 +83,24 @@
                 <!-- 1. Overview Section -->
                 <section id="section-dashboard" class="content-section active">
                     <div class="stats-grid" id="admin-stats">
-                        <div class="stat-card skeleton" style="height: 104px;"></div>
-                        <div class="stat-card skeleton" style="height: 104px;"></div>
-                        <div class="stat-card skeleton" style="height: 104px;"></div>
-                        <div class="stat-card skeleton" style="height: 104px;"></div>
+                        <div class="stat-card skeleton" style="height: 96px;"></div>
+                        <div class="stat-card skeleton" style="height: 96px;"></div>
+                        <div class="stat-card skeleton" style="height: 96px;"></div>
+                        <div class="stat-card skeleton" style="height: 96px;"></div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
-                        <div class="admin-panel">
-                            <div class="panel-header">
-                                <h3 class="panel-title">System Status</h3>
-                            </div>
-                            <p style="color: var(--text-muted); font-size: 0.9rem;">
-                                Welcome to the BuyBIBZ store administration workspace. Use the left sidebar to navigate between orders and inventory listings.
-                            </p>
+                    <div class="analytics-grid" id="dashboard-analytics">
+                        <div class="analytics-panel skeleton" style="height: 260px;"></div>
+                        <div class="analytics-panel skeleton" style="height: 260px;"></div>
+                    </div>
+
+                    <div class="welcome-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Welcome back</h3>
                         </div>
+                        <p>
+                            You're viewing the BuyBIBZ admin workspace. Use the sidebar to manage orders and products, or review the statistics above for a quick snapshot of your store's performance.
+                        </p>
                     </div>
                 </section>
 
@@ -97,12 +109,16 @@
                     <div class="admin-panel">
                         <div class="panel-header">
                             <h3 class="panel-title">Orders Directory</h3>
+                            <label class="admin-table-search" for="order-search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                                <input id="order-search" type="search" placeholder="Search UID, customer, status…" autocomplete="off" oninput="filterAdminOrders()">
+                            </label>
                         </div>
                         <div class="admin-table-wrapper">
                             <table class="admin-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
+                                        <th>Order UID</th>
                                         <th>Date</th>
                                         <th>Customer</th>
                                         <th>Total</th>
@@ -146,6 +162,19 @@
                 </section>
             </div>
         </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal-backdrop" id="order-details-backdrop" onclick="closeOrderDetails()"></div>
+    <div class="modal order-details-modal" id="order-details-modal" role="dialog" aria-modal="true" aria-labelledby="order-details-title">
+        <div class="modal-header">
+            <div>
+                <span class="modal-eyebrow">Order details</span>
+                <h2 id="order-details-title">Order</h2>
+            </div>
+            <button class="modal-close" type="button" onclick="closeOrderDetails()" aria-label="Close order details">✕</button>
+        </div>
+        <div id="order-details-content"></div>
     </div>
 
     <!-- Product Modal -->
@@ -220,12 +249,13 @@
     <div class="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: 12px; font-family: var(--font-family);"></div>
 
     <script src="../js/disable-zoom.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/auth.js"></script>
+    <script src="../js/api.js?v=2"></script>
+    <script src="../js/auth.js?v=2"></script>
     <script src="../js/pwa-install.js"></script>
     <script>
         let allCategories = [];
         let rawProducts = [];
+        let allAdminOrders = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!requireAdmin()) return;
@@ -294,31 +324,35 @@
         // Toast notification system helper
         function showToast(message, type = 'info') {
             const container = document.querySelector('.toast-container');
+            const colors = { success: '#10b981', error: '#ef4444', info: '#6366f1', warning: '#f59e0b' };
+            const color = colors[type] || colors.info;
             const toast = document.createElement('div');
             toast.style.cssText = `
                 background: var(--bg-card);
                 color: var(--text-main);
                 border: 1px solid var(--border);
-                border-left: 4px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-                padding: 14px 20px;
+                border-left: 3px solid ${color};
+                padding: 12px 18px;
                 border-radius: var(--radius-sm);
-                box-shadow: var(--shadow-md);
+                box-shadow: var(--shadow-lg);
                 display: flex;
                 align-items: center;
-                gap: 12px;
-                font-size: 0.9rem;
-                min-width: 280px;
-                animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                gap: 10px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                min-width: 260px;
+                max-width: 380px;
+                animation: toastIn 0.3s var(--ease);
                 transition: all 0.3s ease;
             `;
             toast.innerHTML = `
-                <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span>
                 <span>${message}</span>
             `;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
+                toast.style.transform = 'translateX(20px)';
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
         }
@@ -332,9 +366,9 @@
             event.currentTarget.classList.add('active');
             
             const titles = {
-                dashboard: 'Dashboard Overview',
-                orders: 'Orders Management',
-                products: 'Products Directory'
+                dashboard: 'Overview',
+                orders: 'Orders',
+                products: 'Products'
             };
             document.getElementById('page-title').textContent = titles[sectionId] || 'Overview';
             
@@ -384,52 +418,137 @@
                 
                 document.getElementById('admin-stats').innerHTML = `
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent);">💵</div>
+                        <div class="stat-card-icon" style="background: rgba(16, 185, 129, 0.08); color: #10b981;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
                         <div class="stat-card-info">
                             <span class="stat-card-value">${formatPrice(data.total_revenue)}</span>
                             <span class="stat-card-label">Total Revenue</span>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">📦</div>
+                        <div class="stat-card-icon" style="background: rgba(59, 130, 246, 0.08); color: #3b82f6;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                        </div>
                         <div class="stat-card-info">
                             <span class="stat-card-value">${data.total_orders}</span>
                             <span class="stat-card-label">Total Orders</span>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">🏷️</div>
+                        <div class="stat-card-icon" style="background: rgba(139, 92, 246, 0.08); color: #8b5cf6;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        </div>
                         <div class="stat-card-info">
                             <span class="stat-card-value">${data.total_products}</span>
                             <span class="stat-card-label">Products</span>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">👥</div>
+                        <div class="stat-card-icon" style="background: rgba(245, 158, 11, 0.08); color: #f59e0b;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
                         <div class="stat-card-info">
                             <span class="stat-card-value">${data.total_customers}</span>
                             <span class="stat-card-label">Customers</span>
                         </div>
                     </div>
                 `;
+                renderDashboardAnalytics(data.analytics);
             } catch (err) {}
+        }
+
+        function renderDashboardAnalytics(analytics) {
+            const container = document.getElementById('dashboard-analytics');
+            const dailyRevenue = analytics?.daily_revenue || [];
+            const statusBreakdown = analytics?.status_breakdown || {};
+            const maxRevenue = Math.max(...dailyRevenue.map(day => Number(day.revenue) || 0), 1);
+            const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+            const statusOrderCount = statuses.reduce((sum, status) => sum + (Number(statusBreakdown[status]) || 0), 0);
+            const statusDenominator = Math.max(statusOrderCount, 1);
+
+            container.innerHTML = `
+                <section class="analytics-panel">
+                    <div class="analytics-panel-header">
+                        <div>
+                            <span class="analytics-eyebrow">Performance</span>
+                            <h3>Revenue, last 7 days</h3>
+                        </div>
+                        <span class="analytics-note">Excludes cancelled orders</span>
+                    </div>
+                    <div class="revenue-chart" role="img" aria-label="Daily revenue for the last seven days">
+                        ${dailyRevenue.map(day => {
+                            const revenue = Number(day.revenue) || 0;
+                            const height = Math.max((revenue / maxRevenue) * 100, revenue ? 5 : 2);
+                            return `<div class="revenue-bar-group" title="${day.label}: ${formatPrice(revenue)}"><span class="revenue-value">${revenue ? formatPrice(revenue) : '—'}</span><div class="revenue-bar-track"><div class="revenue-bar" style="height: ${height}%"></div></div><span class="revenue-label">${day.label}</span></div>`;
+                        }).join('')}
+                    </div>
+                </section>
+                <section class="analytics-panel">
+                    <div class="analytics-panel-header">
+                        <div>
+                            <span class="analytics-eyebrow">Fulfilment</span>
+                            <h3>Order status</h3>
+                        </div>
+                        <span class="analytics-note">${statusOrderCount} total</span>
+                    </div>
+                    <div class="status-chart">
+                        ${statuses.map(status => {
+                            const count = Number(statusBreakdown[status]) || 0;
+                            const percentage = (count / statusDenominator) * 100;
+                            return `<div class="status-chart-row"><div class="status-chart-label"><span class="status-dot status-dot-${status}"></span><span>${status}</span><strong>${count}</strong></div><div class="status-chart-track"><span class="status-chart-fill status-fill-${status}" style="width: ${percentage}%"></span></div></div>`;
+                        }).join('')}
+                    </div>
+                </section>
+            `;
         }
 
         async function loadOrders() {
             try {
                 const data = await api.getAdminOrders();
-                const tbody = document.getElementById('admin-orders-table');
-                
-                if (!data.orders || data.orders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: var(--text-muted);">No orders found.</td></tr>';
-                    return;
-                }
-                
-                const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-                
-                tbody.innerHTML = data.orders.map(o => `
+                allAdminOrders = data.orders || [];
+                renderAdminOrders();
+            } catch (err) {
+                document.getElementById('admin-orders-table').innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 20px;">${err.message}</td></tr>`;
+            }
+        }
+
+        function filterAdminOrders() {
+            renderAdminOrders();
+        }
+
+        function renderAdminOrders() {
+            const tbody = document.getElementById('admin-orders-table');
+            const searchInput = document.getElementById('order-search');
+            const searchTerm = (searchInput?.value || '').trim().toLowerCase();
+            const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+            const orders = allAdminOrders.filter(order => {
+                if (!searchTerm) return true;
+                const searchableText = [
+                    order.order_uid,
+                    order.id,
+                    order.shipping_name,
+                    order.profiles?.full_name,
+                    order.shipping_phone,
+                    order.status,
+                    order.total,
+                ].filter(Boolean).join(' ').toLowerCase();
+                return searchableText.includes(searchTerm);
+            });
+
+            if (allAdminOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="admin-table-empty">No orders found.</td></tr>';
+                return;
+            }
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="admin-table-empty">No orders match your search.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.map(o => `
                     <tr>
-                        <td style="font-weight: 700; color: var(--accent);">#${o.id}</td>
+                        <td style="font-weight: 700; color: var(--accent); font-size: 0.78rem;">${o.order_uid || o.id}</td>
                         <td>${formatDate(o.created_at)}</td>
                         <td>
                             <div style="font-weight: 600;">${o.shipping_name}</div>
@@ -442,25 +561,80 @@
                             </select>
                         </td>
                         <td>
-                            <a class="btn btn-secondary btn-ghost" style="padding: 4px 12px; font-size: 0.75rem;" href="../orders.html">View User Side</a>
+                            <button class="btn btn-secondary btn-ghost" style="padding: 4px 12px; font-size: 0.75rem;" type="button" onclick="openOrderDetails(${o.id})">View details</button>
                         </td>
                     </tr>
                 `).join('');
-                
-            } catch (err) {
-                document.getElementById('admin-orders-table').innerHTML = `<tr><td colspan="6" style="color: #ef4444; text-align: center; padding: 20px;">${err.message}</td></tr>`;
-            }
         }
 
         async function updateOrderStatus(orderId, newStatus) {
             try {
                 await api.updateOrderStatus(orderId, newStatus);
-                showToast(`Order #${orderId} status set to ${newStatus}`, 'success');
+                showToast(`Order status set to ${newStatus}`, 'success');
                 loadDashboard();
             } catch (err) {
                 showToast(err.message, 'error');
                 loadOrders();
             }
+        }
+
+        function openOrderDetails(orderId) {
+            const order = allAdminOrders.find(item => item.id === orderId);
+            if (!order) {
+                showToast('Order details are not available. Refresh and try again.', 'error');
+                return;
+            }
+
+            const orderUid = order.order_uid || `#${order.id}`;
+            const items = order.order_items || [];
+            const customerName = order.profiles?.full_name || order.shipping_name || 'Customer';
+            const content = document.getElementById('order-details-content');
+            content.innerHTML = `
+                <div class="order-detail-reference">
+                    <span>Order UID</span>
+                    <code>${orderUid}</code>
+                    <span class="status-badge status-${order.status}">${order.status}</span>
+                </div>
+                <div class="order-detail-layout">
+                    <section class="order-detail-section">
+                        <div class="order-detail-section-heading">
+                            <h3>Items ordered</h3>
+                            <span>${items.length} item${items.length === 1 ? '' : 's'}</span>
+                        </div>
+                        <div class="order-detail-items">
+                            ${items.length ? items.map(item => `
+                                <div class="order-detail-item">
+                                    <img src="${item.product_image || 'https://via.placeholder.com/80?text=Product'}" alt="${item.product_name || 'Product'}">
+                                    <div class="order-detail-item-info">
+                                        <strong>${item.product_name || 'Product'}</strong>
+                                        <span>Product ID: ${item.product_id} · ${formatPrice(item.price)} × ${item.quantity}</span>
+                                    </div>
+                                    <strong class="order-detail-subtotal">${formatPrice(item.subtotal)}</strong>
+                                </div>
+                            `).join('') : '<p class="order-detail-empty">No line items were saved for this order.</p>'}
+                        </div>
+                        <div class="order-detail-total"><span>Order total</span><strong>${formatPrice(order.total)}</strong></div>
+                    </section>
+                    <aside class="order-detail-section order-detail-shipping">
+                        <div class="order-detail-section-heading"><h3>Customer & delivery</h3></div>
+                        <dl>
+                            <div><dt>Customer</dt><dd>${customerName}</dd></div>
+                            <div><dt>Recipient</dt><dd>${order.shipping_name || '—'}</dd></div>
+                            <div><dt>Phone</dt><dd>${order.shipping_phone || '—'}</dd></div>
+                            <div><dt>Address</dt><dd>${order.shipping_address || '—'}${order.shipping_city ? `, ${order.shipping_city}` : ''}${order.shipping_postal ? ` ${order.shipping_postal}` : ''}</dd></div>
+                            <div><dt>Ordered</dt><dd>${formatDate(order.created_at)}</dd></div>
+                        </dl>
+                        ${order.notes ? `<div class="order-detail-notes"><span>Customer note</span><p>${order.notes}</p></div>` : ''}
+                    </aside>
+                </div>
+            `;
+            document.getElementById('order-details-modal').classList.add('active');
+            document.getElementById('order-details-backdrop').classList.add('active');
+        }
+
+        function closeOrderDetails() {
+            document.getElementById('order-details-modal').classList.remove('active');
+            document.getElementById('order-details-backdrop').classList.remove('active');
         }
         
         async function loadProducts() {
@@ -500,8 +674,12 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn-icon" onclick="editProduct(${p.id})" title="Edit Product">✏️</button>
-                                <button class="btn-icon" style="color: #ef4444; border-color: rgba(239,68,68,0.2);" onclick="deleteProduct(${p.id})" title="Delete Product">🗑️</button>
+                                <button class="btn-icon" onclick="editProduct(${p.id})" title="Edit Product">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </button>
+                                <button class="btn-icon" style="color: #ef4444; border-color: rgba(239,68,68,0.15);" onclick="deleteProduct(${p.id})" title="Delete Product">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                </button>
                             </div>
                         </td>
                     </tr>

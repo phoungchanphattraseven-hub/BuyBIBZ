@@ -45,7 +45,7 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",
         )
-    if not profile.data or profile.data.get("role") != "admin":
+    if not profile or not profile.data or profile.data.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",
