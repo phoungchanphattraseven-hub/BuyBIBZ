@@ -47,6 +47,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
                 "price": product["price"],
                 "quantity": item["quantity"],
                 "subtotal": subtotal,
+                "selected_options": item.get("selected_options") or {},
             })
 
         # 3. Create the order

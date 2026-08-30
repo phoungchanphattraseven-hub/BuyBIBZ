@@ -920,6 +920,148 @@ body {
     background: var(--danger-bg);
 }
 
+/* ── Product Editor Modal (2-col layout) ─────────────────── */
+.product-editor-modal {
+    width: min(960px, 96vw);
+    max-height: 92vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.product-editor-modal .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0;
+    padding: 18px 24px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.product-editor-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.product-editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.product-editor-left {
+    padding: 24px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.product-editor-right {
+    padding: 24px;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.editor-section-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 16px;
+}
+
+.editor-section-label span {
+    font-weight: 400;
+    opacity: 0.6;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.68rem;
+    margin-left: 6px;
+    color: var(--text-muted);
+}
+
+.editor-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.editor-toggles {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+/* Toggle chip (Featured / Active) */
+.toggle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.toggle-chip:has(input:checked) {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.toggle-chip input {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.free-shipping-toggle {
+    margin-top: 12px;
+}
+
+.product-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 24px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 700px) {
+    .product-editor-layout {
+        grid-template-columns: 1fr;
+    }
+    .product-editor-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+    .editor-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
 .modal-eyebrow {
     display: block;
     margin-bottom: 4px;
@@ -1164,46 +1306,6 @@ body {
 .grid { display: grid; }
 .grid-2 { grid-template-columns: 1fr 1fr; }
 .gap-md { gap: 16px; }
-
-/* ── Product Attribute Fields (Admin Form) ──────────────── */
-.attr-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 16px;
-}
-
-.attr-field-row {
-    display: grid;
-    grid-template-columns: 24px 120px 1fr;
-    align-items: center;
-    gap: 10px;
-}
-
-.attr-field-row.checkbox-row {
-    align-items: center;
-}
-
-.attr-field-icon {
-    font-size: 16px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.attr-field-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    white-space: nowrap;
-}
-
-.attr-field-row .form-input {
-    padding: 7px 12px;
-    font-size: 0.82rem;
-}
 
 /* ============================================================
    Welcome Panel (Overview Section)

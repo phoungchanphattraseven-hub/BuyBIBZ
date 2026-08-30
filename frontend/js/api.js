@@ -206,8 +206,12 @@ class ApiClient {
         return this.get('/api/cart');
     }
 
-    async addToCart(productId, quantity = 1) {
-        return this.post('/api/cart', { product_id: productId, quantity });
+    async addToCart(productId, quantity = 1, selectedOptions = {}) {
+        return this.post('/api/cart', {
+            product_id: productId,
+            quantity,
+            selected_options: selectedOptions,
+        });
     }
 
     async updateCartItem(itemId, quantity) {

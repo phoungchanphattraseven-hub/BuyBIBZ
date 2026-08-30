@@ -179,126 +179,124 @@
 
     <!-- Product Modal -->
     <div class="modal-backdrop" id="product-modal-backdrop" onclick="closeProductModal()"></div>
-    <div class="modal" id="product-modal">
+    <div class="modal product-editor-modal" id="product-modal">
         <div class="modal-header">
             <h2 id="modal-title">Add Product</h2>
-            <button class="modal-close" onclick="closeProductModal()">✕</button>
+            <button class="modal-close" type="button" onclick="closeProductModal()" aria-label="Close">✕</button>
         </div>
-        <form id="product-form">
+        <form id="product-form" class="product-editor-form">
             <input type="hidden" id="p_id">
-            
-            <div class="form-group">
-                <label class="form-label" for="p_name">Product Name *</label>
-                <input type="text" id="p_name" class="form-input" required>
-            </div>
-            
-            <div class="grid grid-2 gap-md">
-                <div class="form-group">
-                    <label class="form-label" for="p_price">Price *</label>
-                    <input type="number" id="p_price" class="form-input" step="0.01" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="p_compare">Compare at Price</label>
-                    <input type="number" id="p_compare" class="form-input" step="0.01" min="0">
-                </div>
-            </div>
-            
-            <div class="grid grid-2 gap-md">
-                <div class="form-group">
-                    <label class="form-label" for="p_category">Category *</label>
-                    <select id="p_category" class="form-select" required>
-                        <option value="">Select...</option>
-                        <!-- Loaded dynamically -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="p_stock">Stock *</label>
-                    <input type="number" id="p_stock" class="form-input" min="0" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="p_image">Image URL</label>
-                <input type="url" id="p_image" class="form-input" placeholder="https://...">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="p_desc">Description</label>
-                <textarea id="p_desc" class="form-textarea" rows="4"></textarea>
-            </div>
 
-            <!-- Product Attributes -->
-            <div class="form-group">
-                <label class="form-label">Product Attributes <span style="font-weight:400; color: var(--text-muted); font-size:0.78rem;">(optional)</span></label>
-                <div class="attr-fields">
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">🎨</span>
-                        <label class="attr-field-label">Colors</label>
-                        <input type="text" id="p_attr_colors" class="form-input" placeholder="Red, Blue, Black (comma separated)">
+            <!-- Two column layout: left = core, right = attributes -->
+            <div class="product-editor-layout">
+
+                <!-- LEFT COLUMN -->
+                <div class="product-editor-left">
+                    <p class="editor-section-label">Product Info</p>
+
+                    <div class="form-group">
+                        <label class="form-label" for="p_name">Product Name *</label>
+                        <input type="text" id="p_name" class="form-input" placeholder="e.g. Wireless Headphones" required>
                     </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">📐</span>
-                        <label class="attr-field-label">Sizes</label>
-                        <input type="text" id="p_attr_sizes" class="form-input" placeholder="S, M, L, XL (comma separated)">
+
+                    <div class="editor-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="p_price">Selling Price *</label>
+                            <input type="number" id="p_price" class="form-input" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="p_compare">Compare Price</label>
+                            <input type="number" id="p_compare" class="form-input" step="0.01" min="0" placeholder="0.00">
+                        </div>
                     </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">🧵</span>
-                        <label class="attr-field-label">Material</label>
-                        <input type="text" id="p_attr_material" class="form-input" placeholder="e.g. 100% Cotton">
+
+                    <div class="editor-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="p_category">Category *</label>
+                            <select id="p_category" class="form-select" required>
+                                <option value="">Select category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="p_stock">Stock *</label>
+                            <input type="number" id="p_stock" class="form-input" min="0" placeholder="0" required>
+                        </div>
                     </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">🏷️</span>
-                        <label class="attr-field-label">Brand</label>
-                        <input type="text" id="p_attr_brand" class="form-input" placeholder="e.g. Nike">
+
+                    <div class="form-group">
+                        <label class="form-label" for="p_image">Image URL</label>
+                        <input type="url" id="p_image" class="form-input" placeholder="https://...">
                     </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">⚖️</span>
-                        <label class="attr-field-label">Weight</label>
-                        <input type="text" id="p_attr_weight" class="form-input" placeholder="e.g. 250g">
+
+                    <div class="form-group">
+                        <label class="form-label" for="p_desc">Description</label>
+                        <textarea id="p_desc" class="form-textarea" rows="4" placeholder="Product description..."></textarea>
                     </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">🛡️</span>
-                        <label class="attr-field-label">Warranty</label>
-                        <input type="text" id="p_attr_warranty" class="form-input" placeholder="e.g. 1 Year">
-                    </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">📏</span>
-                        <label class="attr-field-label">Dimensions</label>
-                        <input type="text" id="p_attr_dimensions" class="form-input" placeholder="e.g. 30 x 20 x 5 cm">
-                    </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">🌍</span>
-                        <label class="attr-field-label">Made In</label>
-                        <input type="text" id="p_attr_country_origin" class="form-input" placeholder="e.g. Thailand">
-                    </div>
-                    <div class="attr-field-row">
-                        <span class="attr-field-icon">📦</span>
-                        <label class="attr-field-label">Model</label>
-                        <input type="text" id="p_attr_model" class="form-input" placeholder="e.g. iPhone 15 Pro">
-                    </div>
-                    <div class="attr-field-row checkbox-row">
-                        <span class="attr-field-icon">🚚</span>
-                        <label class="attr-field-label">Free Shipping</label>
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                            <input type="checkbox" id="p_attr_free_shipping" style="width:16px; height:16px; accent-color: var(--accent);">
-                            <span style="font-size:0.82rem; color: var(--text-muted);">Enable free shipping</span>
+
+                    <div class="editor-toggles">
+                        <label class="toggle-chip">
+                            <input type="checkbox" id="p_featured">
+                            <span>⭐ Featured</span>
+                        </label>
+                        <label class="toggle-chip">
+                            <input type="checkbox" id="p_active" checked>
+                            <span>✅ Active</span>
                         </label>
                     </div>
                 </div>
-            </div>
-            
-            <div class="form-group" style="display: flex; gap: 24px;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="p_featured" style="width: 18px; height: 18px; accent-color: var(--accent);">
-                    <span style="font-weight: 600; font-size: 0.85rem;">Featured Product</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="p_active" checked style="width: 18px; height: 18px; accent-color: var(--accent);">
-                    <span style="font-weight: 600; font-size: 0.85rem;">Active (Visible)</span>
-                </label>
-            </div>
-            
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+
+                <!-- RIGHT COLUMN -->
+                <div class="product-editor-right">
+                    <p class="editor-section-label">Attributes <span>Optional</span></p>
+
+                    <div class="editor-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">🎨 Colors</label>
+                            <input type="text" id="p_attr_colors" class="form-input" placeholder="Red, Blue, Black">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">📐 Sizes</label>
+                            <input type="text" id="p_attr_sizes" class="form-input" placeholder="S, M, L, XL">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🏷️ Brand</label>
+                            <input type="text" id="p_attr_brand" class="form-input" placeholder="e.g. Nike">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">📦 Model</label>
+                            <input type="text" id="p_attr_model" class="form-input" placeholder="e.g. Pro Max">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🧵 Material</label>
+                            <input type="text" id="p_attr_material" class="form-input" placeholder="e.g. 100% Cotton">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">⚖️ Weight</label>
+                            <input type="text" id="p_attr_weight" class="form-input" placeholder="e.g. 250g">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🛡️ Warranty</label>
+                            <input type="text" id="p_attr_warranty" class="form-input" placeholder="e.g. 1 Year">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">📏 Dimensions</label>
+                            <input type="text" id="p_attr_dimensions" class="form-input" placeholder="e.g. 30×20×5 cm">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🌍 Made In</label>
+                            <input type="text" id="p_attr_country_origin" class="form-input" placeholder="e.g. Thailand">
+                        </div>
+                    </div>
+
+                    <label class="toggle-chip free-shipping-toggle">
+                        <input type="checkbox" id="p_attr_free_shipping">
+                        <span>🚚 Free Shipping</span>
+                    </label>
+                </div>
+
+            </div><!-- end layout -->
+
+            <div class="product-editor-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary" id="p_submit">Save Product</button>
             </div>
@@ -669,6 +667,7 @@
                                     <div class="order-detail-item-info">
                                         <strong>${item.product_name || 'Product'}</strong>
                                         <span>Product ID: ${item.product_id} · ${formatPrice(item.price)} × ${item.quantity}</span>
+                                        ${Object.entries(item.selected_options || {}).map(([key, value]) => `<span style="text-transform: capitalize;">${key.replace(/_/g, ' ')}: ${value}</span>`).join('')}
                                     </div>
                                     <strong class="order-detail-subtotal">${formatPrice(item.subtotal)}</strong>
                                 </div>

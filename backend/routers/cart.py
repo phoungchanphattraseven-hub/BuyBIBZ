@@ -16,7 +16,7 @@ async def get_cart(current_user=Depends(get_current_user)):
 
         response = (
             supabase.table("cart_items")
-            .select("*, products(id, name, slug, price, compare_price, image_url, stock)")
+            .select("*, products(id, name, slug, price, compare_price, image_url, stock, attributes)")
             .eq("user_id", user_id)
             .order("created_at", desc=True)
             .execute()
@@ -59,23 +59,33 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
         if product.data["stock"] < item.quantity:
             raise HTTPException(status_code=400, detail="Insufficient stock")
 
-        # Check if item already in cart
+        # A product with a different selected color/size is a separate cart item.
+        selected_options = item.selected_options or {}
         existing = (
             supabase.table("cart_items")
-            .select("id, quantity")
+            .select("id, quantity, selected_options")
             .eq("user_id", user_id)
             .eq("product_id", item.product_id)
             .execute()
         )
 
-        if existing and existing.data:
-            new_qty = existing.data[0]["quantity"] + item.quantity
+        matching_item = next(
+            (
+                cart_item
+                for cart_item in (existing.data if existing and existing.data else [])
+                if (cart_item.get("selected_options") or {}) == selected_options
+            ),
+            None,
+        )
+
+        if matching_item:
+            new_qty = matching_item["quantity"] + item.quantity
             if new_qty > product.data["stock"]:
                 raise HTTPException(status_code=400, detail="Insufficient stock")
             response = (
                 supabase.table("cart_items")
                 .update({"quantity": new_qty})
-                .eq("id", existing.data[0]["id"])
+                .eq("id", matching_item["id"])
                 .execute()
             )
             return {"message": "Cart updated", "item": response.data[0] if response.data else None}
@@ -86,6 +96,7 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
                     "user_id": user_id,
                     "product_id": item.product_id,
                     "quantity": item.quantity,
+                    "selected_options": selected_options,
                 })
                 .execute()
             )

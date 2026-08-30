@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 
 
@@ -97,6 +97,7 @@ class CategoryResponse(BaseModel):
 class CartItemCreate(BaseModel):
     product_id: int
     quantity: int = Field(default=1, ge=1)
+    selected_options: Dict[str, str] = Field(default_factory=dict)
 
 
 class CartItemUpdate(BaseModel):
@@ -107,6 +108,7 @@ class CartItemResponse(BaseModel):
     id: int
     product_id: int
     quantity: int
+    selected_options: Dict[str, str] = Field(default_factory=dict)
     product: Optional[dict] = None
 
 
@@ -132,6 +134,7 @@ class OrderItemResponse(BaseModel):
     price: float
     quantity: int
     subtotal: float
+    selected_options: Dict[str, str] = Field(default_factory=dict)
 
 
 class OrderResponse(BaseModel):

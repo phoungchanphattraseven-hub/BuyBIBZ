@@ -81,9 +81,10 @@ CREATE TABLE IF NOT EXISTS cart_items (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+    selected_options JSONB NOT NULL DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, product_id)
+    UNIQUE(user_id, product_id, selected_options)
 );
 
 CREATE INDEX IF NOT EXISTS idx_cart_user ON cart_items(user_id);
@@ -117,7 +118,8 @@ CREATE TABLE IF NOT EXISTS order_items (
     product_image TEXT,
     price DECIMAL(10,2) NOT NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
-    subtotal DECIMAL(10,2) NOT NULL
+    subtotal DECIMAL(10,2) NOT NULL,
+    selected_options JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);

@@ -759,6 +759,27 @@ svg:not([class*="width"]):not([class*="size"]) {
     line-height: 1;
 }
 
+.badge-shipping {
+    top: auto;
+    bottom: var(--space-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #eafff1;
+    background: rgba(13, 107, 46, 0.93);
+}
+
+.badge-shipping svg,
+.product-free-shipping-badge svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
 /* When both badges exist, stack them */
 .product-card-image .badge-sale + .badge-featured {
     top: auto;
@@ -1747,6 +1768,53 @@ input:checked + .toggle-slider:before {
     margin-bottom: var(--space-xs);
 }
 
+.cart-item-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+}
+
+.cart-item-variant {
+    display: inline-flex;
+    gap: 0.28rem;
+    padding: 0.22rem 0.48rem;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    font-size: 0.68rem;
+    text-transform: capitalize;
+}
+
+.cart-item-variant b {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.cart-item-shipping {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.22rem 0.48rem;
+    color: var(--status-success);
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.22);
+    border-radius: var(--radius-full);
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.cart-item-shipping svg {
+    width: 0.78rem;
+    height: 0.78rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
 .cart-item-price {
     color: var(--text-brand);
     font-weight: 700;
@@ -1958,6 +2026,35 @@ input:checked + .toggle-slider:before {
     margin-bottom: var(--space-md);
 }
 
+.product-detail-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: var(--space-md);
+}
+
+.product-category-pill {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.product-free-shipping-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.65rem;
+    color: #a8f4c2;
+    background: rgba(27, 140, 61, 0.15);
+    border: 1px solid rgba(82, 205, 123, 0.28);
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
 .product-detail-price {
     display: flex;
     align-items: baseline;
@@ -1999,11 +2096,35 @@ input:checked + .toggle-slider:before {
     margin-bottom: var(--space-xl);
 }
 
+.product-purchase-meta {
+    margin-top: -0.6rem;
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
 .product-detail-meta-item {
     display: flex;
     align-items: center;
     gap: var(--space-md);
     font-size: var(--font-sm);
+}
+
+.stock-indicator {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+
+.stock-indicator.in-stock {
+    background: var(--status-success);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.stock-indicator.out-of-stock {
+    background: var(--status-error);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
 .product-detail-meta-item .label {
@@ -2013,6 +2134,7 @@ input:checked + .toggle-slider:before {
 
 .product-detail-meta-item .value {
     font-weight: 600;
+    color: var(--text-secondary);
 }
 
 /* ── Product Attributes ────────────────────────────────── */
@@ -2020,11 +2142,24 @@ input:checked + .toggle-slider:before {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
-    padding: var(--space-lg);
-    background: var(--bg-secondary);
+    padding: 1.1rem;
+    background: color-mix(in srgb, var(--bg-card) 85%, var(--bg-secondary));
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     margin-bottom: var(--space-xl);
+}
+
+.product-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.5rem 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.product-facts {
+    margin-top: 1.25rem;
 }
 
 .attr-row {
@@ -2035,10 +2170,37 @@ input:checked + .toggle-slider:before {
 }
 
 .attr-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: var(--font-sm);
     color: var(--text-tertiary);
     min-width: 120px;
     flex-shrink: 0;
+}
+
+.attr-icon,
+.variant-icon {
+    display: inline-grid;
+    width: 1.7rem;
+    height: 1.7rem;
+    place-items: center;
+    flex: 0 0 auto;
+    color: var(--brand-primary-light);
+    background: var(--brand-primary-glow);
+    border-radius: var(--radius-sm);
+}
+
+.attr-icon svg,
+.variant-icon svg,
+.attr-badge svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.9;
 }
 
 .attr-value {
@@ -2079,6 +2241,144 @@ input:checked + .toggle-slider:before {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+}
+
+/* Purchasable product variants */
+.variant-selector {
+    min-width: 0;
+    margin: 0;
+    padding: 1.15rem 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.variant-selector + .variant-selector {
+    margin-top: 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.variant-selector legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    width: 100%;
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+    font-weight: 700;
+}
+
+.variant-icon {
+    width: 1.7rem;
+    height: 1.7rem;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+}
+
+.variant-required {
+    margin-left: 0.35rem;
+    color: var(--text-tertiary);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.variant-selection-note {
+    margin-left: 0.2rem;
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    font-weight: 500;
+}
+
+.variant-color-options,
+.variant-size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+}
+
+.variant-color-option,
+.variant-size-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.variant-color-option {
+    gap: 0;
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+}
+
+.variant-color-option span {
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--swatch-border);
+    border-radius: 50%;
+    background: var(--swatch-color);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.variant-color-option b { display: none; }
+
+.variant-size-option {
+    min-width: 48px;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    font-weight: 700;
+}
+
+.variant-color-option:hover,
+.variant-size-option:hover,
+.variant-color-option:focus-visible,
+.variant-size-option:focus-visible {
+    border-color: var(--brand-primary-light);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.variant-color-option.selected,
+.variant-size-option.selected {
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    border-color: var(--text-primary);
+    box-shadow: none;
+}
+
+.variant-color-option.selected {
+    border-color: var(--brand-primary-light);
+    box-shadow: 0 0 0 2px var(--brand-primary-light);
+}
+
+.variant-selector.variant-missing legend,
+.variant-selector.variant-missing .variant-selection-note {
+    color: var(--status-error);
+}
+
+.variant-selector.variant-missing .variant-color-options,
+.variant-selector.variant-missing .variant-size-options {
+    padding: 0.35rem;
+    margin: -0.35rem;
+    border: 1px solid rgba(239, 68, 68, 0.55);
+    border-radius: var(--radius-md);
+}
+
+.attr-badge svg {
+    width: 0.95rem;
+    height: 0.95rem;
 }
 
 .attr-chip {

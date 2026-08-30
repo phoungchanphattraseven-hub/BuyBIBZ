@@ -129,6 +129,7 @@
                                                     <div style="color: var(--text-tertiary); font-size: var(--font-xs);">
                                                         ${formatPrice(item.price)} × ${item.quantity}
                                                     </div>
+                                                    ${Object.entries(item.selected_options || {}).map(([key, value]) => `<div style="color: var(--text-secondary); font-size: var(--font-xs); margin-top: 2px; text-transform: capitalize;">${key.replace(/_/g, ' ')}: ${value}</div>`).join('')}
                                                     <div style="color: var(--text-tertiary); font-size: var(--font-xs); margin-top: 2px;">
                                                         Product ID: ${item.product_id}
                                                     </div>
@@ -517,5 +518,4 @@
     </script>
 </body>
 </html>
-
 

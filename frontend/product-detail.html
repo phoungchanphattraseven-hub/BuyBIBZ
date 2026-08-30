@@ -85,6 +85,7 @@
     <script>
         let productId = null;
         let selectedQty = 1;
+        let selectedVariants = {};
 
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
@@ -118,11 +119,14 @@
         });
 
         function renderProduct(product) {
+            selectedQty = 1;
+            selectedVariants = {};
             const category = product.categories;
             const discount = product.compare_price
                 ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
                 : 0;
             const inStock = product.stock > 0;
+            const hasFreeShipping = product.attributes?.free_shipping === true;
 
             // Handle images - use product_images array if available, otherwise fallback to single image_url
             const images = product.product_images && product.product_images.length > 0
@@ -147,7 +151,10 @@
                     ` : ''}
                 </div>
                 <div class="product-detail-info">
-                    ${category ? `<div class="product-card-category" style="margin-bottom: var(--space-md);">${category.icon || ''} ${category.name}</div>` : ''}
+                    <div class="product-detail-kicker">
+                        ${category ? `<span class="product-category-pill">${category.name}</span>` : ''}
+                        ${hasFreeShipping ? `<span class="product-free-shipping-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Free shipping</span>` : ''}
+                    </div>
                     <h1>${product.name}</h1>
 
                     <div class="product-card-rating" style="margin-bottom: var(--space-lg); font-size: 1.1rem;">
@@ -164,19 +171,13 @@
 
                     <p class="product-detail-desc">${product.description || 'No description available.'}</p>
 
-                    <div class="product-detail-meta">
+                    <div class="product-detail-meta product-purchase-meta">
                         <div class="product-detail-meta-item">
-                            <span class="label">Availability</span>
-                            <span class="value" style="color: ${inStock ? 'var(--status-success)' : 'var(--status-error)'};">
-                                ${inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+                            <span class="stock-indicator ${inStock ? 'in-stock' : 'out-of-stock'}"></span>
+                            <span class="value">
+                                ${inStock ? `${product.stock} available · Ready to ship` : 'Out of stock'}
                             </span>
                         </div>
-                        ${category ? `
-                        <div class="product-detail-meta-item">
-                            <span class="label">Category</span>
-                            <span class="value">${category.name}</span>
-                        </div>
-                        ` : ''}
                     </div>
 
                     ${renderAttributes(product.attributes)}
@@ -188,7 +189,7 @@
                             <span class="qty-value" id="qty-display">1</span>
                             <button onclick="updateQty(1)">+</button>
                         </div>
-                        <button class="btn btn-primary btn-lg" onclick="addToCart(${product.id}, selectedQty)" style="flex:1;">
+                        <button class="btn btn-primary btn-lg" onclick="addSelectedProductToCart(${product.id})" style="flex:1;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                             Add to Cart
                         </button>
@@ -223,7 +224,8 @@
         function renderAttributes(attrs) {
             if (!attrs || typeof attrs !== 'object' || Object.keys(attrs).length === 0) return '';
 
-            // Known attributes config: label, icon, how to render
+            // Colors and sizes are purchasable variants, not just product facts.
+            // The remaining attributes stay as concise product information.
             const ATTR_CONFIG = {
                 colors:         { label: 'Colors',          icon: '🎨', type: 'color-swatches' },
                 sizes:          { label: 'Sizes',            icon: '📐', type: 'chips' },
@@ -248,56 +250,100 @@
                 navy: '#1e3a5f', beige: '#d4b896', gold: '#d97706', silver: '#9ca3af',
             };
 
-            let sections = '';
+            const ATTRIBUTE_ICONS = {
+                colors: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13.5" cy="8.5" r="3.5"/><circle cx="7" cy="15" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/><path d="M12 3a9 9 0 1 0 8.7 11.3c-.3-1.1-1.6-1.5-2.7-1.2-1.7.5-2.6-.9-1.7-2.2.8-1.2.3-3.1-1.2-3.3A9 9 0 0 0 12 3Z"/></svg>',
+                sizes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 16-16"/><path d="m7 17 2 2M11 13l2 2M15 9l2 2M5 7l2 2M9 3l2 2"/></svg>',
+                free_shipping: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+                country_origin: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+                default: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg>',
+            };
+
+            let optionSections = '';
+            let detailSections = '';
 
             for (const [key, value] of Object.entries(attrs)) {
                 if (value === null || value === undefined || value === '') continue;
+                // It is featured above the price as a purchase benefit badge.
+                if (key === 'free_shipping' && value === true) continue;
 
                 const config = ATTR_CONFIG[key] || { label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: '•', type: Array.isArray(value) ? 'chips' : typeof value === 'boolean' ? 'badge' : 'text' };
+                const attrIcon = ATTRIBUTE_ICONS[key] || ATTRIBUTE_ICONS.default;
 
                 if (config.type === 'color-swatches' && Array.isArray(value)) {
-                    sections += `
-                        <div class="attr-row">
-                            <span class="attr-label">${config.icon} ${config.label}</span>
-                            <div class="attr-color-swatches">
+                    optionSections += `
+                        <fieldset class="variant-selector" id="variant-${key}" data-option-label="${config.label.toLowerCase()}">
+                            <legend><span class="variant-icon">${attrIcon}</span><span>${config.label}: <strong class="variant-selection-note" id="${key}-selection-note">Select a color</strong></span></legend>
+                            <div class="variant-color-options" role="radiogroup" aria-label="Choose a color">
                                 ${value.map(c => {
                                     const bg = COLOR_MAP[c.toLowerCase()] || c;
                                     const isLight = ['white','beige','yellow','silver'].includes(c.toLowerCase());
-                                    return `<span class="color-swatch" style="background:${bg}; border: 2px solid ${isLight ? '#ccc' : bg};" title="${c}"></span>`;
+                                    return `<button type="button" class="variant-color-option" style="--swatch-color:${bg}; --swatch-border:${isLight ? '#aab0ac' : bg};" onclick="selectVariant('${key}', '${c}')" aria-label="Choose ${c}" title="${c}"><span></span><b>${c}</b></button>`;
                                 }).join('')}
-                                <span class="attr-value-text">${value.join(', ')}</span>
                             </div>
-                        </div>`;
+                        </fieldset>`;
                 } else if (config.type === 'chips' && Array.isArray(value)) {
-                    sections += `
-                        <div class="attr-row">
-                            <span class="attr-label">${config.icon} ${config.label}</span>
-                            <div class="attr-chips">
-                                ${value.map(v => `<span class="attr-chip">${v}</span>`).join('')}
+                    optionSections += `
+                        <fieldset class="variant-selector" id="variant-${key}" data-option-label="${config.label.toLowerCase()}">
+                            <legend><span class="variant-icon">${attrIcon}</span><span>${config.label}: <strong class="variant-selection-note" id="${key}-selection-note">Select a size</strong></span></legend>
+                            <div class="variant-size-options" role="radiogroup" aria-label="Choose a ${config.label.toLowerCase()}">
+                                ${value.map(v => `<button type="button" class="variant-size-option" onclick="selectVariant('${key}', '${v}')">${v}</button>`).join('')}
                             </div>
-                        </div>`;
+                        </fieldset>`;
                 } else if (config.type === 'badge' && value === true) {
-                    sections += `
+                    detailSections += `
                         <div class="attr-badge-row">
-                            <span class="attr-badge">${config.icon} ${config.label}</span>
+                            <span class="attr-badge">${attrIcon} ${config.label}</span>
                         </div>`;
                 } else if (config.type !== 'badge') {
-                    sections += `
+                    detailSections += `
                         <div class="attr-row">
-                            <span class="attr-label">${config.icon} ${config.label}</span>
+                            <span class="attr-label"><span class="attr-icon">${attrIcon}</span>${config.label}</span>
                             <span class="attr-value">${value}</span>
                         </div>`;
                 }
             }
 
-            if (!sections) return '';
+            if (!optionSections && !detailSections) return '';
 
-            return `<div class="product-attributes">${sections}</div>`;
+            return `
+                ${optionSections ? `<div class="product-options">${optionSections}</div>` : ''}
+                ${detailSections ? `<div class="product-attributes product-facts">${detailSections}</div>` : ''}
+            `;
         }
 
         function updateQty(delta) {
             selectedQty = Math.max(1, selectedQty + delta);
             document.getElementById('qty-display').textContent = selectedQty;
+        }
+
+        function selectVariant(type, value) {
+            selectedVariants[type] = value;
+            const selector = document.getElementById(`variant-${type}`);
+            if (!selector) return;
+
+            selector.classList.remove('variant-missing');
+            selector.querySelectorAll('button').forEach(button => {
+                const buttonValue = type === 'colors'
+                    ? button.querySelector('b')?.textContent
+                    : button.textContent;
+                const isSelected = buttonValue === value;
+                button.classList.toggle('selected', isSelected);
+                button.setAttribute('aria-checked', String(isSelected));
+            });
+            const note = document.getElementById(`${type}-selection-note`);
+            if (note) note.textContent = value;
+        }
+
+        async function addSelectedProductToCart(id) {
+            const selectors = Array.from(document.querySelectorAll('.variant-selector'));
+            const missing = selectors.filter(selector => !selectedVariants[selector.id.replace('variant-', '')]);
+            if (missing.length) {
+                missing.forEach(selector => selector.classList.add('variant-missing'));
+                missing[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast(`Please choose ${missing.map(selector => selector.dataset.optionLabel).join(' and ')}.`, 'warning');
+                return;
+            }
+            await addToCart(id, selectedQty, selectedVariants);
         }
 
         function renderReviews(reviews) {
@@ -389,8 +435,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-

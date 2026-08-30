@@ -186,6 +186,14 @@
                     
                     // Use pending quantity if exists, otherwise use server quantity
                     const displayQty = pendingUpdates.has(item.id) ? pendingUpdates.get(item.id) : item.quantity;
+                    const selectedOptions = item.selected_options || {};
+                    const optionLabels = { colors: 'Color', sizes: 'Size' };
+                    const selectedOptionsHtml = Object.entries(selectedOptions).map(([key, value]) => `
+                        <span class="cart-item-variant"><b>${optionLabels[key] || key.replace(/_/g, ' ')}</b>${value}</span>
+                    `).join('');
+                    const freeShippingBadge = product.attributes?.free_shipping === true
+                        ? `<span class="cart-item-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Free shipping</span>`
+                        : '';
                     
                     return `
                         <div class="cart-item" id="cart-item-${item.id}" data-item-id="${item.id}" data-price="${product.price}">
@@ -196,6 +204,7 @@
                                 <a href="product-detail.html?id=${product.id}" class="cart-item-link">
                                     <div class="cart-item-name">${product.name}</div>
                                 </a>
+                                ${(selectedOptionsHtml || freeShippingBadge) ? `<div class="cart-item-variants">${selectedOptionsHtml}${freeShippingBadge}</div>` : ''}
                                 <div class="cart-item-footer">
                                     <div class="cart-item-pricing">
                                         ${hasDiscount ? `<div class="cart-item-price-compare">${formatPrice(originalPrice)}</div>` : ''}
@@ -408,8 +417,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 

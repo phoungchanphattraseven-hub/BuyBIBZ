@@ -175,7 +175,7 @@ async function updateCartBadge() {
 }
 
 // ── Add to Cart (shared) ────────────────────────────────────
-async function addToCart(productId, quantity = 1) {
+async function addToCart(productId, quantity = 1, selectedOptions = {}) {
     if (!api.isLoggedIn()) {
         showToast(typeof i18n !== 'undefined' ? i18n.t('cart.sign_in_required') : 'Please sign in to add items to cart', 'warning');
         window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.pathname.split('/').pop())}`;
@@ -196,7 +196,7 @@ async function addToCart(productId, quantity = 1) {
 
     try {
         // Make API call in background
-        await api.addToCart(productId, quantity);
+        await api.addToCart(productId, quantity, selectedOptions);
         
         // Sync badge with actual cart count
         updateCartBadge();
@@ -477,6 +477,8 @@ function renderProductCard(product) {
     const discount = product.compare_price
         ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
         : 0;
+    const hasFreeShipping = product.attributes?.free_shipping === true;
+    const needsVariantSelection = Array.isArray(product.attributes?.colors) || Array.isArray(product.attributes?.sizes);
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
     return `
@@ -485,6 +487,7 @@ function renderProductCard(product) {
                 <img src="${product.image_url || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${product.name}" loading="lazy">
                 ${discount > 0 ? `<span class="product-card-badge badge-sale">-${discount}%</span>` : ''}
                 ${product.is_featured ? `<span class="product-card-badge badge-featured">${_t('product.featured')}</span>` : ''}
+                ${hasFreeShipping ? `<span class="product-card-badge badge-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> Free shipping</span>` : ''}
             </div>
             <div class="product-card-body">
                 ${categoryName ? `<div class="product-card-category">${categoryName}</div>` : ''}
@@ -497,7 +500,7 @@ function renderProductCard(product) {
                         <span class="price-current">${formatPrice(product.price)}</span>
                         ${product.compare_price ? `<span class="price-compare">${formatPrice(product.compare_price)}</span>` : ''}
                     </div>
-                    <button class="product-card-add-btn" onclick="event.stopPropagation(); addToCart(${product.id})" title="${_t('product.add_to_cart')}">
+                    <button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? 'Choose product options' : _t('product.add_to_cart')}">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                     </button>
                 </div>
