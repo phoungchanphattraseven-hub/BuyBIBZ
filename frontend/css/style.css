@@ -3086,78 +3086,6 @@ input:checked + .toggle-slider:before {
     margin-bottom: var(--space-sm);
 }
 
-/* Sheet Search Input */
-.sheet-search-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.sheet-search-icon {
-    position: absolute;
-    left: 14px;
-    width: 18px;
-    height: 18px;
-    color: var(--text-tertiary);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.sheet-search-input {
-    width: 100%;
-    padding: 12px 44px 12px 44px;
-    font-size: var(--font-md);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-lg);
-    background: var(--bg-card);
-    color: var(--text-primary);
-    transition: all 0.2s ease;
-}
-
-.sheet-search-input:focus {
-    outline: none;
-    border-color: var(--brand-primary);
-    box-shadow: 0 0 0 3px var(--brand-primary-glow);
-    background: var(--bg-elevated);
-}
-
-.sheet-search-input::placeholder {
-    color: var(--text-tertiary);
-}
-
-.sheet-search-clear {
-    position: absolute;
-    right: 8px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-full);
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    z-index: 1;
-}
-
-.sheet-search-clear:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-}
-
-.sheet-search-clear:active {
-    transform: scale(0.94);
-}
-
-.sheet-search-clear svg {
-    width: 16px;
-    height: 16px;
-}
-
 .sheet-chips-grid {
     display: flex;
     flex-wrap: wrap;
@@ -3338,6 +3266,14 @@ input:checked + .toggle-slider:before {
 /* ── Page Header ──────────────────────────────────────────── */
 .page-header {
     margin-bottom: var(--space-2xl);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-xl);
+}
+
+.page-header-text {
+    flex: 1;
 }
 
 .page-header h1 {
@@ -3348,6 +3284,79 @@ input:checked + .toggle-slider:before {
 .page-header p {
     color: var(--text-secondary);
     margin-top: var(--space-xs);
+}
+
+.page-header-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    flex-shrink: 0;
+}
+
+.page-header-search .search-icon {
+    position: absolute;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.page-header-search input {
+    width: 100%;
+    padding: 12px 44px 12px 44px;
+    font-size: var(--font-md);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--bg-glass);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.page-header-search input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-primary-glow);
+    background: var(--bg-elevated);
+}
+
+.page-header-search input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.page-header-search .search-clear-btn {
+    position: absolute;
+    right: 8px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.page-header-search .search-clear-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.page-header-search .search-clear-btn:active {
+    transform: scale(0.94);
+}
+
+.page-header-search .search-clear-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* ── Footer ───────────────────────────────────────────────── */
@@ -3651,6 +3660,13 @@ input:checked + .toggle-slider:before {
     .page-header {
         margin-bottom: 16px !important;
         padding: 0 4px !important;
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .page-header-search {
+        max-width: 100%;
+        order: -1; /* Show search above title on mobile */
     }
     
     .page-header h1 {
@@ -4411,6 +4427,13 @@ input:checked + .toggle-slider:before {
     
     .page-header {
         margin-bottom: 16px !important;
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .page-header-search {
+        max-width: 100%;
+        order: -1; /* Show search above title on mobile */
     }
     
     .page-header h1 {

@@ -32,8 +32,22 @@
     <main class="catalog-page">
         <div class="container">
             <div class="page-header">
-                <h1 id="catalog-title">All Products</h1>
-                <p id="catalog-subtitle">Discover our premium collection</p>
+                <div class="page-header-text">
+                    <h1 id="catalog-title">All Products</h1>
+                    <p id="catalog-subtitle">Discover our premium collection</p>
+                </div>
+                <div class="page-header-search">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="page-search-input" placeholder="Search products..." aria-label="Search products">
+                    <button type="button" class="search-clear-btn" id="page-search-clear" aria-label="Clear search" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Modern Horizontal Category Carousel / Chips Bar -->
@@ -166,23 +180,6 @@
             </button>
         </div>
         <div class="filter-sheet-body">
-            <!-- Search Section -->
-            <div class="sheet-section">
-                <h4 class="sheet-section-title">Search Products</h4>
-                <div class="sheet-search-wrapper">
-                    <svg class="sheet-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.3-4.3"/>
-                    </svg>
-                    <input type="text" id="mobile-search-input" class="sheet-search-input" placeholder="Search by name, description..." aria-label="Search products">
-                    <button type="button" class="sheet-search-clear" id="mobile-search-clear" aria-label="Clear search" style="display: none;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
             <!-- Price Range -->
             <div class="sheet-section">
                 <h4 class="sheet-section-title">Price Range</h4>
@@ -609,8 +606,8 @@
         }
 
         function setupMobileSearch() {
-            const searchInput = document.getElementById('mobile-search-input');
-            const clearBtn = document.getElementById('mobile-search-clear');
+            const searchInput = document.getElementById('page-search-input');
+            const clearBtn = document.getElementById('page-search-clear');
             let searchTimeout;
 
             if (searchInput) {
