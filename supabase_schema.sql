@@ -246,3 +246,59 @@ CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles FOR EACH ROW
 CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_cart_items_updated_at BEFORE UPDATE ON cart_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
+-- ============================================================
+-- PRODUCT IMAGES - Support for multiple product images
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS product_images (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    alt_text TEXT,
+    display_order INT DEFAULT 0,
+    is_primary BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_product_images_product_id ON product_images(product_id);
+CREATE INDEX idx_product_images_display_order ON product_images(product_id, display_order);
+
+-- Add RLS policies for product_images
+ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view product images"
+    ON product_images FOR SELECT
+    USING (true);
+
+CREATE POLICY "Admin can insert product images"
+    ON product_images FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Admin can update product images"
+    ON product_images FOR UPDATE
+    USING (
+        EXISTS (
+            SELECT 1 FROM profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Admin can delete product images"
+    ON product_images FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+COMMENT ON TABLE product_images IS 'Stores multiple images for each product. Products can have different color variants, angles, etc.';
+COMMENT ON COLUMN product_images.display_order IS 'Order in which images should be displayed (0 = first)';
+COMMENT ON COLUMN product_images.is_primary IS 'Marks the main/thumbnail image for the product';

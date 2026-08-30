@@ -93,7 +93,7 @@ async def head_products():
 
 @router.get("/{product_id}")
 async def get_product(product_id: int):
-    """Get a single product with its reviews."""
+    """Get a single product with its reviews and images."""
     try:
         supabase = get_supabase()
         product = (
@@ -106,6 +106,19 @@ async def get_product(product_id: int):
 
         if not product or not product.data:
             raise HTTPException(status_code=404, detail="Product not found")
+
+        # Get additional product images
+        try:
+            images = (
+                supabase.table("product_images")
+                .select("*")
+                .eq("product_id", product_id)
+                .order("display_order", desc=False)
+                .execute()
+            )
+            product.data["product_images"] = images.data if images and images.data else []
+        except:
+            product.data["product_images"] = []
 
         # Get reviews for this product
         reviews = (

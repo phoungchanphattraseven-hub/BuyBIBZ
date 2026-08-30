@@ -33,7 +33,9 @@
         <div class="container">
             <!-- Loading skeleton -->
             <div class="product-detail-grid" id="product-content">
-                <div class="product-detail-image skeleton" style="aspect-ratio: 1;"></div>
+                <div class="product-detail-image-gallery">
+                    <div class="main-image-container skeleton" style="aspect-ratio: 1;"></div>
+                </div>
                 <div>
                     <div class="skeleton" style="height: 40px; width: 80%; margin-bottom: 16px;"></div>
                     <div class="skeleton" style="height: 30px; width: 40%; margin-bottom: 24px;"></div>
@@ -122,9 +124,27 @@
                 : 0;
             const inStock = product.stock > 0;
 
+            // Handle images - use product_images array if available, otherwise fallback to single image_url
+            const images = product.product_images && product.product_images.length > 0
+                ? product.product_images.sort((a, b) => a.display_order - b.display_order)
+                : [{ image_url: product.image_url || 'https://via.placeholder.com/600x600?text=No+Image', alt_text: product.name }];
+
+            const mainImage = images[0];
+
             document.getElementById('product-content').innerHTML = `
-                <div class="product-detail-image">
-                    <img src="${product.image_url || 'https://via.placeholder.com/600x600?text=No+Image'}" alt="${product.name}">
+                <div class="product-detail-image-gallery">
+                    <div class="main-image-container">
+                        <img src="${mainImage.image_url}" alt="${mainImage.alt_text || product.name}" id="main-product-image" class="main-product-image">
+                    </div>
+                    ${images.length > 1 ? `
+                    <div class="thumbnail-gallery">
+                        ${images.map((img, index) => `
+                            <div class="thumbnail ${index === 0 ? 'active' : ''}" onclick="selectImage(${index})">
+                                <img src="${img.image_url}" alt="${img.alt_text || product.name}">
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
                 </div>
                 <div class="product-detail-info">
                     ${category ? `<div class="product-card-category" style="margin-bottom: var(--space-md);">${category.icon || ''} ${category.name}</div>` : ''}
@@ -178,6 +198,24 @@
                     `}
                 </div>
             `;
+
+            // Store images in window for selectImage function
+            window.productImages = images;
+        }
+
+        function selectImage(index) {
+            const mainImg = document.getElementById('main-product-image');
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            
+            if (window.productImages && window.productImages[index]) {
+                mainImg.src = window.productImages[index].image_url;
+                mainImg.alt = window.productImages[index].alt_text || '';
+                
+                // Update active thumbnail
+                thumbnails.forEach((thumb, i) => {
+                    thumb.classList.toggle('active', i === index);
+                });
+            }
         }
 
         function updateQty(delta) {
