@@ -53,7 +53,7 @@ async def login(user: UserLogin):
                 supabase.table("profiles")
                 .select("*")
                 .eq("id", str(response.user.id))
-                .single()
+                .maybe_single()
                 .execute()
             )
 

@@ -51,7 +51,7 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             supabase.table("products")
             .select("id, stock, is_active")
             .eq("id", item.product_id)
-            .single()
+            .maybe_single()
             .execute()
         )
         if not product.data or not product.data.get("is_active"):

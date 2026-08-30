@@ -42,7 +42,7 @@ async def get_current_user_profile(current_user=Depends(get_current_user)):
             supabase.table("profiles")
             .select("*")
             .eq("id", str(user.id))
-            .single()
+            .maybe_single()
             .execute()
         )
         return {

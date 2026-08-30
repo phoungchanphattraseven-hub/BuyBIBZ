@@ -29,7 +29,7 @@ async def get_category(category_id: int):
             supabase.table("categories")
             .select("*")
             .eq("id", category_id)
-            .single()
+            .maybe_single()
             .execute()
         )
         if not response.data:

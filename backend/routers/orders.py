@@ -133,7 +133,7 @@ async def get_order(order_id: int, current_user=Depends(get_current_user)):
             .select("*, order_items(*)")
             .eq("id", order_id)
             .eq("user_id", user_id)
-            .single()
+            .maybe_single()
             .execute()
         )
 

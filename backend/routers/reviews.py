@@ -27,7 +27,7 @@ async def get_reviews(product_id: int):
                     supabase.table("profiles")
                     .select("full_name")
                     .eq("id", review["user_id"])
-                    .single()
+                    .maybe_single()
                     .execute()
                 )
                 review["profiles"] = profile.data if profile.data else {"full_name": "Anonymous"}
@@ -52,7 +52,7 @@ async def create_review(review: ReviewCreate, current_user=Depends(get_current_u
             supabase.table("products")
             .select("id, rating_avg, rating_count")
             .eq("id", review.product_id)
-            .single()
+            .maybe_single()
             .execute()
         )
         if not product.data:

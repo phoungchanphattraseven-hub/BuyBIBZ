@@ -32,13 +32,19 @@ async def get_current_user(request: Request):
 async def get_admin_user(current_user: dict = Depends(get_current_user)):
     """Verify the current user has admin role."""
     supabase = get_supabase()
-    profile = (
-        supabase.table("profiles")
-        .select("role")
-        .eq("id", str(current_user["user"].id))
-        .single()
-        .execute()
-    )
+    try:
+        profile = (
+            supabase.table("profiles")
+            .select("role")
+            .eq("id", str(current_user["user"].id))
+            .maybe_single()
+            .execute()
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
     if not profile.data or profile.data.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

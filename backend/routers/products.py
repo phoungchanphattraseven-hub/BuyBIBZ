@@ -100,7 +100,7 @@ async def get_product(product_id: int):
             supabase.table("products")
             .select("*, categories(name, slug, icon)")
             .eq("id", product_id)
-            .single()
+            .maybe_single()
             .execute()
         )
 
@@ -124,7 +124,7 @@ async def get_product(product_id: int):
                         supabase.table("profiles")
                         .select("full_name")
                         .eq("id", review["user_id"])
-                        .single()
+                        .maybe_single()
                         .execute()
                     )
                     review["profiles"] = profile.data if profile.data else {"full_name": "Anonymous"}

@@ -49,7 +49,7 @@ async def get_dashboard(admin=Depends(get_admin_user)):
                     supabase.table("profiles")
                     .select("full_name")
                     .eq("id", order["user_id"])
-                    .single()
+                    .maybe_single()
                     .execute()
                 )
                 order["profiles"] = profile.data if profile.data else {"full_name": "Unknown"}
@@ -87,7 +87,7 @@ async def get_all_orders(admin=Depends(get_admin_user)):
                     supabase.table("profiles")
                     .select("full_name")
                     .eq("id", order["user_id"])
-                    .single()
+                    .maybe_single()
                     .execute()
                 )
                 order["profiles"] = profile.data if profile.data else {"full_name": "Unknown"}
