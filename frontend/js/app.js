@@ -225,23 +225,25 @@ function renderNavbar() {
     const isLoggedIn = api.isLoggedIn();
     const isAdmin = api.isAdmin();
 
-    // Determine current page for active link
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const isSubfolder = window.location.pathname.includes('/admin/');
+    const prefix = isSubfolder ? '../' : '';
+    const currentPage = isSubfolder ? 'admin' : (window.location.pathname.split('/').pop() || 'index.html');
+    const isActiveAdmin = isSubfolder || currentPage === 'admin.html' || currentPage === 'admin';
 
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
     nav.innerHTML = `
         <div class="container">
-            <a href="index.html" class="nav-brand">
-                <img src="../logo/logo.jpg" alt="BuyBIBZ">
+            <a href="${prefix}index.html" class="nav-brand">
+                <img src="${prefix}../logo/logo.jpg" alt="BuyBIBZ">
             </a>
 
             <nav class="nav-links" id="nav-links">
-                <a href="index.html" class="${currentPage === 'index.html' ? 'active' : ''}" data-i18n="nav.home">${_t('nav.home')}</a>
-                <a href="products.html" class="${currentPage === 'products.html' ? 'active' : ''}" data-i18n="nav.shop">${_t('nav.shop')}</a>
-                <a href="about.html" class="${currentPage === 'about.html' ? 'active' : ''}" data-i18n="nav.about">${_t('nav.about')}</a>
-                <a href="customer-service.html" class="${currentPage === 'customer-service.html' ? 'active' : ''}" data-i18n="nav.support">${_t('nav.support')}</a>
-                ${isAdmin ? `<a href="admin.html" class="${currentPage === 'admin.html' ? 'active' : ''}" data-i18n="nav.admin">${_t('nav.admin')}</a>` : ''}
+                <a href="${prefix}index.html" class="${currentPage === 'index.html' ? 'active' : ''}" data-i18n="nav.home">${_t('nav.home')}</a>
+                <a href="${prefix}products.html" class="${currentPage === 'products.html' ? 'active' : ''}" data-i18n="nav.shop">${_t('nav.shop')}</a>
+                <a href="${prefix}about.html" class="${currentPage === 'about.html' ? 'active' : ''}" data-i18n="nav.about">${_t('nav.about')}</a>
+                <a href="${prefix}customer-service.html" class="${currentPage === 'customer-service.html' ? 'active' : ''}" data-i18n="nav.support">${_t('nav.support')}</a>
+                ${isAdmin ? `<a href="${prefix}admin/index.html" class="${isActiveAdmin ? 'active' : ''}" data-i18n="nav.admin">${_t('nav.admin')}</a>` : ''}
             </nav>
 
             <div class="nav-actions">
@@ -250,7 +252,7 @@ function renderNavbar() {
                     <input type="text" placeholder="${_t('nav.search_placeholder')}" id="nav-search-input" data-i18n-placeholder="nav.search_placeholder">
                 </div>
 
-                <a href="cart.html" class="nav-icon-btn" id="cart-icon-btn">
+                <a href="${prefix}cart.html" class="nav-icon-btn" id="cart-icon-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                     <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
                 </a>
@@ -264,15 +266,15 @@ function renderNavbar() {
                             <span style="font-size: 0.85rem; font-weight: 600;">${user?.full_name || user?.email?.split('@')[0] || 'User'}</span>
                         </button>
                         <div class="nav-user-dropdown">
-                            <a href="profile.html">${icon('users')} <span data-i18n="nav.profile">${_t('nav.profile')}</span></a>
-                            <a href="orders.html">${icon('package')} <span data-i18n="nav.orders">${_t('nav.orders')}</span></a>
-                            ${isAdmin ? `<a href="admin.html">${icon('settings')} <span data-i18n="nav.admin_panel">${_t('nav.admin_panel')}</span></a>` : ''}
+                            <a href="${prefix}profile.html">${icon('users')} <span data-i18n="nav.profile">${_t('nav.profile')}</span></a>
+                            <a href="${prefix}orders.html">${icon('package')} <span data-i18n="nav.orders">${_t('nav.orders')}</span></a>
+                            ${isAdmin ? `<a href="${prefix}admin/index.html">${icon('settings')} <span data-i18n="nav.admin_panel">${_t('nav.admin_panel')}</span></a>` : ''}
                             <div class="divider"></div>
                             <button onclick="handleLogout()">${icon('logout')} <span data-i18n="nav.sign_out">${_t('nav.sign_out')}</span></button>
                         </div>
                     </div>
                 ` : `
-                    <a href="auth.html" class="nav-auth-btn nav-login-btn" data-i18n="nav.sign_in">${_t('nav.sign_in')}</a>
+                    <a href="${prefix}auth.html" class="nav-auth-btn nav-login-btn" data-i18n="nav.sign_in">${_t('nav.sign_in')}</a>
                 `}
 
                 <button class="nav-mobile-toggle" id="mobile-toggle" onclick="toggleMobileNav()">
@@ -296,7 +298,7 @@ function renderNavbar() {
     if (searchInput) {
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && searchInput.value.trim()) {
-                window.location.href = `products.html?search=${encodeURIComponent(searchInput.value.trim())}`;
+                window.location.href = `${prefix}products.html?search=${encodeURIComponent(searchInput.value.trim())}`;
             }
         });
     }
@@ -316,7 +318,11 @@ function toggleMobileNav() {
         const user = api.getUser();
         const isLoggedIn = api.isLoggedIn();
         const isAdmin = api.isAdmin();
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        
+        const isSubfolder = window.location.pathname.includes('/admin/');
+        const prefix = isSubfolder ? '../' : '';
+        const currentPage = isSubfolder ? 'admin' : (window.location.pathname.split('/').pop() || 'index.html');
+        const isActiveAdmin = isSubfolder || currentPage === 'admin.html' || currentPage === 'admin';
 
         // Backdrop
         backdrop = document.createElement('div');
@@ -337,31 +343,31 @@ function toggleMobileNav() {
                 </button>
             </div>
             <div class="offcanvas-body">
-                <a href="index.html" class="offcanvas-link ${currentPage === 'index.html' ? 'active' : ''}">
+                <a href="${prefix}index.html" class="offcanvas-link ${currentPage === 'index.html' ? 'active' : ''}">
                     ${icon('home')} <span data-i18n="nav.home">${_t('nav.home')}</span>
                 </a>
-                <a href="products.html" class="offcanvas-link ${currentPage === 'products.html' ? 'active' : ''}">
+                <a href="${prefix}products.html" class="offcanvas-link ${currentPage === 'products.html' ? 'active' : ''}">
                     ${icon('tag')} <span data-i18n="nav.shop">${_t('nav.shop')}</span>
                 </a>
-                <a href="about.html" class="offcanvas-link ${currentPage === 'about.html' ? 'active' : ''}">
+                <a href="${prefix}about.html" class="offcanvas-link ${currentPage === 'about.html' ? 'active' : ''}">
                     ${icon('info')} <span data-i18n="nav.about">${_t('nav.about')}</span>
                 </a>
-                <a href="customer-service.html" class="offcanvas-link ${currentPage === 'customer-service.html' ? 'active' : ''}">
+                <a href="${prefix}customer-service.html" class="offcanvas-link ${currentPage === 'customer-service.html' ? 'active' : ''}">
                     ${icon('phone')} <span data-i18n="nav.support">${_t('nav.support')}</span>
                 </a>
-                <a href="cart.html" class="offcanvas-link ${currentPage === 'cart.html' ? 'active' : ''}">
+                <a href="${prefix}cart.html" class="offcanvas-link ${currentPage === 'cart.html' ? 'active' : ''}">
                     ${icon('cart')} <span data-i18n="nav.cart">${_t('nav.cart')}</span>
                 </a>
                 ${isLoggedIn ? `
                     <div class="offcanvas-divider"></div>
-                    <a href="profile.html" class="offcanvas-link ${currentPage === 'profile.html' ? 'active' : ''}">
+                    <a href="${prefix}profile.html" class="offcanvas-link ${currentPage === 'profile.html' ? 'active' : ''}">
                         ${icon('users')} <span data-i18n="nav.profile">${_t('nav.profile')}</span>
                     </a>
-                    <a href="orders.html" class="offcanvas-link ${currentPage === 'orders.html' ? 'active' : ''}">
+                    <a href="${prefix}orders.html" class="offcanvas-link ${currentPage === 'orders.html' ? 'active' : ''}">
                         ${icon('package')} <span data-i18n="nav.orders">${_t('nav.orders')}</span>
                     </a>
                     ${isAdmin ? `
-                        <a href="admin.html" class="offcanvas-link ${currentPage === 'admin.html' ? 'active' : ''}">
+                        <a href="${prefix}admin/index.html" class="offcanvas-link ${isActiveAdmin ? 'active' : ''}">
                             ${icon('settings')} <span data-i18n="nav.admin_panel">${_t('nav.admin_panel')}</span>
                         </a>
                     ` : ''}
@@ -373,7 +379,7 @@ function toggleMobileNav() {
                         ${icon('logout')} <span data-i18n="nav.sign_out">${_t('nav.sign_out')}</span>
                     </button>
                 ` : `
-                    <a href="auth.html" class="btn btn-primary" data-i18n="nav.sign_in">${_t('nav.sign_in')}</a>
+                    <a href="${prefix}auth.html" class="btn btn-primary" data-i18n="nav.sign_in">${_t('nav.sign_in')}</a>
                 `}
             </div>
         `;
@@ -409,14 +415,16 @@ function toggleMobileNav() {
 }
 
 async function handleLogout() {
+    const isSubfolder = window.location.pathname.includes('/admin/');
+    const prefix = isSubfolder ? '../' : '';
     try {
         await api.logout();
         showToast(typeof i18n !== 'undefined' ? i18n.t('common.signed_out') : 'Signed out successfully', 'info');
-        setTimeout(() => window.location.href = 'index.html', 500);
+        setTimeout(() => window.location.href = `${prefix}index.html`, 500);
     } catch (err) {
         // Clear session anyway
         api.clearSession();
-        window.location.href = 'index.html';
+        window.location.href = `${prefix}index.html`;
     }
 }
 
@@ -425,6 +433,8 @@ function renderFooter() {
     const footer = document.getElementById('footer');
     if (!footer) return;
 
+    const isSubfolder = window.location.pathname.includes('/admin/');
+    const prefix = isSubfolder ? '../' : '';
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
     footer.innerHTML = `
@@ -432,7 +442,7 @@ function renderFooter() {
             <div class="footer-grid">
                 <div>
                     <div class="footer-brand">
-                        <img src="../logo/logo.jpg" alt="BuyBIBZ">
+                        <img src="${prefix}../logo/logo.jpg" alt="BuyBIBZ">
                     </div>
                     <p class="footer-desc" data-i18n="footer.desc">${_t('footer.desc')}</p>
                     <div class="footer-social">
@@ -444,16 +454,16 @@ function renderFooter() {
                 </div>
                 <div class="footer-col">
                     <h4 data-i18n="footer.shop">${_t('footer.shop')}</h4>
-                    <a href="products.html" data-i18n="footer.all_products">${_t('footer.all_products')}</a>
-                    <a href="products.html?featured=true" data-i18n="footer.featured">${_t('footer.featured')}</a>
-                    <a href="products.html?sort=newest" data-i18n="footer.new_arrivals">${_t('footer.new_arrivals')}</a>
-                    <a href="products.html?sort=price_asc" data-i18n="footer.best_deals">${_t('footer.best_deals')}</a>
+                    <a href="${prefix}products.html" data-i18n="footer.all_products">${_t('footer.all_products')}</a>
+                    <a href="${prefix}products.html?featured=true" data-i18n="footer.featured">${_t('footer.featured')}</a>
+                    <a href="${prefix}products.html?sort=newest" data-i18n="footer.new_arrivals">${_t('footer.new_arrivals')}</a>
+                    <a href="${prefix}products.html?sort=price_asc" data-i18n="footer.best_deals">${_t('footer.best_deals')}</a>
                 </div>
                 <div class="footer-col">
                     <h4 data-i18n="footer.account">${_t('footer.account')}</h4>
-                    <a href="auth.html" data-i18n="footer.sign_in">${_t('footer.sign_in')}</a>
-                    <a href="cart.html" data-i18n="footer.my_cart">${_t('footer.my_cart')}</a>
-                    <a href="orders.html" data-i18n="footer.order_history">${_t('footer.order_history')}</a>
+                    <a href="${prefix}auth.html" data-i18n="footer.sign_in">${_t('footer.sign_in')}</a>
+                    <a href="${prefix}cart.html" data-i18n="footer.my_cart">${_t('footer.my_cart')}</a>
+                    <a href="${prefix}orders.html" data-i18n="footer.order_history">${_t('footer.order_history')}</a>
                 </div>
                 <div class="footer-col">
                     <h4 data-i18n="footer.support">${_t('footer.support')}</h4>
@@ -473,6 +483,8 @@ function renderFooter() {
 
 // ── Product Card HTML ───────────────────────────────────────
 function renderProductCard(product) {
+    const isSubfolder = window.location.pathname.includes('/admin/');
+    const prefix = isSubfolder ? '../' : '';
     const category = product.categories || product.category;
     const categoryName = category?.name || '';
     const discount = product.compare_price
@@ -481,7 +493,7 @@ function renderProductCard(product) {
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
     return `
-        <div class="product-card" onclick="window.location.href='product-detail.html?id=${product.id}'">
+        <div class="product-card" onclick="window.location.href='${prefix}product-detail.html?id=${product.id}'">
             <div class="product-card-image">
                 <img src="${product.image_url || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${product.name}" loading="lazy">
                 ${discount > 0 ? `<span class="product-card-badge badge-sale">-${discount}%</span>` : ''}
@@ -549,13 +561,15 @@ function renderMobileBottomNav() {
     // Check if already exists
     if (document.querySelector('.mobile-bottom-nav')) return;
     
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const isSubfolder = window.location.pathname.includes('/admin/');
+    const prefix = isSubfolder ? '../' : '';
+    const currentPage = isSubfolder ? 'admin' : (window.location.pathname.split('/').pop() || 'index.html');
     const isLoggedIn = api.isLoggedIn();
     
     const bottomNav = document.createElement('nav');
     bottomNav.className = 'mobile-bottom-nav';
     bottomNav.innerHTML = `
-        <a href="index.html" class="mobile-bottom-nav-item ${currentPage === 'index.html' ? 'active' : ''}">
+        <a href="${prefix}index.html" class="mobile-bottom-nav-item ${currentPage === 'index.html' ? 'active' : ''}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
@@ -563,7 +577,7 @@ function renderMobileBottomNav() {
             <span>Home</span>
         </a>
         
-        <a href="products.html" class="mobile-bottom-nav-item ${currentPage === 'products.html' ? 'active' : ''}">
+        <a href="${prefix}products.html" class="mobile-bottom-nav-item ${currentPage === 'products.html' ? 'active' : ''}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1"/>
                 <circle cx="19" cy="21" r="1"/>
@@ -572,7 +586,7 @@ function renderMobileBottomNav() {
             <span>Shop</span>
         </a>
         
-        <a href="cart.html" class="mobile-bottom-nav-item ${currentPage === 'cart.html' ? 'active' : ''}">
+        <a href="${prefix}cart.html" class="mobile-bottom-nav-item ${currentPage === 'cart.html' ? 'active' : ''}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                 <line x1="3" x2="21" y1="6" y2="6"/>
@@ -583,7 +597,7 @@ function renderMobileBottomNav() {
         </a>
         
         ${isLoggedIn ? `
-            <a href="orders.html" class="mobile-bottom-nav-item ${currentPage === 'orders.html' ? 'active' : ''}">
+            <a href="${prefix}orders.html" class="mobile-bottom-nav-item ${currentPage === 'orders.html' ? 'active' : ''}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m7.5 4.27 9 5.15"/>
                     <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
@@ -593,7 +607,7 @@ function renderMobileBottomNav() {
                 <span>Orders</span>
             </a>
             
-            <a href="profile.html" class="mobile-bottom-nav-item ${currentPage === 'profile.html' ? 'active' : ''}">
+            <a href="${prefix}profile.html" class="mobile-bottom-nav-item ${currentPage === 'profile.html' ? 'active' : ''}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
@@ -601,7 +615,7 @@ function renderMobileBottomNav() {
                 <span>Profile</span>
             </a>
         ` : `
-            <a href="auth.html" class="mobile-bottom-nav-item ${currentPage === 'auth.html' ? 'active' : ''}">
+            <a href="${prefix}auth.html" class="mobile-bottom-nav-item ${currentPage === 'auth.html' ? 'active' : ''}">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>

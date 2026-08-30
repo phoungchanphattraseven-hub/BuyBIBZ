@@ -100,14 +100,20 @@ function initAuth() {
 // Redirect if already logged in
 function redirectIfLoggedIn() {
     if (api.isLoggedIn()) {
-        window.location.href = 'index.html';
+        const isSubfolder = window.location.pathname.includes('/admin/');
+        const prefix = isSubfolder ? '../' : '';
+        window.location.href = `${prefix}index.html`;
     }
 }
 
 // Redirect to login if not authenticated
 function requireAuth() {
     if (!api.isLoggedIn()) {
-        window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.pathname.split('/').pop())}`;
+        const isSubfolder = window.location.pathname.includes('/admin/');
+        const prefix = isSubfolder ? '../' : '';
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const redirectUrl = isSubfolder ? `admin/${currentPage}` : currentPage;
+        window.location.href = `${prefix}auth.html?redirect=${encodeURIComponent(redirectUrl)}`;
         return false;
     }
     return true;
@@ -118,7 +124,9 @@ function requireAdmin() {
     if (!requireAuth()) return false;
     if (!api.isAdmin()) {
         showToast('Admin access required', 'error');
-        window.location.href = 'index.html';
+        const isSubfolder = window.location.pathname.includes('/admin/');
+        const prefix = isSubfolder ? '../' : '';
+        window.location.href = `${prefix}index.html`;
         return false;
     }
     return true;

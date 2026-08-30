@@ -80,10 +80,13 @@ class ApiClient {
             if (!response.ok) {
                 if (response.status === 401) {
                     this.clearSession();
+                    const isSubfolder = window.location.pathname.includes('/admin/');
+                    const prefix = isSubfolder ? '../' : '';
                     const protectedPages = ['cart.html', 'profile.html', 'checkout.html', 'orders.html', 'admin.html'];
                     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-                    if (protectedPages.includes(currentPage)) {
-                        window.location.href = `auth.html?redirect=${encodeURIComponent(currentPage)}`;
+                    if (protectedPages.includes(currentPage) || isSubfolder) {
+                        const redirectUrl = isSubfolder ? `admin/${currentPage}` : currentPage;
+                        window.location.href = `${prefix}auth.html?redirect=${encodeURIComponent(redirectUrl)}`;
                         return;
                     } else if (typeof renderNavbar === 'function') {
                         renderNavbar();
