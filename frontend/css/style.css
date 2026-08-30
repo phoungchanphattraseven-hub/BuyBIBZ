@@ -3309,6 +3309,8 @@ input:checked + .toggle-slider:before {
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .search-toggle-btn:hover {
@@ -3344,7 +3346,7 @@ input:checked + .toggle-slider:before {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
 }
 
 .page-header-search.expanded {
