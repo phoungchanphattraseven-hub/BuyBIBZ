@@ -922,7 +922,8 @@ body {
 
 /* ── Product Editor Modal (2-col layout) ─────────────────── */
 .product-editor-modal {
-    width: min(1200px, 96vw);
+    width: min(1400px, 98vw);
+    max-width: 1400px;
     max-height: 92vh;
     overflow: hidden;
     display: flex;
