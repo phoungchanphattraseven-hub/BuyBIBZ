@@ -226,6 +226,66 @@
                 <label class="form-label" for="p_desc">Description</label>
                 <textarea id="p_desc" class="form-textarea" rows="4"></textarea>
             </div>
+
+            <!-- Product Attributes -->
+            <div class="form-group">
+                <label class="form-label">Product Attributes <span style="font-weight:400; color: var(--text-muted); font-size:0.78rem;">(optional)</span></label>
+                <div class="attr-fields">
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">🎨</span>
+                        <label class="attr-field-label">Colors</label>
+                        <input type="text" id="p_attr_colors" class="form-input" placeholder="Red, Blue, Black (comma separated)">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">📐</span>
+                        <label class="attr-field-label">Sizes</label>
+                        <input type="text" id="p_attr_sizes" class="form-input" placeholder="S, M, L, XL (comma separated)">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">🧵</span>
+                        <label class="attr-field-label">Material</label>
+                        <input type="text" id="p_attr_material" class="form-input" placeholder="e.g. 100% Cotton">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">🏷️</span>
+                        <label class="attr-field-label">Brand</label>
+                        <input type="text" id="p_attr_brand" class="form-input" placeholder="e.g. Nike">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">⚖️</span>
+                        <label class="attr-field-label">Weight</label>
+                        <input type="text" id="p_attr_weight" class="form-input" placeholder="e.g. 250g">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">🛡️</span>
+                        <label class="attr-field-label">Warranty</label>
+                        <input type="text" id="p_attr_warranty" class="form-input" placeholder="e.g. 1 Year">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">📏</span>
+                        <label class="attr-field-label">Dimensions</label>
+                        <input type="text" id="p_attr_dimensions" class="form-input" placeholder="e.g. 30 x 20 x 5 cm">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">🌍</span>
+                        <label class="attr-field-label">Made In</label>
+                        <input type="text" id="p_attr_country_origin" class="form-input" placeholder="e.g. Thailand">
+                    </div>
+                    <div class="attr-field-row">
+                        <span class="attr-field-icon">📦</span>
+                        <label class="attr-field-label">Model</label>
+                        <input type="text" id="p_attr_model" class="form-input" placeholder="e.g. iPhone 15 Pro">
+                    </div>
+                    <div class="attr-field-row checkbox-row">
+                        <span class="attr-field-icon">🚚</span>
+                        <label class="attr-field-label">Free Shipping</label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="p_attr_free_shipping" style="width:16px; height:16px; accent-color: var(--accent);">
+                            <span style="font-size:0.82rem; color: var(--text-muted);">Enable free shipping</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
             
             <div class="form-group" style="display: flex; gap: 24px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -296,7 +356,8 @@
                     image_url: document.getElementById('p_image').value || null,
                     description: document.getElementById('p_desc').value,
                     is_featured: document.getElementById('p_featured').checked,
-                    is_active: document.getElementById('p_active').checked
+                    is_active: document.getElementById('p_active').checked,
+                    attributes: buildAttributes()
                 };
 
                 btn.disabled = true;
@@ -696,6 +757,7 @@
             document.getElementById('modal-title').textContent = 'Add Product';
             document.getElementById('p_submit').textContent = 'Save Product';
             document.getElementById('p_submit').disabled = false;
+            populateAttributes({});
             
             document.getElementById('product-modal').classList.add('active');
             document.getElementById('product-modal-backdrop').classList.add('active');
@@ -720,6 +782,9 @@
             document.getElementById('p_desc').value = product.description || '';
             document.getElementById('p_featured').checked = product.is_featured;
             document.getElementById('p_active').checked = product.is_active;
+
+            // Populate attribute fields
+            populateAttributes(product.attributes || {});
             
             document.getElementById('modal-title').textContent = 'Edit Product';
             document.getElementById('p_submit').textContent = 'Update Product';
@@ -727,6 +792,60 @@
             
             document.getElementById('product-modal').classList.add('active');
             document.getElementById('product-modal-backdrop').classList.add('active');
+        }
+
+        function populateAttributes(attrs) {
+            const fields = ['colors', 'sizes', 'material', 'brand', 'weight', 'warranty', 'dimensions', 'country_origin', 'model'];
+            fields.forEach(key => {
+                const el = document.getElementById(`p_attr_${key}`);
+                if (!el) return;
+                const val = attrs[key];
+                el.value = Array.isArray(val) ? val.join(', ') : (val || '');
+            });
+            const freeShipping = document.getElementById('p_attr_free_shipping');
+            if (freeShipping) freeShipping.checked = attrs.free_shipping === true;
+        }
+
+        function buildAttributes() {
+            const attrs = {};
+            const parseList = id => {
+                const val = document.getElementById(id)?.value.trim();
+                if (!val) return null;
+                return val.split(',').map(s => s.trim()).filter(Boolean);
+            };
+            const parseText = id => document.getElementById(id)?.value.trim() || null;
+
+            const colors = parseList('p_attr_colors');
+            if (colors) attrs.colors = colors;
+
+            const sizes = parseList('p_attr_sizes');
+            if (sizes) attrs.sizes = sizes;
+
+            const material = parseText('p_attr_material');
+            if (material) attrs.material = material;
+
+            const brand = parseText('p_attr_brand');
+            if (brand) attrs.brand = brand;
+
+            const weight = parseText('p_attr_weight');
+            if (weight) attrs.weight = weight;
+
+            const warranty = parseText('p_attr_warranty');
+            if (warranty) attrs.warranty = warranty;
+
+            const dimensions = parseText('p_attr_dimensions');
+            if (dimensions) attrs.dimensions = dimensions;
+
+            const country_origin = parseText('p_attr_country_origin');
+            if (country_origin) attrs.country_origin = country_origin;
+
+            const model = parseText('p_attr_model');
+            if (model) attrs.model = model;
+
+            const freeShipping = document.getElementById('p_attr_free_shipping')?.checked;
+            if (freeShipping) attrs.free_shipping = true;
+
+            return attrs;
         }
 
         async function deleteProduct(id) {

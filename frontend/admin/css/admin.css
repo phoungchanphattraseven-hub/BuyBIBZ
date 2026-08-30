@@ -1165,6 +1165,46 @@ body {
 .grid-2 { grid-template-columns: 1fr 1fr; }
 .gap-md { gap: 16px; }
 
+/* ── Product Attribute Fields (Admin Form) ──────────────── */
+.attr-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.attr-field-row {
+    display: grid;
+    grid-template-columns: 24px 120px 1fr;
+    align-items: center;
+    gap: 10px;
+}
+
+.attr-field-row.checkbox-row {
+    align-items: center;
+}
+
+.attr-field-icon {
+    font-size: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.attr-field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.attr-field-row .form-input {
+    padding: 7px 12px;
+    font-size: 0.82rem;
+}
+
 /* ============================================================
    Welcome Panel (Overview Section)
    ============================================================ */
