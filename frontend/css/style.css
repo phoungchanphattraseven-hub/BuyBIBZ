@@ -3267,7 +3267,7 @@ input:checked + .toggle-slider:before {
 .page-header {
     margin-bottom: var(--space-2xl);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-xl);
 }
@@ -3279,17 +3279,20 @@ input:checked + .toggle-slider:before {
 .page-header h1 {
     font-size: var(--font-3xl);
     font-weight: 800;
+    margin: 0;
 }
 
 .page-header p {
     color: var(--text-secondary);
     margin-top: var(--space-xs);
+    margin-bottom: 0;
 }
 
 .page-header-actions {
     display: flex;
     align-items: center;
     position: relative;
+    margin-top: -2px;
 }
 
 /* Search Toggle Button */
@@ -3297,8 +3300,8 @@ input:checked + .toggle-slider:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: var(--radius-full);
     background: var(--bg-glass);
     border: 1px solid var(--border-default);
@@ -3312,7 +3315,7 @@ input:checked + .toggle-slider:before {
     background: var(--bg-elevated);
     border-color: var(--brand-primary);
     color: var(--brand-primary);
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .search-toggle-btn:active {
@@ -3320,19 +3323,20 @@ input:checked + .toggle-slider:before {
 }
 
 .search-toggle-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
 }
 
 /* Expandable Search Bar */
 .page-header-search {
     position: absolute;
     right: 0;
-    top: 0;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     background: var(--bg-glass);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-full);
@@ -3344,7 +3348,7 @@ input:checked + .toggle-slider:before {
 }
 
 .page-header-search.expanded {
-    width: 400px;
+    width: 380px;
     opacity: 1;
     visibility: visible;
     pointer-events: all;
@@ -3371,7 +3375,7 @@ input:checked + .toggle-slider:before {
 
 .page-header-search input {
     width: 100%;
-    padding: 12px 48px 12px 44px;
+    padding: 11px 46px 11px 42px;
     font-size: var(--font-md);
     border: none;
     background: transparent;
@@ -3391,12 +3395,12 @@ input:checked + .toggle-slider:before {
 
 .page-header-search .search-close-btn {
     position: absolute;
-    right: 6px;
+    right: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     padding: 0;
     border: none;
     border-radius: var(--radius-full);
@@ -3423,8 +3427,8 @@ input:checked + .toggle-slider:before {
 }
 
 .page-header-search .search-close-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
 }
 
 /* ── Footer ───────────────────────────────────────────────── */
@@ -3728,14 +3732,13 @@ input:checked + .toggle-slider:before {
     .page-header {
         margin-bottom: 16px !important;
         padding: 0 4px !important;
-        flex-direction: column;
-        gap: var(--space-md);
-        align-items: stretch;
+        align-items: flex-start;
     }
     
     .page-header-actions {
-        align-self: flex-end;
-        margin-top: calc(-1 * var(--space-md));
+        position: absolute;
+        right: 0;
+        top: 0;
     }
     
     .page-header-search.expanded {
@@ -3746,6 +3749,7 @@ input:checked + .toggle-slider:before {
     .page-header h1 {
         font-size: 24px !important;
         margin-bottom: 4px !important;
+        padding-right: 50px;
     }
     
     .page-header p {
@@ -4501,14 +4505,13 @@ input:checked + .toggle-slider:before {
     
     .page-header {
         margin-bottom: 16px !important;
-        flex-direction: column;
-        gap: var(--space-md);
-        align-items: stretch;
+        align-items: flex-start;
     }
     
     .page-header-actions {
-        align-self: flex-end;
-        margin-top: calc(-1 * var(--space-md));
+        position: absolute;
+        right: 0;
+        top: 0;
     }
     
     .page-header-search.expanded {
@@ -4519,6 +4522,7 @@ input:checked + .toggle-slider:before {
     .page-header h1 {
         font-size: 24px !important;
         margin-bottom: 4px !important;
+        padding-right: 50px;
     }
     
     .page-header p {
