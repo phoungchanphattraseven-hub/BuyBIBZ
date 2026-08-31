@@ -164,7 +164,7 @@
                                                     <span>${formatPrice((order.total || 0) - (order.shipping_fee || 0))}</span>
                                                 </div>
                                                 <div style="display:flex; justify-content:space-between; font-size: var(--font-xs); margin-bottom: 4px; ${order.shipping_fee > 0 ? '' : 'color: var(--status-success);'}">
-                                                    <span>Shipping</span>
+                                                    <span>International Shipping</span>
                                                     <span>${order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : 'Free'}</span>
                                                 </div>
                                                 <div style="display:flex; justify-content:space-between; font-size: var(--font-sm); font-weight: 700; color: var(--text-brand); border-top: 1px solid var(--border-subtle); padding-top: 4px; margin-top: 4px;">
@@ -508,7 +508,7 @@
                                 <td style="text-align: right; font-weight: 600; color: #111;">${formatPrice((order.total || 0) - (order.shipping_fee || 0))}</td>
                             </tr>
                             <tr>
-                                <td style="color: #888;">Shipping & Handling</td>
+                                <td style="color: #888;">International Shipping</td>
                                 <td style="text-align: right; font-weight: 600; color: #111;">${order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : '$0.00 (Free)'}</td>
                             </tr>
                             <tr class="grand-total">
