@@ -1558,3 +1558,8 @@ body {
         padding: 16px 12px;
     }
 }
+
+/* ── Taobao Import Spinner ─────────────────────────────────── */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

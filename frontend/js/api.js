@@ -270,6 +270,14 @@ class ApiClient {
     async getAdminProducts() {
         return this.get('/api/admin/products');
     }
+    // ── Taobao Import ────────────────────────────────────────
+    async previewTaobaoProduct(item) {
+        return this.post('/api/products/import-taobao/preview', { item });
+    }
+
+    async importTaobaoProduct(item, categoryId = null) {
+        return this.post('/api/products/import-taobao', { item, category_id: categoryId });
+    }
 }
 
 // Global instance

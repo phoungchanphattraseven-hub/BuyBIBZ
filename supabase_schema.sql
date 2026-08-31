@@ -113,7 +113,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE TABLE IF NOT EXISTS order_items (
     id BIGSERIAL PRIMARY KEY,
     order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE SET NULL,
+    -- Keep the line item after a catalog product is deleted. The snapshot
+    -- fields below preserve the name, image, price and selected options.
+    product_id BIGINT REFERENCES products(id) ON DELETE SET NULL,
     product_name TEXT NOT NULL,
     product_image TEXT,
     price DECIMAL(10,2) NOT NULL,

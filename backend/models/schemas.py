@@ -128,7 +128,7 @@ class OrderStatusUpdate(BaseModel):
 
 class OrderItemResponse(BaseModel):
     id: int
-    product_id: int
+    product_id: Optional[int] = None
     product_name: str
     product_image: Optional[str] = None
     price: float

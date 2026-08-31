@@ -124,6 +124,56 @@ function renderStars(rating, count = null) {
     return html;
 }
 
+// ── Imported product text ───────────────────────────────────
+// Imported catalog data can contain raw Taobao SKU labels. Keep a small
+// client-side safety net for products already saved before server-side
+// normalization was added, so customer pages never expose Chinese text.
+function toEnglishProductText(value, fallback = '') {
+    if (value === null || value === undefined) return fallback;
+
+    const replacements = {
+        '机械轴': 'Mechanical Switch', '无线': 'Wireless', '有线': 'Wired',
+        '蓝牙': 'Bluetooth', '三模': 'Tri-Mode', '红轴': 'Red Switch',
+        '青轴': 'Blue Switch', '茶轴': 'Brown Switch', '黑轴': 'Black Switch',
+        '银轴': 'Silver Switch', '黄轴': 'Yellow Switch', '磁轴': 'Magnetic Switch',
+        '灰木磁轴': 'Greystone Magnetic', '线性轴': 'Linear Switch',
+        '段落轴': 'Tactile Switch', '触发轴': 'RT Switch',
+        '白色': 'White', '黑色': 'Black', '灰色': 'Grey', '银色': 'Silver',
+        '金色': 'Gold', '蓝色': 'Blue', '红色': 'Red', '绿色': 'Green',
+        '粉色': 'Pink', '紫色': 'Purple', '橙色': 'Orange',
+        '透明': 'Clear', '白透': 'White Clear', '黑透': 'Black Clear',
+        '锻碳纹': 'Carbon Fiber', '折影': 'Shadow', '黑雾': 'Dark Fog',
+        '侧刻': 'Side Print', '正刻': 'Top Print',
+        '标准版': 'Standard Edition', '标配': 'Standard',
+        '豪华版': 'Deluxe Edition', '旗舰版': 'Flagship Edition',
+        '套餐类型': 'Bundle Type', '颜色分类': 'Color', '规格': 'Spec',
+        '版本': 'Version', '套装': 'Bundle', '单件': 'Single',
+        '国行': 'CN Version', '国际版': 'International',
+        '中国大陆': 'CN', '全网通': 'All-Network',
+        '存储容量': 'Storage', '运行内存': 'RAM',
+        '包邮': '', '爆款': '', '秒杀': '', '新款': '', '现货': '',
+        '旗舰店': '', '专卖店': '', '顺丰': '',
+    };
+
+    let text = String(value);
+    Object.entries(replacements)
+        .sort(([a], [b]) => b.length - a.length)
+        .forEach(([chinese, english]) => { text = text.replaceAll(chinese, ` ${english} `); });
+
+    // Remove untranslated CJK fragments rather than showing source-market text.
+    text = text
+        .replace(/[\u3400-\u4dbf\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]+/g, ' ')
+        .replace(/[【】〔〕（）]/g, ' ')
+        .split('/')
+        .map(part => part.replace(/^[\s\-–—|]+|[\s\-–—|]+$/g, '').trim())
+        .filter(Boolean)
+        .join(' / ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return text || fallback;
+}
+
 // ── Format Price ────────────────────────────────────────────
 function formatPrice(price) {
     let prefs = {};
@@ -489,8 +539,8 @@ function renderProductCard(product) {
                 <img src="${product.image_url || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${product.name}" loading="lazy"${isOutOfStock ? ' style="opacity:0.6;"' : ''}>
                 ${!isOutOfStock && discount > 0 ? `<span class="product-card-badge badge-sale">-${discount}%</span>` : ''}
                 ${product.is_featured && !isOutOfStock ? `<span class="product-card-badge badge-featured">${_t('product.featured')}</span>` : ''}
-                ${hasFreeShipping ? `<span class="product-card-badge badge-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> Free shipping</span>` : ''}
-                ${isOutOfStock ? `<span class="product-card-badge badge-oos">Out of stock</span>` : ''}
+                ${hasFreeShipping ? `<span class="product-card-badge badge-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> ${_t('product.free_shipping')}</span>` : ''}
+                ${isOutOfStock ? `<span class="product-card-badge badge-oos">${_t('product.out_of_stock')}</span>` : ''}
             </div>
             <div class="product-card-body">
                 ${categoryName ? `<div class="product-card-category">${categoryName}</div>` : ''}
@@ -504,10 +554,10 @@ function renderProductCard(product) {
                         ${product.compare_price ? `<span class="price-compare">${formatPrice(product.compare_price)}</span>` : ''}
                     </div>
                     ${isOutOfStock
-                        ? `<button class="product-card-add-btn product-card-add-btn-oos" disabled title="Out of stock" style="opacity:0.4;cursor:not-allowed;background:var(--text-tertiary);">
+                        ? `<button class="product-card-add-btn product-card-add-btn-oos" disabled title="${_t('product.out_of_stock')}" style="opacity:0.4;cursor:not-allowed;background:var(--text-tertiary);">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                            </button>`
-                        : `<button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? 'Choose product options' : _t('product.add_to_cart')}">
+                        : `<button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? _t('product.choose_options') : _t('product.add_to_cart')}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                            </button>`
                     }
@@ -564,6 +614,7 @@ function renderMobileBottomNav() {
     const currentPage = isSubfolder ? 'admin' : (window.location.pathname.split('/').pop() || 'index.html');
     const isLoggedIn = api.isLoggedIn();
     
+    const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
     const bottomNav = document.createElement('nav');
     bottomNav.className = 'mobile-bottom-nav';
     bottomNav.innerHTML = `
@@ -572,7 +623,7 @@ function renderMobileBottomNav() {
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
-            <span>Home</span>
+            <span data-i18n="mobile_nav.home">${_t('mobile_nav.home')}</span>
         </a>
         
         <a href="${prefix}products.html" class="mobile-bottom-nav-item ${currentPage === 'products.html' ? 'active' : ''}">
@@ -581,7 +632,7 @@ function renderMobileBottomNav() {
                 <circle cx="19" cy="21" r="1"/>
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
             </svg>
-            <span>Shop</span>
+            <span data-i18n="mobile_nav.shop">${_t('mobile_nav.shop')}</span>
         </a>
         
         <a href="${prefix}cart.html" class="mobile-bottom-nav-item ${currentPage === 'cart.html' ? 'active' : ''}">
@@ -590,7 +641,7 @@ function renderMobileBottomNav() {
                 <line x1="3" x2="21" y1="6" y2="6"/>
                 <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
-            <span id="mobile-cart-badge-text">Cart</span>
+            <span data-i18n="mobile_nav.cart">${_t('mobile_nav.cart')}</span>
             <span class="mobile-bottom-nav-badge" id="mobile-cart-count" style="display: none;">0</span>
         </a>
         
@@ -602,7 +653,7 @@ function renderMobileBottomNav() {
                     <path d="m3.3 7 8.7 5 8.7-5"/>
                     <path d="M12 22V12"/>
                 </svg>
-                <span>Orders</span>
+                <span data-i18n="mobile_nav.orders">${_t('mobile_nav.orders')}</span>
             </a>
             
             <a href="${prefix}profile.html" class="mobile-bottom-nav-item ${currentPage === 'profile.html' ? 'active' : ''}">
@@ -610,7 +661,7 @@ function renderMobileBottomNav() {
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
-                <span>Profile</span>
+                <span data-i18n="mobile_nav.profile">${_t('mobile_nav.profile')}</span>
             </a>
         ` : `
             <a href="${prefix}auth.html" class="mobile-bottom-nav-item ${currentPage === 'auth.html' ? 'active' : ''}">
@@ -618,7 +669,7 @@ function renderMobileBottomNav() {
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
-                <span>Sign In</span>
+                <span data-i18n="mobile_nav.sign_in">${_t('mobile_nav.sign_in')}</span>
             </a>
         `}
     `;

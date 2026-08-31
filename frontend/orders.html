@@ -32,8 +32,8 @@
     <main class="orders-page">
         <div class="container">
             <div class="page-header">
-                <h1>My Orders</h1>
-                <p>Track and view your past orders</p>
+                <h1 data-i18n="orders.title">My Orders</h1>
+                <p data-i18n="orders.subtitle">Track and view your past orders</p>
             </div>
 
             <div id="orders-list">
@@ -60,6 +60,7 @@
 
         async function loadOrders() {
             const container = document.getElementById('orders-list');
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             
             try {
                 const data = await api.getOrders();
@@ -68,9 +69,9 @@
                     container.innerHTML = `
                         <div style="text-align: center; padding: var(--space-4xl); background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
                             <div style="font-size: 3rem; margin-bottom: var(--space-md); opacity: 0.5;">📦</div>
-                            <h2 style="margin-bottom: var(--space-sm);">No orders yet</h2>
-                            <p class="text-secondary" style="margin-bottom: var(--space-xl);">When you place orders, they will appear here.</p>
-                            <a href="products.html" class="btn btn-primary">Start Shopping</a>
+                            <h2 style="margin-bottom: var(--space-sm);">${_t('orders.no_orders')}</h2>
+                            <p class="text-secondary" style="margin-bottom: var(--space-xl);">${_t('orders.no_orders_desc')}</p>
+                            <a href="products.html" class="btn btn-primary">${_t('orders.start_shopping')}</a>
                         </div>
                     `;
                     return;
@@ -89,14 +90,14 @@
                         <div class="order-card">
                             <div class="order-card-header" onclick="toggleOrderDetails(${order.id})">
                                 <div class="order-card-identity">
-                                    <span class="order-eyebrow">Order UID</span>
+                                    <span class="order-eyebrow">${_t('orders.order_uid')}</span>
                                     <div class="order-uid-row">
                                         <code class="order-uid" title="${orderUid}">${shortOrderUid}</code>
                                         <button class="order-copy-btn" type="button" onclick="event.stopPropagation(); copyOrderUid('${orderUid}')" aria-label="Copy order UID" title="Copy order UID">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                                         </button>
                                     </div>
-                                    <div class="order-date">${formatDate(order.created_at)} • ${itemCount} item${itemCount !== 1 ? 's' : ''}</div>
+                                    <div class="order-date">${formatDate(order.created_at)} • ${itemCount} ${itemCount !== 1 ? _t('orders.items_plural') : _t('orders.items')}</div>
                                 </div>
                                 <div class="order-card-summary">
                                     <div class="order-total">${formatPrice(order.total)}</div>
@@ -107,16 +108,16 @@
                             
                             <div class="order-card-body" id="order-details-${order.id}">
                                 <div class="order-uid-detail">
-                                    <span>Order UID</span>
+                                    <span>${_t('orders.order_uid')}</span>
                                     <code>${orderUid}</code>
-                                    <button type="button" onclick="copyOrderUid('${orderUid}')">Copy</button>
+                                    <button type="button" onclick="copyOrderUid('${orderUid}')">${_t('orders.copy')}</button>
                                 </div>
                                 ${renderOrderTracker(order.status)}
                                 <div class="order-details-grid">
                                     
                                     <!-- Items -->
                                     <div>
-                                        <h4 style="font-size: var(--font-sm); color: var(--text-secondary); margin-bottom: var(--space-md); text-transform: uppercase; letter-spacing: 0.05em;">Items</h4>
+                                        <h4 style="font-size: var(--font-sm); color: var(--text-secondary); margin-bottom: var(--space-md); text-transform: uppercase; letter-spacing: 0.05em;">${_t('orders.items_label')}</h4>
                                         ${items.map(item => {
                                             const itemSelectedImage = (item.selected_options || {})._selected_image || item.product_image || 'https://via.placeholder.com/100?text=Img';
                                             const visibleOptions = Object.entries(item.selected_options || {}).filter(([key]) => key !== '_selected_image');
@@ -126,15 +127,15 @@
                                                     <img src="${itemSelectedImage}" alt="${item.product_name}">
                                                 </div>
                                                 <div style="flex: 1;">
-                                                    <a href="product-detail.html?id=${item.product_id}" style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 2px;">
-                                                        ${item.product_name}
-                                                    </a>
+                                                    ${item.product_id
+                                                        ? `<a href="product-detail.html?id=${item.product_id}" style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 2px;">${item.product_name}</a>`
+                                                        : `<span style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 2px;">${item.product_name}</span>`}
                                                     <div style="color: var(--text-tertiary); font-size: var(--font-xs);">
                                                         ${formatPrice(item.price)} × ${item.quantity}
                                                     </div>
-                                                    ${visibleOptions.map(([key, value]) => `<div style="color: var(--text-secondary); font-size: var(--font-xs); margin-top: 2px; text-transform: capitalize;">${key.replace(/_/g, ' ')}: ${value}</div>`).join('')}
+                                            ${visibleOptions.map(([key, value]) => `<div style="color: var(--text-secondary); font-size: var(--font-xs); margin-top: 2px; text-transform: capitalize;">${toEnglishProductText(key.replace(/_/g, ' '))}: ${toEnglishProductText(value, 'Standard')}</div>`).join('')}
                                                     <div style="color: var(--text-tertiary); font-size: var(--font-xs); margin-top: 2px;">
-                                                        Product ID: ${item.product_id}
+                                                        ${item.product_id ? `${_t('orders.product_id')}: ${item.product_id}` : _t('orders.deleted_product')}
                                                     </div>
                                                 </div>
                                                 <div style="font-weight: 700;">
@@ -147,7 +148,7 @@
                                     <!-- Shipping Info -->
                                     <div style="background: var(--bg-tertiary); padding: var(--space-lg); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; min-height: 240px;">
                                         <div>
-                                            <h4 style="font-size: var(--font-sm); color: var(--text-secondary); margin-bottom: var(--space-md); text-transform: uppercase; letter-spacing: 0.05em;">Shipping Details</h4>
+                                            <h4 style="font-size: var(--font-sm); color: var(--text-secondary); margin-bottom: var(--space-md); text-transform: uppercase; letter-spacing: 0.05em;">${_t('orders.shipping_details')}</h4>
                                             
                                             <div style="font-size: var(--font-sm); line-height: 1.6;">
                                                 <div style="font-weight: 600; color: var(--text-primary);">${order.shipping_name}</div>
@@ -156,19 +157,19 @@
                                                 <div style="margin-top: var(--space-xs); color: var(--text-tertiary);">📞 ${order.shipping_phone}</div>
                                             </div>
                                             
-                                            ${order.notes ? '<div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-default);"><div style="font-size: var(--font-xs); color: var(--text-tertiary); margin-bottom: 4px;">Notes</div><div style="font-size: var(--font-sm); font-style: italic;">' + order.notes + '</div></div>' : ''}
+                                            ${order.notes ? `<div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-default);"><div style="font-size: var(--font-xs); color: var(--text-tertiary); margin-bottom: 4px;">${_t('orders.notes')}</div><div style="font-size: var(--font-sm); font-style: italic;">${order.notes}</div></div>` : ''}
                                             
                                             <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border-default);">
                                                 <div style="display:flex; justify-content:space-between; font-size: var(--font-xs); color: var(--text-tertiary); margin-bottom: 4px;">
-                                                    <span>Subtotal</span>
+                                                    <span>${_t('orders.subtotal')}</span>
                                                     <span>${formatPrice((order.total || 0) - (order.shipping_fee || 0))}</span>
                                                 </div>
                                                 <div style="display:flex; justify-content:space-between; font-size: var(--font-xs); margin-bottom: 4px; ${order.shipping_fee > 0 ? '' : 'color: var(--status-success);'}">
-                                                    <span>International Shipping</span>
-                                                    <span>${order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : 'Free'}</span>
+                                                    <span>${_t('orders.intl_shipping')}</span>
+                                                    <span>${order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : _t('orders.free')}</span>
                                                 </div>
                                                 <div style="display:flex; justify-content:space-between; font-size: var(--font-sm); font-weight: 700; color: var(--text-brand); border-top: 1px solid var(--border-subtle); padding-top: 4px; margin-top: 4px;">
-                                                    <span>Total</span>
+                                                    <span>${_t('orders.total')}</span>
                                                     <span>${formatPrice(order.total)}</span>
                                                 </div>
                                             </div>
@@ -176,7 +177,7 @@
                                         
                                         <button class="btn btn-secondary btn-sm" onclick="printReceipt(${order.id}, '${orderJson}')" style="margin-top: var(--space-lg); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
-                                            Print Receipt
+                                            ${_t('orders.print_receipt')}
                                         </button>
                                     </div>
                                     
@@ -187,7 +188,7 @@
                 }).join('');
                 
             } catch (err) {
-                container.innerHTML = `<p class="text-secondary">Failed to load orders: ${err.message}</p>`;
+                container.innerHTML = `<p class="text-secondary">${_t('orders.load_error')}: ${err.message}</p>`;
             }
         }
 
@@ -201,20 +202,22 @@
         }
 
         async function copyOrderUid(orderUid) {
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             try {
                 await navigator.clipboard.writeText(orderUid);
-                showToast('Order UID copied', 'success');
+                showToast(_t('orders.uid_copied'), 'success');
             } catch {
-                showToast('Unable to copy the order UID', 'error');
+                showToast(_t('orders.uid_copy_error'), 'error');
             }
         }
 
         function renderOrderTracker(status) {
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             let statusText = '';
             let pPercent = '0%';
 
             if (status === 'cancelled') {
-                statusText = 'This order has been cancelled.';
+                statusText = _t('orders.status_cancelled');
                 return `
                     <div class="order-tracker cancelled">
                         <div class="tracker-steps" style="max-width: 300px; margin: 0 auto;">
@@ -223,11 +226,11 @@
                             </div>
                             <div class="tracker-step completed">
                                 <div class="step-icon">✓</div>
-                                <div class="step-label">Order Placed</div>
+                                <div class="step-label">${_t('orders.placed')}</div>
                             </div>
                             <div class="tracker-step active">
                                 <div class="step-icon">✕</div>
-                                <div class="step-label">Cancelled</div>
+                                <div class="step-label">${_t('orders.cancelled')}</div>
                             </div>
                         </div>
                         <div class="tracker-description" style="color: var(--status-error); font-weight: 600;">
@@ -242,46 +245,26 @@
 
             switch (status) {
                 case 'pending':
-                    s1 = 'active';
-                    icon1 = '🛒';
-                    pPercent = '0%';
-                    statusText = 'We have received your order and are preparing to process it.';
+                    s1 = 'active'; icon1 = '🛒'; pPercent = '0%';
+                    statusText = _t('orders.status_pending');
                     break;
                 case 'processing':
-                    s1 = 'completed';
-                    icon1 = '✓';
-                    s2 = 'active';
-                    icon2 = '⚙️';
-                    pPercent = '33.33%';
-                    statusText = 'Your order is being processed and packaged.';
+                    s1 = 'completed'; icon1 = '✓'; s2 = 'active'; icon2 = '⚙️'; pPercent = '33.33%';
+                    statusText = _t('orders.status_processing');
                     break;
                 case 'shipped':
-                    s1 = 'completed';
-                    icon1 = '✓';
-                    s2 = 'completed';
-                    icon2 = '✓';
-                    s3 = 'active';
-                    icon3 = '🚚';
-                    pPercent = '66.66%';
-                    statusText = 'Your order has been shipped and is on the way!';
+                    s1 = 'completed'; icon1 = '✓'; s2 = 'completed'; icon2 = '✓';
+                    s3 = 'active'; icon3 = '🚚'; pPercent = '66.66%';
+                    statusText = _t('orders.status_shipped');
                     break;
                 case 'delivered':
-                    s1 = 'completed';
-                    icon1 = '✓';
-                    s2 = 'completed';
-                    icon2 = '✓';
-                    s3 = 'completed';
-                    icon3 = '✓';
-                    s4 = 'completed';
-                    icon4 = '🎁';
-                    pPercent = '100%';
-                    statusText = 'Your order has been delivered. Thank you for shopping with us!';
+                    s1 = 'completed'; icon1 = '✓'; s2 = 'completed'; icon2 = '✓';
+                    s3 = 'completed'; icon3 = '✓'; s4 = 'completed'; icon4 = '🎁'; pPercent = '100%';
+                    statusText = _t('orders.status_delivered');
                     break;
                 default:
-                    s1 = 'active';
-                    icon1 = '🛒';
-                    pPercent = '0%';
-                    statusText = 'Order placed.';
+                    s1 = 'active'; icon1 = '🛒'; pPercent = '0%';
+                    statusText = _t('orders.status_default');
             }
 
             return `
@@ -292,19 +275,19 @@
                         </div>
                         <div class="tracker-step ${s1}">
                             <div class="step-icon">${icon1}</div>
-                            <div class="step-label">Placed</div>
+                            <div class="step-label">${_t('orders.placed')}</div>
                         </div>
                         <div class="tracker-step ${s2}">
                             <div class="step-icon">${icon2}</div>
-                            <div class="step-label">Processing</div>
+                            <div class="step-label">${_t('orders.processing')}</div>
                         </div>
                         <div class="tracker-step ${s3}">
                             <div class="step-icon">${icon3}</div>
-                            <div class="step-label">Shipped</div>
+                            <div class="step-label">${_t('orders.shipped')}</div>
                         </div>
                         <div class="tracker-step ${s4}">
                             <div class="step-icon">${icon4}</div>
-                            <div class="step-label">Delivered</div>
+                            <div class="step-label">${_t('orders.delivered')}</div>
                         </div>
                     </div>
                     <div class="tracker-description">
@@ -315,6 +298,7 @@
         }
 
         function printReceipt(orderId, orderDataJson) {
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             const order = JSON.parse(decodeURIComponent(orderDataJson));
             const items = order.order_items || [];
             const printWindow = window.open('', '_blank', 'width=800,height=900');
@@ -338,9 +322,9 @@
 
             const receiptHtml = `
                 <!DOCTYPE html>
-                <html${''}>
-                <head${''}>
-                    <title>Receipt - Order UID ${order.order_uid || order.id}</title>
+                <html>
+                <head>
+                    <title>${_t('orders.print_receipt')} - ${_t('orders.order_uid')} ${order.order_uid || order.id}</title>
                     <style>
                         body {
                             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -438,16 +422,12 @@
                             margin-top: 50px;
                         }
                         @media print {
-                            body {
-                                padding: 0;
-                            }
-                            .no-print {
-                                display: none;
-                            }
+                            body { padding: 0; }
+                            .no-print { display: none; }
                         }
                     </style>
-                </head${''}>
-                <body${''}>
+                </head>
+                <body>
                     <div class="invoice-box">
                         <table class="header-table">
                             <tr>
@@ -456,10 +436,10 @@
                                     <div style="font-size: 12px; color: #888; margin-top: 4px;">Premium E-Commerce Marketplace</div>
                                 </td>
                                 <td class="invoice-title">
-                                    Receipt / Invoice
+                                    ${_t('orders.print_receipt')}
                                     <div style="font-size: 13px; font-weight: normal; color: #555; margin-top: 6px; text-transform: none;">
-                                        Order UID <strong>${order.order_uid || order.id}</strong><br>
-                                        Date: ${formatDate(order.created_at)}
+                                        ${_t('orders.order_uid')}: <strong>${order.order_uid || order.id}</strong><br>
+                                        ${formatDate(order.created_at)}
                                     </div>
                                 </td>
                             </tr>
@@ -468,21 +448,19 @@
                         <table class="details-table">
                             <tr>
                                 <td class="details-col">
-                                    <div class="section-title">Billed To</div>
+                                    <div class="section-title">${_t('checkout.shipping_details')}</div>
                                     <div class="info-text">
                                         <strong>${order.shipping_name}</strong><br>
                                         ${order.shipping_address}<br>
                                         ${order.shipping_city}, ${order.shipping_postal || ''}<br>
-                                        Phone: ${order.shipping_phone}
-                                        ${order.notes ? `<br><br><div style="margin-top: 8px; padding: 8px 12px; background: rgba(27, 140, 61, 0.05); border-left: 3px solid var(--brand-primary); border-radius: 4px;"><strong style="color: var(--brand-primary); font-size: 0.85rem;">📝 Delivery Notes:</strong><br><span style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">${order.notes}</span></div>` : ''}
+                                        📞 ${order.shipping_phone}
+                                        ${order.notes ? `<br><br><div style="margin-top: 8px; padding: 8px 12px; background: rgba(27,140,61,0.05); border-left: 3px solid #1B8C3D; border-radius: 4px;"><strong style="color: #1B8C3D; font-size: 0.85rem;">📝 ${_t('orders.notes')}:</strong><br><span style="font-size: 0.9rem; line-height: 1.5;">${order.notes}</span></div>` : ''}
                                     </div>
                                 </td>
                                 <td class="details-col" style="text-align: right;">
-                                    <div class="section-title">Payment Details</div>
+                                    <div class="section-title">${_t('checkout.payment_method')}</div>
                                     <div class="info-text">
-                                        Payment Method: <strong>Credit Card / Online</strong><br>
-                                        Status: <strong style="color: #1B8C3D;">Paid / ${order.status.toUpperCase()}</strong><br>
-                                        Currency: <strong>USD ($)</strong>
+                                        <strong style="color: #1B8C3D;">${order.status.toUpperCase()}</strong>
                                     </div>
                                 </td>
                             </tr>
@@ -491,10 +469,10 @@
                         <table class="items-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 55%;">Item</th>
-                                    <th style="width: 15%; text-align: center;">Price</th>
+                                    <th style="width: 55%;">${_t('orders.items_label')}</th>
+                                    <th style="width: 15%; text-align: center;">${_t('orders.subtotal').split(' ')[0]}</th>
                                     <th style="width: 15%; text-align: center;">Qty</th>
-                                    <th style="width: 15%; text-align: right;">Total</th>
+                                    <th style="width: 15%; text-align: right;">${_t('orders.total')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -504,28 +482,28 @@
 
                         <table class="totals-table">
                             <tr>
-                                <td style="color: #888;">Subtotal</td>
+                                <td style="color: #888;">${_t('orders.subtotal')}</td>
                                 <td style="text-align: right; font-weight: 600; color: #111;">${formatPrice((order.total || 0) - (order.shipping_fee || 0))}</td>
                             </tr>
                             <tr>
-                                <td style="color: #888;">International Shipping</td>
-                                <td style="text-align: right; font-weight: 600; color: #111;">${order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : '$0.00 (Free)'}</td>
+                                <td style="color: #888;">${_t('orders.intl_shipping')}</td>
+                                <td style="text-align: right; font-weight: 600; color: #111;">${order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : _t('orders.free')}</td>
                             </tr>
                             <tr class="grand-total">
-                                <td>Total Paid</td>
+                                <td>${_t('orders.total')}</td>
                                 <td style="text-align: right;">${formatPrice(order.total)}</td>
                             </tr>
                         </table>
 
-                        ${order.notes ? '<div style="background-color: #f9f9f9; border-left: 3px solid #1B8C3D; padding: 15px; margin-bottom: 30px; border-radius: 4px;"><div class="section-title" style="margin-bottom: 5px;">Order Notes</div><div style="font-size: 13px; font-style: italic; color: #555;">"' + order.notes + '"</div></div>' : ''}
+                        ${order.notes ? `<div style="background-color: #f9f9f9; border-left: 3px solid #1B8C3D; padding: 15px; margin-bottom: 30px; border-radius: 4px;"><div class="section-title" style="margin-bottom: 5px;">${_t('orders.notes')}</div><div style="font-size: 13px; font-style: italic; color: #555;">"${order.notes}"</div></div>` : ''}
 
                         <div class="footer">
                             Thank you for shopping with BuyBIBZ!<br>
-                            For any support queries, please contact support@buybiz.com
+                            support@buybibz.com
                         </div>
                     </div>
-                </body${''}>
-                </html${''}>
+                </body>
+                </html>
             `;
 
             printWindow.document.write(receiptHtml);
@@ -536,4 +514,3 @@
     </script>
 </body>
 </html>
-

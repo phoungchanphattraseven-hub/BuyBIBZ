@@ -32,8 +32,8 @@
     <main class="cart-page">
         <div class="container">
             <div class="page-header">
-                <h1>Shopping Cart</h1>
-                <p>Review your items before checkout</p>
+                <h1 data-i18n="cart.title">Shopping Cart</h1>
+                <p data-i18n="cart.page_subtitle">Review your items before checkout</p>
             </div>
 
             <div class="cart-layout">
@@ -48,31 +48,31 @@
 
                 <!-- Cart Summary -->
                 <aside class="cart-summary" id="cart-summary" style="display: none;">
-                    <h3>Order Summary</h3>
+                    <h3 data-i18n="cart.order_summary">Order Summary</h3>
                     <div class="cart-summary-row">
-                        <span>Subtotal (<span id="summary-count">0</span> items)</span>
+                        <span><span data-i18n="cart.subtotal">Subtotal</span> (<span id="summary-count">0</span> <span data-i18n="cart.items">items</span>)</span>
                         <span id="summary-subtotal">$0.00</span>
                     </div>
                     <div class="cart-summary-row">
-                        <span>International Shipping</span>
-                        <span id="summary-shipping" style="color: var(--status-success);">Free</span>
+                        <span data-i18n="cart.intl_shipping">International Shipping</span>
+                        <span id="summary-shipping" style="color: var(--status-success);" data-i18n="cart.free">Free</span>
                     </div>
                     <div class="cart-summary-row">
-                        <span>Tax</span>
-                        <span>Calculated at checkout</span>
+                        <span data-i18n="cart.tax">Tax</span>
+                        <span data-i18n="cart.tax_calculated">Calculated at checkout</span>
                     </div>
                     <div class="cart-summary-total">
-                        <span>Total</span>
+                        <span data-i18n="cart.total">Total</span>
                         <span id="summary-total" style="color: var(--text-brand);">$0.00</span>
                     </div>
                     
                     <a href="checkout.html" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-xl);">
-                        Proceed to Checkout
+                        <span data-i18n="cart.proceed_checkout">Proceed to Checkout</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                     </a>
                     
                     <div style="text-align: center; margin-top: var(--space-lg);">
-                        <button class="btn btn-ghost btn-sm" onclick="clearCart()">Clear Cart</button>
+                        <button class="btn btn-ghost btn-sm" onclick="clearCart()" data-i18n="cart.clear_cart">Clear Cart</button>
                     </div>
                 </aside>
             </div>
@@ -162,12 +162,13 @@
                 const data = await api.getCart();
                 
                 if (!data.items || data.items.length === 0) {
+                    const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
                     container.innerHTML = `
                         <div class="cart-empty">
                             <div class="cart-empty-icon">🛒</div>
-                            <h2>Your cart is empty</h2>
-                            <p>Looks like you haven't added anything to your cart yet.</p>
-                            <a href="products.html" class="btn btn-primary btn-lg">Continue Shopping</a>
+                            <h2>${_t('cart.empty')}</h2>
+                            <p>${_t('cart.empty_desc')}</p>
+                            <a href="products.html" class="btn btn-primary btn-lg">${_t('cart.start_shopping')}</a>
                         </div>
                     `;
                     summary.style.display = 'none';
@@ -186,7 +187,8 @@
                     shippingEl.textContent = formatPrice(currentShippingFee);
                     shippingEl.style.color = '';
                 } else {
-                    shippingEl.textContent = 'Free';
+                    const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
+                    shippingEl.textContent = _t('cart.free');
                     shippingEl.style.color = 'var(--status-success)';
                 }
                 
@@ -203,11 +205,11 @@
                     const displayQty = pendingUpdates.has(item.id) ? pendingUpdates.get(item.id) : item.quantity;
                     const selectedOptions = item.selected_options || {};
                     const selectedImage = selectedOptions._selected_image || product.image_url || 'https://via.placeholder.com/200x200?text=No+Image';
-                    const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions' };
+                    const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions', variant: 'Variant' };
                     const selectedOptionsHtml = Object.entries(selectedOptions)
                         .filter(([key]) => key !== '_selected_image')
                         .map(([key, value]) => `
-                        <span class="cart-item-variant"><b>${optionLabels[key] || key.replace(/_/g, ' ')}</b>${value}</span>
+                        <span class="cart-item-variant"><b>${toEnglishProductText(optionLabels[key] || key.replace(/_/g, ' '))}</b>${toEnglishProductText(value, 'Standard')}</span>
                     `).join('');
                     const freeShippingBadge = product.attributes?.free_shipping === true
                         ? `<span class="cart-item-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Free shipping</span>`
@@ -335,9 +337,10 @@
         }
 
         async function removeItem(itemId) {
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             showConfirmModal(
-                'Remove Item',
-                'Remove this item from your cart?',
+                _t('cart.remove_title'),
+                _t('cart.remove_confirm'),
                 async () => {
                     // Optimistically remove from UI
                     const itemElement = document.querySelector(`#cart-item-${itemId}`);
@@ -359,12 +362,13 @@
                     
                     if (newCount === 0) {
                         // Show empty cart immediately
+                        const _t2 = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
                         document.getElementById('cart-items-container').innerHTML = `
                             <div class="cart-empty">
                                 <div class="cart-empty-icon">🛒</div>
-                                <h2>Your cart is empty</h2>
-                                <p>Looks like you haven't added anything to your cart yet.</p>
-                                <a href="products.html" class="btn btn-primary btn-lg">Continue Shopping</a>
+                                <h2>${_t2('cart.empty')}</h2>
+                                <p>${_t2('cart.empty_desc')}</p>
+                                <a href="products.html" class="btn btn-primary btn-lg">${_t2('cart.start_shopping')}</a>
                             </div>
                         `;
                         document.getElementById('cart-summary').style.display = 'none';
@@ -380,7 +384,7 @@
                     try {
                         // Make API call in background
                         await api.removeCartItem(itemId);
-                        showToast('Item removed', 'success');
+                        showToast(typeof i18n !== 'undefined' ? i18n.t('cart.item_removed') : 'Item removed', 'success');
                         updateCartBadge();
                         
                         // Clear pending updates for this item
@@ -399,9 +403,10 @@
         }
 
         async function clearCart() {
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             showConfirmModal(
-                'Clear Cart',
-                'Are you sure you want to clear your entire cart?',
+                _t('cart.clear_title'),
+                _t('cart.clear_confirm'),
                 async () => {
                     // Optimistically clear UI
                     const container = document.getElementById('cart-items-container');
@@ -410,9 +415,9 @@
                     container.innerHTML = `
                         <div class="cart-empty">
                             <div class="cart-empty-icon">🛒</div>
-                            <h2>Your cart is empty</h2>
-                            <p>Looks like you haven't added anything to your cart yet.</p>
-                            <a href="products.html" class="btn btn-primary btn-lg">Continue Shopping</a>
+                            <h2>${_t('cart.empty')}</h2>
+                            <p>${_t('cart.empty_desc')}</p>
+                            <a href="products.html" class="btn btn-primary btn-lg">${_t('cart.start_shopping')}</a>
                         </div>
                     `;
                     summary.style.display = 'none';
@@ -420,7 +425,7 @@
                     try {
                         // Make API call in background
                         await api.clearCart();
-                        showToast('Cart cleared', 'success');
+                        showToast(_t('cart.cart_cleared'), 'success');
                         updateCartBadge();
                         
                         // Clear all pending updates
@@ -438,6 +443,5 @@
     </script>
 </body>
 </html>
-
 
 

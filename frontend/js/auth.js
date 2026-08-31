@@ -10,6 +10,7 @@ function initAuth() {
     const registerForm = document.getElementById('register-form');
     const title = document.getElementById('auth-title');
     const subtitle = document.getElementById('auth-subtitle');
+    const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
     if (loginTab && registerTab) {
         loginTab.addEventListener('click', () => {
@@ -17,8 +18,8 @@ function initAuth() {
             registerTab.classList.remove('active');
             loginForm.classList.add('active');
             registerForm.classList.remove('active');
-            if (title) title.textContent = 'Welcome Back';
-            if (subtitle) subtitle.textContent = 'Sign in to continue shopping at BuyBIBZ';
+            if (title) title.textContent = _t('auth.welcome_back');
+            if (subtitle) subtitle.textContent = _t('auth.sign_in_subtitle');
         });
 
         registerTab.addEventListener('click', () => {
@@ -26,10 +27,14 @@ function initAuth() {
             loginTab.classList.remove('active');
             registerForm.classList.add('active');
             loginForm.classList.remove('active');
-            if (title) title.textContent = 'Create your account';
-            if (subtitle) subtitle.textContent = 'A few details and you are ready to shop.';
+            if (title) title.textContent = _t('auth.create_account_title');
+            if (subtitle) subtitle.textContent = _t('auth.create_account_subtitle');
         });
     }
+
+    // Apply initial translations to auth title/subtitle
+    if (title) title.textContent = _t('auth.welcome_back');
+    if (subtitle) subtitle.textContent = _t('auth.sign_in_subtitle');
 
     // Login form
     const loginFormEl = document.getElementById('login-form-el');
@@ -41,11 +46,11 @@ function initAuth() {
             const password = document.getElementById('login-password').value;
 
             btn.disabled = true;
-            btn.textContent = 'Signing in...';
+            btn.textContent = _t('auth.signing_in');
 
             try {
                 await api.login(email, password);
-                showToast('Welcome back!', 'success');
+                showToast(_t('auth.welcome_msg'), 'success');
                 setTimeout(() => {
                     const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
                     window.location.href = redirect;
@@ -53,7 +58,7 @@ function initAuth() {
             } catch (err) {
                 showToast(err.message, 'error');
                 btn.disabled = false;
-                btn.textContent = 'Sign In';
+                btn.textContent = _t('auth.sign_in_btn');
             }
         });
     }
@@ -70,28 +75,28 @@ function initAuth() {
             const confirmPassword = document.getElementById('register-confirm-password').value;
 
             if (password !== confirmPassword) {
-                showToast('Passwords do not match', 'error');
+                showToast(_t('auth.password_mismatch'), 'error');
                 return;
             }
 
             if (password.length < 6) {
-                showToast('Password must be at least 6 characters', 'error');
+                showToast(_t('auth.password_short'), 'error');
                 return;
             }
 
             btn.disabled = true;
-            btn.textContent = 'Creating account...';
+            btn.textContent = _t('auth.creating');
 
             try {
                 await api.register(email, password, name);
-                showToast('Account created! Welcome to BuyBIBZ!', 'success');
+                showToast(_t('auth.created_msg'), 'success');
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 500);
             } catch (err) {
                 showToast(err.message, 'error');
                 btn.disabled = false;
-                btn.textContent = 'Create Account';
+                btn.textContent = _t('auth.create_btn');
             }
         });
     }

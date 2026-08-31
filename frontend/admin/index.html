@@ -23,7 +23,7 @@
     <meta name="theme-color" content="#0a0f1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo.jpg">
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/admin.css?v=3">
 </head>
 <body>
 
@@ -139,7 +139,13 @@
                     <div class="admin-panel">
                         <div class="panel-header">
                             <h3 class="panel-title">Inventory Directory</h3>
-                            <button class="btn btn-primary" onclick="openProductModal()">+ Add New Product</button>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <button class="btn btn-secondary" onclick="openTaobaoModal()" style="display:flex;align-items:center;gap:6px;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    Import from Taobao
+                                </button>
+                                <button class="btn btn-primary" onclick="openProductModal()">+ Add New Product</button>
+                            </div>
                         </div>
                         <div class="admin-table-wrapper">
                             <table class="admin-table">
@@ -344,6 +350,71 @@
         </form>
     </div>
 
+    <!-- Taobao Import Modal -->
+    <div class="modal-backdrop" id="taobao-modal-backdrop" onclick="closeTaobaoModal()"></div>
+    <div class="modal product-editor-modal" id="taobao-modal" style="max-width:600px;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+        <!-- Sticky header -->
+        <div class="modal-header" style="padding:20px 24px 16px;flex-shrink:0;margin-bottom:0;">
+            <div>
+                <span class="modal-eyebrow">Taobao / Tmall</span>
+                <h2>Import Product</h2>
+            </div>
+            <button class="modal-close" type="button" onclick="closeTaobaoModal()" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div style="flex:1;overflow-y:auto;padding:20px 24px;">
+
+            <!-- Step 1: URL input -->
+            <div id="taobao-step-input">
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+                    Paste a Taobao or Tmall product URL (or numeric item ID). The product will be fetched, translated, and priced automatically.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="taobao-url-input">Product URL or Item ID</label>
+                    <input type="text" id="taobao-url-input" class="form-input"
+                        placeholder="https://item.taobao.com/item.htm?id=... or 1003783113480"
+                        style="font-size:0.83rem;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="taobao-category-select">Override Category <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+                    <select id="taobao-category-select" class="form-select">
+                        <option value="">Auto-detect</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 2: Preview result -->
+            <div id="taobao-step-preview" style="display:none;">
+                <div id="taobao-preview-content"></div>
+            </div>
+
+            <!-- Step 3: Loading spinner -->
+            <div id="taobao-step-loading" style="display:none;text-align:center;padding:40px 20px;">
+                <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+                <p id="taobao-loading-msg" style="color:var(--text-muted);font-size:0.875rem;">Fetching from Taobao via Apify…<br><span style="font-size:0.8rem;opacity:0.6;">This usually takes 20–40 seconds</span></p>
+            </div>
+
+        </div>
+
+        <!-- Sticky footer buttons — always visible -->
+        <div id="taobao-footer-input" style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card);">
+            <button class="btn btn-secondary" onclick="closeTaobaoModal()">Cancel</button>
+            <button class="btn btn-primary" id="taobao-preview-btn" onclick="runTaobaoPreview()">
+                Preview Product
+            </button>
+        </div>
+
+        <div id="taobao-footer-preview" style="padding:14px 24px;border-top:1px solid var(--border);display:none;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card);">
+            <button class="btn btn-secondary" onclick="taobaoBackToInput()">← Back</button>
+            <button class="btn btn-primary" id="taobao-import-btn" onclick="runTaobaoImport()" style="background:#10b981;border-color:#10b981;">
+                ✓ Import to Store
+            </button>
+        </div>
+
+        <div id="taobao-footer-loading" style="padding:14px 24px;border-top:1px solid var(--border);display:none;flex-shrink:0;background:var(--bg-card);"></div>
+    </div>
+
     <!-- UI Notification System -->
     <div class="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: 12px; font-family: var(--font-family);"></div>
 
@@ -377,6 +448,11 @@
                 const select = document.getElementById('p_category');
                 allCategories.forEach(cat => {
                     select.add(new Option(cat.name, cat.id));
+                });
+                // Also populate Taobao category override dropdown
+                const taobaoSelect = document.getElementById('taobao-category-select');
+                allCategories.forEach(cat => {
+                    taobaoSelect.add(new Option(cat.name, cat.id));
                 });
             } catch (err) {}
 
@@ -725,7 +801,7 @@
                                     <img src="${itemImg}" alt="${item.product_name || 'Product'}">
                                     <div class="order-detail-item-info">
                                         <strong>${item.product_name || 'Product'}</strong>
-                                        <span>Product ID: ${item.product_id} · ${formatPrice(item.price)} × ${item.quantity}</span>
+                                        <span>${item.product_id ? `Product ID: ${item.product_id}` : 'Deleted product'} · ${formatPrice(item.price)} × ${item.quantity}</span>
                                         ${visibleOpts.map(([key, value]) => `<span style="text-transform: capitalize;">${key.replace(/_/g, ' ')}: ${value}</span>`).join('')}
                                     </div>
                                     <strong class="order-detail-subtotal">${formatPrice(item.subtotal)}</strong>
@@ -1003,6 +1079,158 @@
                 loadDashboard();
             } catch (err) {
                 showToast(err.message, 'error');
+            }
+        }
+
+        // ── Taobao Import Modal ──────────────────────────────────
+        let _taobaoPreviewData = null;
+
+        function openTaobaoModal() {
+            _taobaoPreviewData = null;
+            document.getElementById('taobao-url-input').value = '';
+            taobaoShowStep('input');
+            document.getElementById('taobao-modal').classList.add('active');
+            document.getElementById('taobao-modal-backdrop').classList.add('active');
+            setTimeout(() => document.getElementById('taobao-url-input').focus(), 100);
+        }
+
+        function closeTaobaoModal() {
+            document.getElementById('taobao-modal').classList.remove('active');
+            document.getElementById('taobao-modal-backdrop').classList.remove('active');
+        }
+
+        function taobaoShowStep(step) {
+            document.getElementById('taobao-step-input').style.display    = step === 'input'   ? '' : 'none';
+            document.getElementById('taobao-step-preview').style.display  = step === 'preview' ? '' : 'none';
+            document.getElementById('taobao-step-loading').style.display  = step === 'loading' ? '' : 'none';
+            // Footer buttons
+            document.getElementById('taobao-footer-input').style.display   = step === 'input'   ? 'flex' : 'none';
+            document.getElementById('taobao-footer-preview').style.display = step === 'preview' ? 'flex' : 'none';
+            document.getElementById('taobao-footer-loading').style.display = step === 'loading' ? 'block' : 'none';
+        }
+
+        function taobaoBackToInput() {
+            taobaoShowStep('input');
+        }
+
+        async function runTaobaoPreview() {
+            const item = document.getElementById('taobao-url-input').value.trim();
+            if (!item) {
+                showToast('Please enter a Taobao URL or item ID.', 'warning');
+                return;
+            }
+
+            taobaoShowStep('loading');
+            document.getElementById('taobao-loading-msg').innerHTML =
+                'Fetching from Taobao via Apify…<br><span style="font-size:0.8rem;opacity:0.6;">This usually takes 20–40 seconds</span>';
+
+            try {
+                const result = await api.previewTaobaoProduct(item);
+                _taobaoPreviewData = result.data;
+                renderTaobaoPreview(result.data);
+                taobaoShowStep('preview');
+            } catch (err) {
+                taobaoShowStep('input');
+                showToast('Preview failed: ' + err.message, 'error');
+            }
+        }
+
+        function renderTaobaoPreview(data) {
+            const pricing = data.pricing || {};
+            const images = data.main_images || [];
+            const variants = data.variants || [];
+            const attributes = data.attributes || [];
+
+            const imageStrip = images.slice(0, 5).map((url, i) =>
+                `<img src="${url}" alt="img${i}" referrerpolicy="no-referrer"
+                    style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;"
+                    onclick="document.getElementById('tb-main-img').src=this.src">`
+            ).join('');
+
+            const variantRows = variants.slice(0, 6).map(v =>
+                `<tr>
+                    <td style="padding:4px 8px;font-size:0.78rem;">${v.variant_name || '—'}</td>
+                    <td style="padding:4px 8px;font-size:0.78rem;color:#10b981;font-weight:600;">$${v.retail_price_usd}</td>
+                    <td style="padding:4px 8px;font-size:0.78rem;color:var(--text-muted);">$${v.supplier_cost_usd}</td>
+                    <td style="padding:4px 8px;font-size:0.78rem;">${v.stock}</td>
+                </tr>`
+            ).join('');
+
+            const attrBadges = attributes.slice(0, 8).map(a =>
+                `<span style="background:var(--bg-muted);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:0.75rem;">
+                    <strong>${a.name}:</strong> ${(a.values || []).join(', ')}
+                </span>`
+            ).join('');
+
+            document.getElementById('taobao-preview-content').innerHTML = `
+                <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">
+                    <div style="flex-shrink:0;">
+                        <img id="tb-main-img" src="${images[0] || ''}" referrerpolicy="no-referrer"
+                            style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
+                        <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;max-width:110px;">${imageStrip}</div>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.7rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">${data.category}</div>
+                        <div style="font-weight:700;font-size:0.95rem;line-height:1.3;margin-bottom:8px;">${data.title}</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Brand: ${data.brand}</div>
+                        <div style="display:flex;align-items:baseline;gap:10px;">
+                            <span style="font-size:1.2rem;font-weight:800;color:#10b981;">$${pricing.retail_price_usd}</span>
+                            ${pricing.original_retail_usd !== pricing.retail_price_usd
+                                ? `<span style="font-size:0.8rem;color:var(--text-muted);text-decoration:line-through;">$${pricing.original_retail_usd}</span>` : ''}
+                            <span style="font-size:0.75rem;color:var(--text-muted);">cost: $${pricing.supplier_cost_usd}</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${attrBadges ? `
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">${attrBadges}</div>` : ''}
+
+                ${variants.length > 0 ? `
+                <div style="margin-bottom:4px;">
+                    <p style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">
+                        Variants (${variants.length} SKUs)
+                    </p>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <th style="padding:4px 8px;text-align:left;font-weight:600;color:var(--text-muted);">Variant</th>
+                                    <th style="padding:4px 8px;text-align:left;font-weight:600;color:var(--text-muted);">Retail</th>
+                                    <th style="padding:4px 8px;text-align:left;font-weight:600;color:var(--text-muted);">Cost</th>
+                                    <th style="padding:4px 8px;text-align:left;font-weight:600;color:var(--text-muted);">Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>${variantRows}</tbody>
+                        </table>
+                        ${variants.length > 6 ? `<p style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:6px;">+ ${variants.length - 6} more variants</p>` : ''}
+                    </div>
+                </div>` : ''}
+
+                <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:10px 14px;font-size:0.78rem;color:var(--text-muted);margin-top:12px;">
+                    ✓ Images loaded with <strong>no-referrer</strong> policy &nbsp;·&nbsp;
+                    Item ID: <strong>${data.taobao_item_id}</strong>
+                </div>
+            `;
+        }
+
+        async function runTaobaoImport() {
+            if (!_taobaoPreviewData) return;
+            const item = document.getElementById('taobao-url-input').value.trim();
+            const categoryId = document.getElementById('taobao-category-select').value || null;
+
+            document.getElementById('taobao-loading-msg').innerHTML =
+                'Saving product to your store…<br><span style="font-size:0.8rem;opacity:0.6;">Almost done</span>';
+            taobaoShowStep('loading');
+
+            try {
+                const result = await api.importTaobaoProduct(item, categoryId ? parseInt(categoryId) : null);
+                closeTaobaoModal();
+                showToast(`"${result.product?.name || 'Product'}" imported successfully!`, 'success');
+                loadProducts();
+                loadDashboard();
+            } catch (err) {
+                taobaoShowStep('preview');
+                showToast('Import failed: ' + err.message, 'error');
             }
         }
     </script>

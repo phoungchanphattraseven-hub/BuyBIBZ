@@ -1,7 +1,8 @@
 import re
-from fastapi import APIRouter, HTTPException, Depends, Query, Response
+from fastapi import APIRouter, HTTPException, Depends, Query, Response, Body
 from core.config import get_supabase, get_authenticated_client
 from core.auth import get_current_user, get_admin_user
+from core.taobao_ingest import ingest_taobao_product, normalize_taobao_product
 from models.schemas import ProductCreate, ProductUpdate
 from typing import Optional
 
@@ -245,6 +246,144 @@ async def delete_product(product_id: int, admin=Depends(get_admin_user)):
         return {"message": "Product deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Taobao Import Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/import-taobao/preview")
+async def preview_taobao_product(
+    payload: dict = Body(..., example={"item": "https://item.taobao.com/item.htm?id=1003783113480"}),
+    admin=Depends(get_admin_user),
+):
+    """
+    Fetch a Taobao product via Apify, run it through the normalisation pipeline,
+    and return the structured result WITHOUT saving to the database.
+
+    Use this to preview / verify before committing.
+    Body: { "item": "<taobao_url_or_item_id>" }
+    """
+    item = (payload or {}).get("item", "").strip()
+    if not item:
+        raise HTTPException(status_code=422, detail="'item' field is required (Taobao URL or item ID).")
+
+    try:
+        result = await ingest_taobao_product(item)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Apify fetch error: {str(e)}")
+
+    if result.get("status") == "rejected":
+        raise HTTPException(status_code=422, detail=result.get("reason", "Product rejected by category filter."))
+
+    return result
+
+
+@router.post("/import-taobao")
+async def import_taobao_product(
+    payload: dict = Body(..., example={"item": "https://item.taobao.com/item.htm?id=1003783113480", "category_id": None}),
+    admin=Depends(get_admin_user),
+):
+    """
+    Fetch a Taobao product via Apify, normalise it, and insert it into the database.
+
+    Body:
+      - item (required): Taobao product URL or numeric item ID
+      - category_id (optional): Override the auto-detected category with a DB category ID
+
+    Returns the created product row.
+    """
+    item = (payload or {}).get("item", "").strip()
+    if not item:
+        raise HTTPException(status_code=422, detail="'item' field is required (Taobao URL or item ID).")
+
+    category_id_override = (payload or {}).get("category_id")
+
+    # ── 1. Fetch & normalise ──────────────────────────────────────────────────
+    try:
+        result = await ingest_taobao_product(item)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Apify fetch error: {str(e)}")
+
+    if result.get("status") == "rejected":
+        raise HTTPException(status_code=422, detail=result.get("reason", "Product rejected by category filter."))
+
+    pc = result["data"]["_product_create"]
+
+    # ── 2. Resolve category_id ────────────────────────────────────────────────
+    supabase = get_authenticated_client(admin["token"])
+    resolved_category_id = category_id_override
+
+    if not resolved_category_id:
+        detected_category_name = result["data"]["category"]
+        try:
+            cat_resp = (
+                supabase.table("categories")
+                .select("id")
+                .ilike("name", f"%{detected_category_name.split()[0]}%")
+                .limit(1)
+                .execute()
+            )
+            if cat_resp.data:
+                resolved_category_id = cat_resp.data[0]["id"]
+        except Exception:
+            pass  # category_id stays None — product still saves without a category
+
+    pc["category_id"] = resolved_category_id
+
+    # ── 3. Generate unique slug ───────────────────────────────────────────────
+    base_slug = slugify(pc["name"])
+    slug = base_slug
+    counter = 1
+    while True:
+        existing = supabase.table("products").select("id").eq("slug", slug).execute()
+        if not existing.data:
+            break
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    pc["slug"] = slug
+
+    # ── 4. Insert product ─────────────────────────────────────────────────────
+    try:
+        insert_resp = supabase.table("products").insert(pc).execute()
+        if not insert_resp.data:
+            raise HTTPException(status_code=500, detail="Database insert returned no data.")
+        product_row = insert_resp.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database insert error: {str(e)}")
+
+    # ── 5. Save product images ────────────────────────────────────────────────
+    product_id = product_row["id"]
+    image_rows = [
+        {
+            "product_id": product_id,
+            "image_url": url,
+            "alt_text": pc["name"],
+            "display_order": idx,
+            "is_primary": idx == 0,
+        }
+        for idx, url in enumerate(pc.get("images") or [])
+        if url
+    ]
+    if image_rows:
+        try:
+            supabase.table("product_images").insert(image_rows).execute()
+        except Exception:
+            pass  # non-fatal — product already created
+
+    return {
+        "message": "Product imported from Taobao successfully.",
+        "product": product_row,
+        "images_saved": len(image_rows),
+        "normalized": result["data"],
+    }
 
 
 @router.post("/{product_id}/images")

@@ -57,8 +57,8 @@
         <div class="container">
             <div class="page-header">
                 <div class="page-header-text">
-                    <h1 id="catalog-title">All Products</h1>
-                    <p id="catalog-subtitle">Discover our premium collection</p>
+                    <h1 id="catalog-title" data-i18n="products.all_products">All Products</h1>
+                    <p id="catalog-subtitle" data-i18n="products.premium_collection">Discover our premium collection</p>
                 </div>
                 <div class="page-header-search">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -108,15 +108,15 @@
                             <line x1="9" y1="8" x2="15" y2="8"></line>
                             <line x1="17" y1="16" x2="23" y2="16"></line>
                         </svg>
-                        <span>Filters</span>
+                        <span data-i18n="products.filters">Filters</span>
                         <span class="filter-badge" id="filter-badge" style="display: none;">0</span>
                     </button>
                     <div class="mobile-sort-wrapper">
                         <select id="mobile-sort-select" class="mobile-sort-select" aria-label="Sort products">
-                            <option value="newest">Newest</option>
-                            <option value="price_asc">Price: Low to High</option>
-                            <option value="price_desc">Price: High to Low</option>
-                            <option value="rating">Top Rated</option>
+                            <option value="newest" data-i18n="products.newest">Newest</option>
+                            <option value="price_asc" data-i18n="products.price_low">Price: Low to High</option>
+                            <option value="price_desc" data-i18n="products.price_high">Price: High to Low</option>
+                            <option value="rating" data-i18n="products.top_rated">Top Rated</option>
                         </select>
                         <svg class="sort-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
                     </div>
@@ -131,51 +131,51 @@
                 <aside class="catalog-sidebar">
                     <div class="filter-section">
                         <div class="filter-section-header">
-                            <h3>Categories</h3>
+                            <h3 data-i18n="products.categories">Categories</h3>
                         </div>
                         <div id="filter-categories">
                             <label class="filter-option active" data-category="">
-                                <input type="radio" name="category" value="" checked> All Categories
+                                <input type="radio" name="category" value="" checked> <span data-i18n="products.all_categories">All Categories</span>
                             </label>
                         </div>
                     </div>
 
                     <div class="filter-section">
                         <div class="filter-section-header">
-                            <h3>Price Range</h3>
+                            <h3 data-i18n="products.price_range">Price Range</h3>
                         </div>
                         <label class="filter-option active" data-price="">
-                            <input type="radio" name="price" value="" checked> All Prices
+                            <input type="radio" name="price" value="" checked> <span data-i18n="products.all_prices">All Prices</span>
                         </label>
                         <label class="filter-option" data-price="0-50">
-                            <input type="radio" name="price" value="0-50"> Under $50
+                            <input type="radio" name="price" value="0-50"> <span data-i18n="products.under_50">Under $50</span>
                         </label>
                         <label class="filter-option" data-price="50-100">
-                            <input type="radio" name="price" value="50-100"> $50 — $100
+                            <input type="radio" name="price" value="50-100"> <span data-i18n="products.50_100">$50 — $100</span>
                         </label>
                         <label class="filter-option" data-price="100-250">
-                            <input type="radio" name="price" value="100-250"> $100 — $250
+                            <input type="radio" name="price" value="100-250"> <span data-i18n="products.100_250">$100 — $250</span>
                         </label>
                         <label class="filter-option" data-price="250-9999">
-                            <input type="radio" name="price" value="250-9999"> $250+
+                            <input type="radio" name="price" value="250-9999"> <span data-i18n="products.250_plus">$250+</span>
                         </label>
                     </div>
 
                     <div class="filter-section">
                         <div class="filter-section-header">
-                            <h3>Sort By</h3>
+                            <h3 data-i18n="products.sort_by">Sort By</h3>
                         </div>
                         <label class="filter-option active">
-                            <input type="radio" name="sort" value="newest" checked> Newest
+                            <input type="radio" name="sort" value="newest" checked> <span data-i18n="products.newest">Newest</span>
                         </label>
                         <label class="filter-option">
-                            <input type="radio" name="sort" value="price_asc"> Price: Low to High
+                            <input type="radio" name="sort" value="price_asc"> <span data-i18n="products.price_low">Price: Low to High</span>
                         </label>
                         <label class="filter-option">
-                            <input type="radio" name="sort" value="price_desc"> Price: High to Low
+                            <input type="radio" name="sort" value="price_desc"> <span data-i18n="products.price_high">Price: High to Low</span>
                         </label>
                         <label class="filter-option">
-                            <input type="radio" name="sort" value="rating"> Top Rated
+                            <input type="radio" name="sort" value="rating"> <span data-i18n="products.top_rated">Top Rated</span>
                         </label>
                     </div>
                 </aside>
@@ -202,8 +202,8 @@
         <div class="filter-sheet-handle"></div>
         <div class="filter-sheet-header">
             <div class="filter-sheet-title-group">
-                <h3>Filters & Refinements</h3>
-                <button type="button" class="btn-sheet-reset" id="sheet-reset-btn">Reset All</button>
+                <h3 data-i18n="products.filters_refinements">Filters & Refinements</h3>
+                <button type="button" class="btn-sheet-reset" id="sheet-reset-btn" data-i18n="products.reset_all">Reset All</button>
             </div>
             <button type="button" class="filter-sheet-close" id="close-filter-sheet" aria-label="Close filters">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -212,37 +212,37 @@
         <div class="filter-sheet-body">
             <!-- Price Range -->
             <div class="sheet-section">
-                <h4 class="sheet-section-title">Price Range</h4>
+                <h4 class="sheet-section-title" data-i18n="products.price_range">Price Range</h4>
                 <div class="sheet-chips-grid" id="sheet-price-chips">
-                    <button type="button" class="sheet-chip active" data-price="">All Prices</button>
-                    <button type="button" class="sheet-chip" data-price="0-50">Under $50</button>
-                    <button type="button" class="sheet-chip" data-price="50-100">$50 — $100</button>
-                    <button type="button" class="sheet-chip" data-price="100-250">$100 — $250</button>
-                    <button type="button" class="sheet-chip" data-price="250-9999">$250+</button>
+                    <button type="button" class="sheet-chip active" data-price="" data-i18n="products.all_prices">All Prices</button>
+                    <button type="button" class="sheet-chip" data-price="0-50" data-i18n="products.under_50">Under $50</button>
+                    <button type="button" class="sheet-chip" data-price="50-100" data-i18n="products.50_100">$50 — $100</button>
+                    <button type="button" class="sheet-chip" data-price="100-250" data-i18n="products.100_250">$100 — $250</button>
+                    <button type="button" class="sheet-chip" data-price="250-9999" data-i18n="products.250_plus">$250+</button>
                 </div>
             </div>
 
             <!-- Sort By -->
             <div class="sheet-section">
-                <h4 class="sheet-section-title">Sort By</h4>
+                <h4 class="sheet-section-title" data-i18n="products.sort_by">Sort By</h4>
                 <div class="sheet-chips-grid" id="sheet-sort-chips">
-                    <button type="button" class="sheet-chip active" data-sort="newest">✨ Newest</button>
-                    <button type="button" class="sheet-chip" data-sort="price_asc">💵 Price: Low to High</button>
-                    <button type="button" class="sheet-chip" data-sort="price_desc">💎 Price: High to Low</button>
-                    <button type="button" class="sheet-chip" data-sort="rating">⭐ Top Rated</button>
+                    <button type="button" class="sheet-chip active" data-sort="newest">✨ <span data-i18n="products.newest">Newest</span></button>
+                    <button type="button" class="sheet-chip" data-sort="price_asc">💵 <span data-i18n="products.price_low">Price: Low to High</span></button>
+                    <button type="button" class="sheet-chip" data-sort="price_desc">💎 <span data-i18n="products.price_high">Price: High to Low</span></button>
+                    <button type="button" class="sheet-chip" data-sort="rating">⭐ <span data-i18n="products.top_rated">Top Rated</span></button>
                 </div>
             </div>
 
             <!-- Categories in Bottom Sheet -->
             <div class="sheet-section">
-                <h4 class="sheet-section-title">Category</h4>
+                <h4 class="sheet-section-title" data-i18n="products.categories">Category</h4>
                 <div class="sheet-chips-grid" id="sheet-category-chips">
-                    <button type="button" class="sheet-chip active" data-category="">✨ All Categories</button>
+                    <button type="button" class="sheet-chip active" data-category="">✨ <span data-i18n="products.all_categories">All Categories</span></button>
                 </div>
             </div>
         </div>
         <div class="filter-sheet-footer">
-            <button type="button" class="btn btn-primary btn-block btn-apply-filter" id="apply-filters-btn">
+            <button type="button" class="btn btn-primary btn-block btn-apply-filter" id="apply-filters-btn" data-i18n="products.show_products">
                 Show Products
             </button>
         </div>
@@ -278,11 +278,11 @@
 
             // Update title if searching
             if (currentFilters.search) {
-                document.getElementById('catalog-title').textContent = `Search: "${currentFilters.search}"`;
+                document.getElementById('catalog-title').textContent = `${typeof i18n !== 'undefined' ? i18n.t('nav.search_placeholder').replace('...','') : 'Search'}: "${currentFilters.search}"`;
             }
             if (currentFilters.featured) {
-                document.getElementById('catalog-title').textContent = 'Featured Products';
-                document.getElementById('catalog-subtitle').textContent = 'Our hand-picked selection of premium items';
+                document.getElementById('catalog-title').textContent = typeof i18n !== 'undefined' ? i18n.t('section.featured') : 'Featured Products';
+                document.getElementById('catalog-subtitle').textContent = typeof i18n !== 'undefined' ? i18n.t('section.featured_desc') : 'Our hand-picked selection of premium items';
             }
 
             // Sync sort select
@@ -515,26 +515,27 @@
         }
 
         function updateFilterBadgeAndTags(currentPriceKey) {
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             let activeCount = 0;
             const tags = [];
 
             if (currentFilters.category) {
                 activeCount++;
                 const catObj = categoryList.find(c => c.id == currentFilters.category);
-                const name = catObj ? `${catObj.icon || ''} ${catObj.name}` : 'Category';
+                const name = catObj ? `${catObj.icon || ''} ${catObj.name}` : _t('products.categories');
                 tags.push({ label: name, onRemove: () => setCategoryFilter('') });
             }
 
             if (currentPriceKey) {
                 activeCount++;
                 const priceLabels = {
-                    '0-50': 'Under $50',
-                    '50-100': '$50 — $100',
-                    '100-250': '$100 — $250',
-                    '250-9999': '$250+'
+                    '0-50': _t('products.under_50'),
+                    '50-100': _t('products.50_100'),
+                    '100-250': _t('products.100_250'),
+                    '250-9999': _t('products.250_plus'),
                 };
                 tags.push({
-                    label: priceLabels[currentPriceKey] || 'Price filter',
+                    label: priceLabels[currentPriceKey] || currentPriceKey,
                     onRemove: () => setPriceFilter('')
                 });
             }
@@ -542,12 +543,12 @@
             if (currentFilters.sort && currentFilters.sort !== 'newest') {
                 activeCount++;
                 const sortLabels = {
-                    'price_asc': 'Price ↑',
-                    'price_desc': 'Price ↓',
-                    'rating': 'Top Rated'
+                    'price_asc': _t('products.price_low'),
+                    'price_desc': _t('products.price_high'),
+                    'rating': _t('products.top_rated'),
                 };
                 tags.push({
-                    label: sortLabels[currentFilters.sort] || 'Sorted',
+                    label: sortLabels[currentFilters.sort] || currentFilters.sort,
                     onRemove: () => setSortFilter('newest')
                 });
             }
@@ -584,7 +585,7 @@
                     const clearBtn = document.createElement('button');
                     clearBtn.type = 'button';
                     clearBtn.className = 'tag-clear-all';
-                    clearBtn.textContent = 'Clear All';
+                    clearBtn.textContent = _t('products.clear_all');
                     clearBtn.addEventListener('click', resetAllFilters);
                     tagsContainer.appendChild(clearBtn);
                 } else {

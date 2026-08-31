@@ -31,9 +31,23 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
         subtotal = 0
         all_free_shipping = True
         for item in (cart.data if cart and cart.data else []):
-            product = item["products"]
-            if not product:
-                continue
+            # `cart_items.product_id` is the authoritative relation key. Do
+            # not rely on the embedded product response for it: some joined
+            # responses can omit the embedded `products.id`, which previously
+            # created an order item with a NULL product_id.
+            product_id = item.get("product_id")
+            product = item.get("products")
+
+            if (
+                not isinstance(product_id, int)
+                or product_id <= 0
+                or not isinstance(product, dict)
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail="A cart item is no longer available. Remove it from your cart and try again.",
+                )
+
             if product["stock"] < item["quantity"]:
                 raise HTTPException(
                     status_code=400,
@@ -45,7 +59,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             item_subtotal = round(product["price"] * item["quantity"], 2)
             subtotal += item_subtotal
             order_items_data.append({
-                "product_id": product["id"],
+                "product_id": product_id,
                 "product_name": product["name"],
                 "product_image": product.get("image_url"),
                 "price": product["price"],
@@ -94,7 +108,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
                 new_stock = product["stock"] - item["quantity"]
                 supabase.table("products").update(
                     {"stock": new_stock}
-                ).eq("id", product["id"]).execute()
+                ).eq("id", item["product_id"]).execute()
 
         # 6. Clear the cart
         supabase.table("cart_items").delete().eq("user_id", user_id).execute()

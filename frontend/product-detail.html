@@ -46,14 +46,14 @@
 
             <!-- Reviews Section -->
             <div class="reviews-section" id="reviews-section" style="display: none;">
-                <h2>Customer Reviews</h2>
+                <h2 data-i18n="product.customer_reviews">Customer Reviews</h2>
                 <div id="reviews-list"></div>
 
                 <div class="review-form" id="review-form-container" style="display: none;">
-                    <h3>Write a Review</h3>
+                    <h3 data-i18n="product.write_review">Write a Review</h3>
                     <form id="review-form">
                         <div class="form-group">
-                            <label class="form-label">Rating</label>
+                            <label class="form-label" data-i18n="product.rating_label">Rating</label>
                             <div class="star-rating-input" id="star-rating">
                                 <span class="star" data-value="1">★</span>
                                 <span class="star" data-value="2">★</span>
@@ -64,10 +64,10 @@
                             <input type="hidden" id="review-rating" value="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="review-comment">Your Review</label>
-                            <textarea id="review-comment" class="form-textarea" placeholder="Share your experience with this product..." rows="4"></textarea>
+                            <label class="form-label" for="review-comment" data-i18n="product.your_review">Your Review</label>
+                            <textarea id="review-comment" class="form-textarea" data-i18n-placeholder="product.review_placeholder" placeholder="Share your experience with this product..." rows="4"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                        <button type="submit" class="btn btn-primary" data-i18n="product.submit_review">Submit Review</button>
                     </form>
                 </div>
             </div>
@@ -128,6 +128,7 @@
                 : 0;
             const inStock = product.stock > 0;
             const hasFreeShipping = product.attributes?.free_shipping === true;
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
             // Handle images - use product_images array if available, otherwise fallback to single image_url
             const images = product.product_images && product.product_images.length > 0
@@ -154,7 +155,7 @@
                 <div class="product-detail-info">
                     <div class="product-detail-kicker">
                         ${category ? `<span class="product-category-pill">${category.name}</span>` : ''}
-                        ${hasFreeShipping ? `<span class="product-free-shipping-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Free shipping</span>` : ''}
+                        ${hasFreeShipping ? `<span class="product-free-shipping-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>${_t('product.free_shipping')}</span>` : ''}
                     </div>
                     <h1>${product.name}</h1>
 
@@ -176,7 +177,7 @@
                         <div class="product-detail-meta-item">
                             <span class="stock-indicator ${inStock ? 'in-stock' : 'out-of-stock'}"></span>
                             <span class="value">
-                                ${inStock ? `${product.stock} available · Ready to ship` : 'Out of stock'}
+                                ${inStock ? `${product.stock} ${_t('product.available')}` : _t('product.out_of_stock')}
                             </span>
                         </div>
                     </div>
@@ -192,12 +193,12 @@
                         </div>
                         <button class="btn btn-primary btn-lg" onclick="addSelectedProductToCart(${product.id})" style="flex:1;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                            Add to Cart
+                            ${_t('product.add_to_cart_btn')}
                         </button>
                     </div>
                     ` : `
                     <button class="btn btn-secondary btn-lg" disabled style="opacity: 0.5; cursor: not-allowed;">
-                        Out of Stock
+                        ${_t('product.out_of_stock')}
                     </button>
                     `}
                 </div>
@@ -242,19 +243,23 @@
             // Known attributes config: label, icon, how to render
             // type: 'chips' means the value is always selectable (even single-value)
             const ATTR_CONFIG = {
-                colors:         { label: 'Colors',      type: 'color-swatches' },
-                sizes:          { label: 'Sizes',        type: 'chips' },
-                material:       { label: 'Material',     type: 'text' },
-                weight:         { label: 'Weight',       type: 'chips' },
-                warranty:       { label: 'Warranty',     type: 'text' },
-                free_shipping:  { label: 'Free Shipping',type: 'badge' },
-                brand:          { label: 'Brand',        type: 'text' },
-                model:          { label: 'Model',        type: 'text' },
-                dimensions:     { label: 'Dimensions',   type: 'chips' },
-                gender:         { label: 'Gender',       type: 'text' },
-                age_group:      { label: 'Age Group',    type: 'text' },
-                condition:      { label: 'Condition',    type: 'text' },
-                country_origin: { label: 'Made In',      type: 'text' },
+                colors:           { label: 'Colors',         type: 'color-swatches' },
+                sizes:            { label: 'Sizes',           type: 'chips' },
+                material:         { label: 'Material',        type: 'text' },
+                weight:           { label: 'Weight',          type: 'chips' },
+                warranty:         { label: 'Warranty',        type: 'text' },
+                free_shipping:    { label: 'Free Shipping',   type: 'badge' },
+                brand:            { label: 'Brand',           type: 'text' },
+                model:            { label: 'Model',           type: 'text' },
+                dimensions:       { label: 'Dimensions',      type: 'chips' },
+                gender:           { label: 'Gender',          type: 'text' },
+                age_group:        { label: 'Age Group',       type: 'text' },
+                condition:        { label: 'Condition',       type: 'text' },
+                country_origin:   { label: 'Made In',         type: 'text' },
+                // ── Taobao-imported fields ──────────────────────
+                taobao_item_id:   { label: 'Taobao Item Id',  type: 'text' },
+                supplier_cost_usd:{ label: 'Supplier Cost',   type: 'hidden' }, // internal — hide from customers
+                variants:         { label: 'Variants',        type: 'hidden' }, // rendered separately as SKU table
             };
 
             // Color name → CSS color
@@ -292,12 +297,20 @@
 
                 // Look up config first to know if this attr is a selectable type
                 const config = ATTR_CONFIG[key] || { label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: '•', type: typeof rawValue === 'boolean' ? 'badge' : 'text' };
+
+                // Skip hidden fields (internal data not shown to customers)
+                if (config.type === 'hidden') continue;
+
                 const isSelectableType = config.type === 'chips' || config.type === 'color-swatches';
+
+                // Guard: never render plain objects or arrays as text — skip unknown complex values
+                if (typeof rawValue === 'object' && !isSelectableType) continue;
 
                 // Normalize value: arrays stay as-is; comma-separated strings get split for chip-type attrs
                 let listValues;
                 if (Array.isArray(rawValue)) {
-                    listValues = rawValue.filter(v => v !== null && v !== undefined && v !== '');
+                    listValues = rawValue
+                        .filter(v => v !== null && v !== undefined && v !== '' && typeof v !== 'object');
                 } else if (isSelectableType && typeof rawValue === 'string' && rawValue.includes(',')) {
                     // Split comma-separated string into individual selectable options
                     listValues = rawValue.split(',').map(v => v.trim()).filter(v => v !== '');
@@ -306,8 +319,8 @@
                 }
 
                 const value = listValues
-                    ? (listValues.length === 1 ? listValues[0] : listValues)
-                    : rawValue;
+                    ? listValues.map(v => toEnglishProductText(v))
+                    : (typeof rawValue === 'string' ? toEnglishProductText(rawValue) : rawValue);
 
                 const attrIcon = ATTRIBUTE_ICONS[key] || ATTRIBUTE_ICONS.default;
 
@@ -355,7 +368,63 @@
 
             if (!optionSections && !detailSections) return '';
 
+            // ── Taobao SKU variant selector ───────────────────────────────────
+            // If the product has Taobao variants stored in attributes.variants,
+            // render them as a selectable chip group
+            let variantSection = '';
+            const taobaoVariants = attrs.variants;
+            if (Array.isArray(taobaoVariants) && taobaoVariants.length > 0) {
+                // Cleaning legacy Chinese names can make multiple SKUs share
+                // the same visible label (for example, several "Standard"
+                // variants). Give those duplicates a stable SKU suffix so a
+                // click selects exactly one chip and one cart option.
+                const cleanedVariants = taobaoVariants
+                    .filter(v => v && v.variant_name && v.variant_name !== 'Default')
+                    .map((v, idx) => ({
+                        ...v,
+                        index: idx,
+                        label: toEnglishProductText(v.variant_name, 'Standard'),
+                    }));
+                const labelCount = cleanedVariants.reduce((counts, variant) => {
+                    counts[variant.label] = (counts[variant.label] || 0) + 1;
+                    return counts;
+                }, {});
+
+                const variantChips = cleanedVariants
+                    .map((v) => {
+                        const label = labelCount[v.label] > 1
+                            ? `${v.label} · SKU ${v.sku_id || v.index + 1}`
+                            : v.label;
+                        const price = v.retail_price_usd ? ` — $${v.retail_price_usd}` : '';
+                        const outOfStock = (v.stock || 0) === 0;
+                        const safeLabel = label.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        return `<button type="button"
+                            class="variant-size-option${outOfStock ? ' disabled' : ''}"
+                            data-value="${safeLabel}"
+                            onclick="${outOfStock ? '' : `selectVariant('variant', '${safeLabel}')`}"
+                            ${outOfStock ? 'disabled title="Out of stock"' : ''}
+                            data-image="${v.image_url || ''}"
+                            data-price="${v.retail_price_usd || ''}"
+                        >${label}${price}</button>`;
+                    }).join('');
+
+                if (variantChips) {
+                    const variantIcon = ATTRIBUTE_ICONS.default;
+                    variantSection = `
+                        <fieldset class="variant-selector" id="variant-variant" data-option-label="variant">
+                            <legend>
+                                <span class="variant-icon">${variantIcon}</span>
+                                <span>Variant: <strong class="variant-selection-note" id="variant-selection-note">Select variant</strong></span>
+                            </legend>
+                            <div class="variant-size-options" role="radiogroup" aria-label="Choose a variant">
+                                ${variantChips}
+                            </div>
+                        </fieldset>`;
+                }
+            }
+
             return `
+                ${variantSection ? `<div class="product-options">${variantSection}</div>` : ''}
                 ${optionSections ? `<div class="product-options">${optionSections}</div>` : ''}
                 ${detailSections ? `<div class="product-attributes product-facts">${detailSections}</div>` : ''}
             `;
@@ -373,15 +442,34 @@
 
             selector.classList.remove('variant-missing');
             selector.querySelectorAll('button').forEach(button => {
-                const buttonValue = type === 'colors'
-                    ? button.querySelector('b')?.textContent
-                    : button.textContent;
+                // Use data-value if present (Taobao variants), else fall back to text
+                const buttonValue = button.dataset.value
+                    || (type === 'colors'
+                        ? button.querySelector('b')?.textContent
+                        : button.textContent.split(' — ')[0].trim());
                 const isSelected = buttonValue === value;
                 button.classList.toggle('selected', isSelected);
                 button.setAttribute('aria-checked', String(isSelected));
+
+                // When selected, update the displayed price if variant has its own price
+                if (isSelected && button.dataset.price) {
+                    const priceEl = document.querySelector('.price-current');
+                    if (priceEl) priceEl.textContent = `$${button.dataset.price}`;
+                }
+
+                // When selected, update main image if variant has its own image
+                if (isSelected && button.dataset.image) {
+                    const mainImg = document.getElementById('main-product-image');
+                    if (mainImg) {
+                        mainImg.src = button.dataset.image;
+                        selectedImageUrl = button.dataset.image;
+                    }
+                }
             });
             const note = document.getElementById(`${type}-selection-note`);
-            if (note) note.textContent = value;
+            if (note) note.textContent = typeof toEnglishProductText === 'function'
+                ? toEnglishProductText(value, value)
+                : value;
         }
 
         async function addSelectedProductToCart(id) {
@@ -402,6 +490,7 @@
         function renderReviews(reviews) {
             const section = document.getElementById('reviews-section');
             const list = document.getElementById('reviews-list');
+            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             section.style.display = 'block';
 
             if (reviews.length > 0) {
@@ -426,7 +515,7 @@
                     `;
                 }).join('');
             } else {
-                list.innerHTML = '<p class="text-secondary" style="margin-bottom: var(--space-lg);">No reviews yet. Be the first to review this product!</p>';
+                list.innerHTML = `<p class="text-secondary" style="margin-bottom: var(--space-lg);">${_t('product.no_reviews')}</p>`;
             }
 
             // Show review form if logged in
@@ -467,17 +556,18 @@
         function initReviewForm() {
             document.getElementById('review-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
                 const rating = parseInt(document.getElementById('review-rating').value);
                 const comment = document.getElementById('review-comment').value;
 
                 if (rating === 0) {
-                    showToast('Please select a rating', 'warning');
+                    showToast(_t('product.rating_label'), 'warning');
                     return;
                 }
 
                 try {
                     await api.createReview(productId, rating, comment);
-                    showToast('Review submitted!', 'success');
+                    showToast(_t('product.submit_review'), 'success');
                     // Reload product to show new review
                     setTimeout(() => window.location.reload(), 500);
                 } catch (err) {

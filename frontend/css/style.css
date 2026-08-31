@@ -2422,9 +2422,10 @@ input:checked + .toggle-slider:before {
 .variant-color-option.selected,
 .variant-size-option.selected {
     color: var(--text-primary);
-    background: var(--bg-elevated);
-    border-color: var(--text-primary);
-    box-shadow: none;
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--brand-primary-light);
 }
 
 .variant-color-option.selected {
