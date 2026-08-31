@@ -178,7 +178,7 @@
                         </div>
                         <div class="cart-summary-row">
                             <span>Shipping</span>
-                            <span style="color: var(--status-success);">Free</span>
+                            <span id="summary-shipping" style="color: var(--status-success);">Free</span>
                         </div>
                         <div class="cart-summary-total">
                             <span>Total</span>
@@ -425,8 +425,18 @@
                 }
 
                 document.getElementById('summary-count').textContent = data.count;
-                document.getElementById('summary-subtotal').textContent = formatPrice(data.total);
+                document.getElementById('summary-subtotal').textContent = formatPrice(data.subtotal ?? data.total);
                 document.getElementById('summary-total').textContent = formatPrice(data.total);
+
+                const shippingEl = document.getElementById('summary-shipping');
+                const shippingFee = data.shipping ?? 0;
+                if (shippingFee > 0) {
+                    shippingEl.textContent = formatPrice(shippingFee);
+                    shippingEl.style.color = '';
+                } else {
+                    shippingEl.textContent = 'Free';
+                    shippingEl.style.color = 'var(--status-success)';
+                }
                 
                 const itemsContainer = document.getElementById('checkout-items');
                 itemsContainer.innerHTML = data.items.map(item => {

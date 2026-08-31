@@ -23,15 +23,26 @@ async def get_cart(current_user=Depends(get_current_user)):
         )
 
         items = response.data if response and response.data else []
-        total = sum(
+        subtotal = sum(
             item["products"]["price"] * item["quantity"]
             for item in items
             if item.get("products")
         )
 
+        # Shipping: $2.25 standard fee, waived only if every item has free_shipping
+        all_free_shipping = all(
+            item["products"].get("attributes", {}).get("free_shipping") is True
+            for item in items
+            if item.get("products")
+        )
+        shipping_fee = 0.0 if (not items or all_free_shipping) else 2.25
+        total = round(subtotal + shipping_fee, 2)
+
         return {
             "items": items,
-            "total": round(total, 2),
+            "subtotal": round(subtotal, 2),
+            "shipping": shipping_fee,
+            "total": total,
             "count": len(items),
         }
     except Exception as e:

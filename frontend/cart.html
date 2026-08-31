@@ -55,7 +55,7 @@
                     </div>
                     <div class="cart-summary-row">
                         <span>Shipping</span>
-                        <span style="color: var(--status-success);">Free</span>
+                        <span id="summary-shipping" style="color: var(--status-success);">Free</span>
                     </div>
                     <div class="cart-summary-row">
                         <span>Tax</span>
@@ -104,6 +104,9 @@
     <script src="js/app.js"></script>
     <script src="js/pwa-install.js"></script>
     <script>
+        // Store last known shipping fee from server
+        let currentShippingFee = 0;
+
         // Store pending updates to prevent conflicts
         const pendingUpdates = new Map();
         const updateTimeouts = new Map();
@@ -173,8 +176,19 @@
 
                 summary.style.display = 'block';
                 document.getElementById('summary-count').textContent = data.count;
-                document.getElementById('summary-subtotal').textContent = formatPrice(data.total);
+                document.getElementById('summary-subtotal').textContent = formatPrice(data.subtotal ?? data.total);
                 document.getElementById('summary-total').textContent = formatPrice(data.total);
+
+                // Shipping row
+                const shippingEl = document.getElementById('summary-shipping');
+                currentShippingFee = data.shipping ?? 0;
+                if (currentShippingFee > 0) {
+                    shippingEl.textContent = formatPrice(currentShippingFee);
+                    shippingEl.style.color = '';
+                } else {
+                    shippingEl.textContent = 'Free';
+                    shippingEl.style.color = 'var(--status-success)';
+                }
                 
                 container.innerHTML = data.items.map(item => {
                     const product = item.products;
@@ -277,7 +291,7 @@
         }
 
         function updateTotalsUI() {
-            let totalPrice = 0;
+            let subtotal = 0;
             let totalItems = 0;
             
             document.querySelectorAll('.cart-item').forEach(itemElement => {
@@ -285,13 +299,13 @@
                 const quantity = parseInt(qtyElement.dataset.quantity);
                 const price = parseFloat(itemElement.dataset.price);
                 
-                totalPrice += price * quantity;
+                subtotal += price * quantity;
                 totalItems++;
             });
             
             document.getElementById('summary-count').textContent = totalItems;
-            document.getElementById('summary-subtotal').textContent = formatPrice(totalPrice);
-            document.getElementById('summary-total').textContent = formatPrice(totalPrice);
+            document.getElementById('summary-subtotal').textContent = formatPrice(subtotal);
+            document.getElementById('summary-total').textContent = formatPrice(subtotal + currentShippingFee);
         }
 
         async function saveQuantityToServer(itemId, quantity) {

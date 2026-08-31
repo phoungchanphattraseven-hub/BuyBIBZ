@@ -18,7 +18,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
         # 1. Get cart items with product details
         cart = (
             supabase.table("cart_items")
-            .select("*, products(id, name, price, image_url, stock)")
+            .select("*, products(id, name, price, image_url, stock, attributes)")
             .eq("user_id", user_id)
             .execute()
         )
@@ -28,7 +28,8 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
 
         # 2. Validate stock availability
         order_items_data = []
-        total = 0
+        subtotal = 0
+        all_free_shipping = True
         for item in (cart.data if cart and cart.data else []):
             product = item["products"]
             if not product:
@@ -38,27 +39,32 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
                     status_code=400,
                     detail=f"Insufficient stock for {product['name']}",
                 )
-            subtotal = round(product["price"] * item["quantity"], 2)
-            total += subtotal
+            # Check if this product breaks the free-shipping rule
+            if not (product.get("attributes") or {}).get("free_shipping"):
+                all_free_shipping = False
+            item_subtotal = round(product["price"] * item["quantity"], 2)
+            subtotal += item_subtotal
             order_items_data.append({
                 "product_id": product["id"],
                 "product_name": product["name"],
                 "product_image": product.get("image_url"),
                 "price": product["price"],
                 "quantity": item["quantity"],
-                "subtotal": subtotal,
+                "subtotal": item_subtotal,
                 "selected_options": item.get("selected_options") or {},
             })
+
+        shipping_fee = 0.0 if all_free_shipping else 2.25
+        total = round(subtotal + shipping_fee, 2)
 
         # 3. Create the order
         order_response = (
             supabase.table("orders")
             .insert({
                 "user_id": user_id,
-                # `id` is the internal database key; this UUID is the stable
-                # public identifier shown to customers and administrators.
                 "order_uid": str(uuid4()),
-                "total": round(total, 2),
+                "total": total,
+                "shipping_fee": shipping_fee,
                 "shipping_name": order.shipping_name,
                 "shipping_address": order.shipping_address,
                 "shipping_city": order.shipping_city,
