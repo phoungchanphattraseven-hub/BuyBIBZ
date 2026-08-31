@@ -60,7 +60,10 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             raise HTTPException(status_code=400, detail="Insufficient stock")
 
         # A product with a different selected color/size is a separate cart item.
+        # Strip display-only metadata (_selected_image) before comparing variants.
         selected_options = item.selected_options or {}
+        selected_image = selected_options.pop("_selected_image", None)  # extract, don't compare
+
         existing = (
             supabase.table("cart_items")
             .select("id, quantity, selected_options")
@@ -69,11 +72,17 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             .execute()
         )
 
+        def options_match(cart_opts: dict, incoming_opts: dict) -> bool:
+            """Compare only variant keys, ignoring _selected_image."""
+            a = {k: v for k, v in (cart_opts or {}).items() if k != "_selected_image"}
+            b = {k: v for k, v in (incoming_opts or {}).items() if k != "_selected_image"}
+            return a == b
+
         matching_item = next(
             (
                 cart_item
                 for cart_item in (existing.data if existing and existing.data else [])
-                if (cart_item.get("selected_options") or {}) == selected_options
+                if options_match(cart_item.get("selected_options") or {}, selected_options)
             ),
             None,
         )
@@ -82,14 +91,24 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             new_qty = matching_item["quantity"] + item.quantity
             if new_qty > product.data["stock"]:
                 raise HTTPException(status_code=400, detail="Insufficient stock")
+            # Merge: update quantity and refresh the selected image to the latest one chosen
+            merged_options = {
+                **{k: v for k, v in (matching_item.get("selected_options") or {}).items() if k != "_selected_image"},
+                **selected_options,
+            }
+            if selected_image:
+                merged_options["_selected_image"] = selected_image
             response = (
                 supabase.table("cart_items")
-                .update({"quantity": new_qty})
+                .update({"quantity": new_qty, "selected_options": merged_options})
                 .eq("id", matching_item["id"])
                 .execute()
             )
             return {"message": "Cart updated", "item": response.data[0] if response.data else None}
         else:
+            # New variant combination — store image alongside the variant options
+            if selected_image:
+                selected_options["_selected_image"] = selected_image
             response = (
                 supabase.table("cart_items")
                 .insert({

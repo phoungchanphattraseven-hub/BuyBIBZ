@@ -86,6 +86,7 @@
         let productId = null;
         let selectedQty = 1;
         let selectedVariants = {};
+        let selectedImageUrl = null; // tracks the image the user clicked in the gallery
 
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
@@ -204,6 +205,19 @@
 
             // Store images in window for selectImage function
             window.productImages = images;
+            // Default selected image is the first (cover) image
+            selectedImageUrl = mainImage.image_url;
+
+            // Auto-select any variant that has only one option (e.g. single dimension, single weight)
+            document.querySelectorAll('.variant-selector').forEach(selector => {
+                const buttons = selector.querySelectorAll('button');
+                if (buttons.length === 1) {
+                    const key = selector.id.replace('variant-', '');
+                    const buttonValue = selector.querySelector('.variant-color-option b')?.textContent
+                        || buttons[0].textContent.trim();
+                    selectVariant(key, buttonValue);
+                }
+            });
         }
 
         function selectImage(index) {
@@ -213,6 +227,7 @@
             if (window.productImages && window.productImages[index]) {
                 mainImg.src = window.productImages[index].image_url;
                 mainImg.alt = window.productImages[index].alt_text || '';
+                selectedImageUrl = window.productImages[index].image_url; // track selected image
                 
                 // Update active thumbnail
                 thumbnails.forEach((thumb, i) => {
@@ -225,16 +240,17 @@
             if (!attrs || typeof attrs !== 'object' || Object.keys(attrs).length === 0) return '';
 
             // Known attributes config: label, icon, how to render
+            // type: 'chips' means the value is always selectable (even single-value)
             const ATTR_CONFIG = {
                 colors:         { label: 'Colors',      type: 'color-swatches' },
                 sizes:          { label: 'Sizes',        type: 'chips' },
                 material:       { label: 'Material',     type: 'text' },
-                weight:         { label: 'Weight',       type: 'text' },
+                weight:         { label: 'Weight',       type: 'chips' },
                 warranty:       { label: 'Warranty',     type: 'text' },
                 free_shipping:  { label: 'Free Shipping',type: 'badge' },
                 brand:          { label: 'Brand',        type: 'text' },
                 model:          { label: 'Model',        type: 'text' },
-                dimensions:     { label: 'Dimensions',   type: 'text' },
+                dimensions:     { label: 'Dimensions',   type: 'chips' },
                 gender:         { label: 'Gender',       type: 'text' },
                 age_group:      { label: 'Age Group',    type: 'text' },
                 condition:      { label: 'Condition',    type: 'text' },
@@ -269,32 +285,58 @@
             let optionSections = '';
             let detailSections = '';
 
-            for (const [key, value] of Object.entries(attrs)) {
-                if (value === null || value === undefined || value === '') continue;
+            for (const [key, rawValue] of Object.entries(attrs)) {
+                if (rawValue === null || rawValue === undefined || rawValue === '') continue;
                 // It is featured above the price as a purchase benefit badge.
-                if (key === 'free_shipping' && value === true) continue;
+                if (key === 'free_shipping' && rawValue === true) continue;
 
-                const config = ATTR_CONFIG[key] || { label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: '•', type: Array.isArray(value) ? 'chips' : typeof value === 'boolean' ? 'badge' : 'text' };
+                // Look up config first to know if this attr is a selectable type
+                const config = ATTR_CONFIG[key] || { label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: '•', type: typeof rawValue === 'boolean' ? 'badge' : 'text' };
+                const isSelectableType = config.type === 'chips' || config.type === 'color-swatches';
+
+                // Normalize value: arrays stay as-is; comma-separated strings get split for chip-type attrs
+                let listValues;
+                if (Array.isArray(rawValue)) {
+                    listValues = rawValue.filter(v => v !== null && v !== undefined && v !== '');
+                } else if (isSelectableType && typeof rawValue === 'string' && rawValue.includes(',')) {
+                    // Split comma-separated string into individual selectable options
+                    listValues = rawValue.split(',').map(v => v.trim()).filter(v => v !== '');
+                } else {
+                    listValues = null;
+                }
+
+                const value = listValues
+                    ? (listValues.length === 1 ? listValues[0] : listValues)
+                    : rawValue;
+
                 const attrIcon = ATTRIBUTE_ICONS[key] || ATTRIBUTE_ICONS.default;
 
-                if (config.type === 'color-swatches' && Array.isArray(value)) {
+                // Build chip values for selectable types (single value also becomes a chip)
+                const chipValues = isSelectableType
+                    ? (Array.isArray(value) ? value : [value]).filter(v => v !== null && v !== undefined && v !== '')
+                    : null;
+                const isRenderedAsSelector = isSelectableType && chipValues && chipValues.length > 0;
+
+                const selectNote = `Select ${config.label.toLowerCase()}`;
+
+                if (isRenderedAsSelector && config.type === 'color-swatches') {
                     optionSections += `
                         <fieldset class="variant-selector" id="variant-${key}" data-option-label="${config.label.toLowerCase()}">
-                            <legend><span class="variant-icon">${attrIcon}</span><span>${config.label}: <strong class="variant-selection-note" id="${key}-selection-note">Select a color</strong></span></legend>
+                            <legend><span class="variant-icon">${attrIcon}</span><span>${config.label}: <strong class="variant-selection-note" id="${key}-selection-note">${selectNote}</strong></span></legend>
                             <div class="variant-color-options" role="radiogroup" aria-label="Choose a color">
-                                ${value.map(c => {
+                                ${chipValues.map(c => {
                                     const bg = COLOR_MAP[c.toLowerCase()] || c;
                                     const isLight = ['white','beige','yellow','silver'].includes(c.toLowerCase());
                                     return `<button type="button" class="variant-color-option" style="--swatch-color:${bg}; --swatch-border:${isLight ? '#aab0ac' : bg};" onclick="selectVariant('${key}', '${c}')" aria-label="Choose ${c}" title="${c}"><span></span><b>${c}</b></button>`;
                                 }).join('')}
                             </div>
                         </fieldset>`;
-                } else if (config.type === 'chips' && Array.isArray(value)) {
+                } else if (isRenderedAsSelector) {
                     optionSections += `
                         <fieldset class="variant-selector" id="variant-${key}" data-option-label="${config.label.toLowerCase()}">
-                            <legend><span class="variant-icon">${attrIcon}</span><span>${config.label}: <strong class="variant-selection-note" id="${key}-selection-note">Select a size</strong></span></legend>
-                            <div class="variant-size-options" role="radiogroup" aria-label="Choose a ${config.label.toLowerCase()}">
-                                ${value.map(v => `<button type="button" class="variant-size-option" onclick="selectVariant('${key}', '${v}')">${v}</button>`).join('')}
+                            <legend><span class="variant-icon">${attrIcon}</span><span>${config.label}: <strong class="variant-selection-note" id="${key}-selection-note">${chipValues.length === 1 ? chipValues[0] : selectNote}</strong></span></legend>
+                            <div class="variant-size-options" role="radiogroup" aria-label="Choose ${config.label.toLowerCase()}">
+                                ${chipValues.map(v => `<button type="button" class="variant-size-option${chipValues.length === 1 ? ' selected' : ''}" onclick="selectVariant('${key}', '${v}')">${v}</button>`).join('')}
                             </div>
                         </fieldset>`;
                 } else if (config.type === 'badge' && value === true) {
@@ -351,7 +393,10 @@
                 showToast(`Please choose ${missing.map(selector => selector.dataset.optionLabel).join(' and ')}.`, 'warning');
                 return;
             }
-            await addToCart(id, selectedQty, selectedVariants);
+            // Include the selected image URL so the cart shows the right image
+            const optionsWithImage = { ...selectedVariants };
+            if (selectedImageUrl) optionsWithImage._selected_image = selectedImageUrl;
+            await addToCart(id, selectedQty, optionsWithImage);
         }
 
         function renderReviews(reviews) {

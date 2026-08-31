@@ -478,16 +478,19 @@ function renderProductCard(product) {
         ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
         : 0;
     const hasFreeShipping = product.attributes?.free_shipping === true;
-    const needsVariantSelection = Array.isArray(product.attributes?.colors) || Array.isArray(product.attributes?.sizes);
+    const isOutOfStock = !product.stock || product.stock <= 0;
+    // Any attribute with multiple options requires the customer to choose on the product page first
+    const needsVariantSelection = Object.values(product.attributes || {}).some(v => Array.isArray(v) && v.length > 1);
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
     return `
-        <div class="product-card" onclick="window.location.href='${prefix}product-detail.html?id=${product.id}'">
+        <div class="product-card${isOutOfStock ? ' product-card-oos' : ''}" onclick="window.location.href='${prefix}product-detail.html?id=${product.id}'">
             <div class="product-card-image">
-                <img src="${product.image_url || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${product.name}" loading="lazy">
-                ${discount > 0 ? `<span class="product-card-badge badge-sale">-${discount}%</span>` : ''}
-                ${product.is_featured ? `<span class="product-card-badge badge-featured">${_t('product.featured')}</span>` : ''}
+                <img src="${product.image_url || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${product.name}" loading="lazy"${isOutOfStock ? ' style="opacity:0.6;"' : ''}>
+                ${!isOutOfStock && discount > 0 ? `<span class="product-card-badge badge-sale">-${discount}%</span>` : ''}
+                ${product.is_featured && !isOutOfStock ? `<span class="product-card-badge badge-featured">${_t('product.featured')}</span>` : ''}
                 ${hasFreeShipping ? `<span class="product-card-badge badge-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> Free shipping</span>` : ''}
+                ${isOutOfStock ? `<span class="product-card-badge badge-oos">Out of stock</span>` : ''}
             </div>
             <div class="product-card-body">
                 ${categoryName ? `<div class="product-card-category">${categoryName}</div>` : ''}
@@ -500,9 +503,14 @@ function renderProductCard(product) {
                         <span class="price-current">${formatPrice(product.price)}</span>
                         ${product.compare_price ? `<span class="price-compare">${formatPrice(product.compare_price)}</span>` : ''}
                     </div>
-                    <button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? 'Choose product options' : _t('product.add_to_cart')}">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                    </button>
+                    ${isOutOfStock
+                        ? `<button class="product-card-add-btn product-card-add-btn-oos" disabled title="Out of stock" style="opacity:0.4;cursor:not-allowed;background:var(--text-tertiary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                           </button>`
+                        : `<button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? 'Choose product options' : _t('product.add_to_cart')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                           </button>`
+                    }
                 </div>
             </div>
         </div>

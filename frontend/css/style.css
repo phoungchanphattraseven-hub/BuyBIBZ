@@ -775,6 +775,21 @@ svg:not([class*="width"]):not([class*="size"]) {
     background: rgba(13, 107, 46, 0.93);
 }
 
+.badge-oos {
+    top: auto;
+    bottom: var(--space-sm);
+    left: auto;
+    right: var(--space-sm);
+    background: rgba(239, 68, 68, 0.92);
+    color: white;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    min-height: 22px;
+    padding: 0 8px;
+}
+
 .badge-shipping svg,
 .product-free-shipping-badge svg {
     width: 12px;
@@ -1823,6 +1838,32 @@ input:checked + .toggle-slider:before {
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 2;
+}
+
+/* Out-of-stock badge in cart */
+.cart-item-oos-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.48rem;
+    color: var(--status-error);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--radius-full);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+/* Dim the whole row when out of stock */
+.cart-item-oos {
+    opacity: 0.7;
+}
+
+/* Disable quantity controls visually */
+.cart-qty-controls-disabled .cart-qty-btn {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .cart-item-price {

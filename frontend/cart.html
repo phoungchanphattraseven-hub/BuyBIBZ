@@ -183,37 +183,44 @@
                     // Calculate original price (assuming 20% markup for demo, adjust as needed)
                     const originalPrice = product.compare_at_price || product.price * 1.25;
                     const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+                    const isOutOfStock = !product.stock || product.stock <= 0;
                     
                     // Use pending quantity if exists, otherwise use server quantity
                     const displayQty = pendingUpdates.has(item.id) ? pendingUpdates.get(item.id) : item.quantity;
                     const selectedOptions = item.selected_options || {};
-                    const optionLabels = { colors: 'Color', sizes: 'Size' };
-                    const selectedOptionsHtml = Object.entries(selectedOptions).map(([key, value]) => `
+                    const selectedImage = selectedOptions._selected_image || product.image_url || 'https://via.placeholder.com/200x200?text=No+Image';
+                    const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions' };
+                    const selectedOptionsHtml = Object.entries(selectedOptions)
+                        .filter(([key]) => key !== '_selected_image')
+                        .map(([key, value]) => `
                         <span class="cart-item-variant"><b>${optionLabels[key] || key.replace(/_/g, ' ')}</b>${value}</span>
                     `).join('');
                     const freeShippingBadge = product.attributes?.free_shipping === true
                         ? `<span class="cart-item-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Free shipping</span>`
                         : '';
+                    const outOfStockBadge = isOutOfStock
+                        ? `<span class="cart-item-oos-badge">Out of stock</span>`
+                        : '';
                     
                     return `
-                        <div class="cart-item" id="cart-item-${item.id}" data-item-id="${item.id}" data-price="${product.price}">
+                        <div class="cart-item${isOutOfStock ? ' cart-item-oos' : ''}" id="cart-item-${item.id}" data-item-id="${item.id}" data-price="${product.price}">
                             <a href="product-detail.html?id=${product.id}" class="cart-item-image">
-                                <img src="${product.image_url || 'https://via.placeholder.com/200x200?text=No+Image'}" alt="${product.name}">
+                                <img src="${selectedImage}" alt="${product.name}" style="${isOutOfStock ? 'opacity:0.5;' : ''}">
                             </a>
                             <div class="cart-item-details">
                                 <a href="product-detail.html?id=${product.id}" class="cart-item-link">
                                     <div class="cart-item-name">${product.name}</div>
                                 </a>
-                                ${(selectedOptionsHtml || freeShippingBadge) ? `<div class="cart-item-variants">${selectedOptionsHtml}${freeShippingBadge}</div>` : ''}
+                                ${(selectedOptionsHtml || freeShippingBadge || outOfStockBadge) ? `<div class="cart-item-variants">${selectedOptionsHtml}${freeShippingBadge}${outOfStockBadge}</div>` : ''}
                                 <div class="cart-item-footer">
                                     <div class="cart-item-pricing">
                                         ${hasDiscount ? `<div class="cart-item-price-compare">${formatPrice(originalPrice)}</div>` : ''}
                                         <div class="cart-item-price">${formatPrice(product.price)}</div>
                                     </div>
-                                    <div class="cart-qty-controls">
-                                        <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, -1)">−</button>
+                                    <div class="cart-qty-controls${isOutOfStock ? ' cart-qty-controls-disabled' : ''}">
+                                        <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, -1)" ${isOutOfStock ? 'disabled' : ''}>−</button>
                                         <span class="cart-qty-value" data-quantity="${displayQty}">${displayQty}</span>
-                                        <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, 1)">+</button>
+                                        <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, 1)" ${isOutOfStock ? 'disabled' : ''}>+</button>
                                     </div>
                                 </div>
                             </div>
