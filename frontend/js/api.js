@@ -278,6 +278,31 @@ class ApiClient {
     async importTaobaoProduct(item, categoryId = null) {
         return this.post('/api/products/import-taobao', { item, category_id: categoryId });
     }
+
+    async bulkImportTaobao(items, categoryId = null) {
+        return this.post('/api/products/import-taobao/bulk', {
+            items,
+            category_id: categoryId,
+            concurrency: 2,
+        });
+    }
+
+    // ── CJ Dropshipping (Free) ────────────────────────────────
+    async cjSearch(keyword, page = 1, size = 20) {
+        return this.get(`/api/products/cj/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
+    }
+
+    async cjGetDetail(pid) {
+        return this.get(`/api/products/cj/detail/${encodeURIComponent(pid)}`);
+    }
+
+    async cjImportProduct(pid, categoryId = null) {
+        return this.post('/api/products/cj/import', { pid, category_id: categoryId });
+    }
+
+    async cjBulkImport(pids, categoryId = null) {
+        return this.post('/api/products/cj/import-bulk', { pids, category_id: categoryId });
+    }
 }
 
 // Global instance

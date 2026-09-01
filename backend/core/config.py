@@ -45,7 +45,6 @@ SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
 ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")
 ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
-APIFY_TOKEN: str = os.getenv("APIFY_TOKEN", "")
 
 if not SUPABASE_URL or not SUPABASE_ANON_KEY:
     raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in .env")

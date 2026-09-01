@@ -1,12 +1,141 @@
 import re
+import asyncio
 from fastapi import APIRouter, HTTPException, Depends, Query, Response, Body
 from core.config import get_supabase, get_authenticated_client
 from core.auth import get_current_user, get_admin_user
-from core.taobao_ingest import ingest_taobao_product, normalize_taobao_product
 from models.schemas import ProductCreate, ProductUpdate
-from typing import Optional
+from typing import Optional, List
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
+
+
+def _match_category(detected: str, local_cats: list) -> int | None:
+    """
+    Map a CJ category path string to the best matching local category id.
+    Uses a keyword alias table first, then falls back to word-overlap scoring.
+    
+    CJ category paths look like:
+      "Consumer Electronics / Phone & Accessories / Cases"
+      "Women's Clothing / Tops & Sets / Hoodies & Sweatshirts"
+      "Home & Garden, Furniture / Bedroom Furniture / Beds"
+      "Sports & Entertainment / Fitness Equipment / Yoga"
+    """
+    if not detected or not local_cats:
+        return None
+
+    # Build a lookup: local_name.lower() → id
+    cat_by_name = {c["name"].lower(): c["id"] for c in local_cats}
+
+    # ── Static alias map: CJ fragment keywords → your local category names ──
+    # Keys are lowercased substrings that may appear anywhere in the CJ path.
+    # List your actual category names exactly as stored in the DB.
+    ALIAS: list[tuple[str, str]] = [
+        # Electronics
+        ("electronics",        "Electronics"),
+        ("phone",              "Electronics"),
+        ("computer",          "Electronics"),
+        ("camera",             "Electronics"),
+        ("audio",              "Electronics"),
+        ("gadget",             "Electronics"),
+        ("tablet",             "Electronics"),
+        ("laptop",             "Electronics"),
+        ("smart watch",        "Electronics"),
+        ("smartwatch",         "Electronics"),
+        ("television",         "Electronics"),
+        ("headphone",          "Electronics"),
+        ("earphone",           "Electronics"),
+        ("speaker",            "Electronics"),
+        ("game",               "Electronics"),
+        ("gaming",             "Electronics"),
+        # Fashion / Clothing
+        ("clothing",           "Fashion"),
+        ("fashion",            "Fashion"),
+        ("apparel",            "Fashion"),
+        ("shoes",              "Fashion"),
+        ("footwear",           "Fashion"),
+        ("bags",               "Fashion"),
+        ("accessories",        "Fashion"),
+        ("jewelry",            "Fashion"),
+        ("watches",            "Fashion"),
+        ("sunglasses",         "Fashion"),
+        ("wallet",             "Fashion"),
+        ("handbag",            "Fashion"),
+        ("backpack",           "Fashion"),
+        # Home & Living
+        ("home",               "Home & Living"),
+        ("garden",             "Home & Living"),
+        ("furniture",          "Home & Living"),
+        ("kitchen",            "Home & Living"),
+        ("bedroom",            "Home & Living"),
+        ("bathroom",           "Home & Living"),
+        ("living room",        "Home & Living"),
+        ("lighting",           "Home & Living"),
+        ("decor",              "Home & Living"),
+        ("storage",            "Home & Living"),
+        ("bedding",            "Home & Living"),
+        ("cookware",           "Home & Living"),
+        ("tableware",          "Home & Living"),
+        ("candle",             "Home & Living"),
+        # Sports & Outdoors
+        ("sport",              "Sports & Outdoors"),
+        ("outdoor",            "Sports & Outdoors"),
+        ("fitness",            "Sports & Outdoors"),
+        ("yoga",               "Sports & Outdoors"),
+        ("cycling",            "Sports & Outdoors"),
+        ("camping",            "Sports & Outdoors"),
+        ("hiking",             "Sports & Outdoors"),
+        ("gym",                "Sports & Outdoors"),
+        ("exercise",           "Sports & Outdoors"),
+        ("swimming",           "Sports & Outdoors"),
+        ("fishing",            "Sports & Outdoors"),
+        ("hunting",            "Sports & Outdoors"),
+        # Beauty & Care
+        ("beauty",             "Beauty & Care"),
+        ("skincare",           "Beauty & Care"),
+        ("makeup",             "Beauty & Care"),
+        ("hair",               "Beauty & Care"),
+        ("nail",               "Beauty & Care"),
+        ("perfume",            "Beauty & Care"),
+        ("cosmetic",           "Beauty & Care"),
+        ("personal care",      "Beauty & Care"),
+        ("health",             "Beauty & Care"),
+        ("massage",            "Beauty & Care"),
+        ("oral",               "Beauty & Care"),
+    ]
+
+    detected_lower = detected.lower()
+
+    # 1. Try alias table — first match wins (ordered from most specific to broad)
+    for keyword, local_name in ALIAS:
+        if keyword in detected_lower:
+            target = local_name.lower()
+            if target in cat_by_name:
+                return cat_by_name[target]
+
+    # 2. Word-overlap scoring as fallback
+    cj_words = set(
+        w for w in detected_lower.replace("/", " ").replace("&", " ").replace(",", " ").split()
+        if len(w) > 2
+    )
+    best_score = 0
+    best_id = None
+    for cat in local_cats:
+        cat_words = set(w.lower() for w in cat["name"].replace("&", " ").split())
+        score = len(cj_words & cat_words)
+        if score > best_score:
+            best_score = score
+            best_id = cat["id"]
+
+    if best_id:
+        return best_id
+
+    # 3. Substring match on the last path segment
+    last_segment = detected.split("/")[-1].strip().lower()
+    for cat in local_cats:
+        if last_segment in cat["name"].lower() or cat["name"].lower() in last_segment:
+            return cat["id"]
+
+    return None
 
 
 def slugify(text: str) -> str:
@@ -88,9 +217,12 @@ async def list_products(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.head("/")
 async def head_products():
     return Response(status_code=200)
+
 
 @router.get("/{product_id}")
 async def get_product(product_id: int):
@@ -118,7 +250,7 @@ async def get_product(product_id: int):
                 .execute()
             )
             product_images = images.data if images and images.data else []
-            
+
             # If no product_images rows but image_url exists, create a synthetic entry
             # so the gallery always has at least one image
             if not product_images and product.data.get("image_url"):
@@ -130,9 +262,9 @@ async def get_product(product_id: int):
                     "display_order": 0,
                     "is_primary": True,
                 }]
-            
+
             product.data["product_images"] = product_images
-        except:
+        except Exception:
             product.data["product_images"] = []
 
         # Get reviews for this product
@@ -146,7 +278,7 @@ async def get_product(product_id: int):
 
         # Enrich reviews with user profiles
         if reviews and reviews.data:
-            for review in (reviews.data if reviews and reviews.data else []):
+            for review in reviews.data:
                 try:
                     profile = (
                         supabase.table("profiles")
@@ -156,7 +288,7 @@ async def get_product(product_id: int):
                         .execute()
                     )
                     review["profiles"] = profile.data if profile and profile.data else {"full_name": "Anonymous"}
-                except:
+                except Exception:
                     review["profiles"] = {"full_name": "Anonymous"}
 
         product_data = product.data
@@ -208,7 +340,6 @@ async def update_product(product_id: int, product: ProductUpdate, admin=Depends(
             counter = 1
             while True:
                 existing = supabase.table("products").select("id").eq("slug", slug).execute()
-                # Allow the slug if no conflict, or if it belongs to this same product
                 if not existing.data or existing.data[0]["id"] == product_id:
                     break
                 slug = f"{base_slug}-{counter}"
@@ -237,153 +368,10 @@ async def delete_product(product_id: int, admin=Depends(get_admin_user)):
     """Delete a product (admin only)."""
     try:
         supabase = get_authenticated_client(admin["token"])
-        response = (
-            supabase.table("products")
-            .delete()
-            .eq("id", product_id)
-            .execute()
-        )
+        supabase.table("products").delete().eq("id", product_id).execute()
         return {"message": "Product deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Taobao Import Endpoints
-# ─────────────────────────────────────────────────────────────────────────────
-
-@router.post("/import-taobao/preview")
-async def preview_taobao_product(
-    payload: dict = Body(..., example={"item": "https://item.taobao.com/item.htm?id=1003783113480"}),
-    admin=Depends(get_admin_user),
-):
-    """
-    Fetch a Taobao product via Apify, run it through the normalisation pipeline,
-    and return the structured result WITHOUT saving to the database.
-
-    Use this to preview / verify before committing.
-    Body: { "item": "<taobao_url_or_item_id>" }
-    """
-    item = (payload or {}).get("item", "").strip()
-    if not item:
-        raise HTTPException(status_code=422, detail="'item' field is required (Taobao URL or item ID).")
-
-    try:
-        result = await ingest_taobao_product(item)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Apify fetch error: {str(e)}")
-
-    if result.get("status") == "rejected":
-        raise HTTPException(status_code=422, detail=result.get("reason", "Product rejected by category filter."))
-
-    return result
-
-
-@router.post("/import-taobao")
-async def import_taobao_product(
-    payload: dict = Body(..., example={"item": "https://item.taobao.com/item.htm?id=1003783113480", "category_id": None}),
-    admin=Depends(get_admin_user),
-):
-    """
-    Fetch a Taobao product via Apify, normalise it, and insert it into the database.
-
-    Body:
-      - item (required): Taobao product URL or numeric item ID
-      - category_id (optional): Override the auto-detected category with a DB category ID
-
-    Returns the created product row.
-    """
-    item = (payload or {}).get("item", "").strip()
-    if not item:
-        raise HTTPException(status_code=422, detail="'item' field is required (Taobao URL or item ID).")
-
-    category_id_override = (payload or {}).get("category_id")
-
-    # ── 1. Fetch & normalise ──────────────────────────────────────────────────
-    try:
-        result = await ingest_taobao_product(item)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Apify fetch error: {str(e)}")
-
-    if result.get("status") == "rejected":
-        raise HTTPException(status_code=422, detail=result.get("reason", "Product rejected by category filter."))
-
-    pc = result["data"]["_product_create"]
-
-    # ── 2. Resolve category_id ────────────────────────────────────────────────
-    supabase = get_authenticated_client(admin["token"])
-    resolved_category_id = category_id_override
-
-    if not resolved_category_id:
-        detected_category_name = result["data"]["category"]
-        try:
-            cat_resp = (
-                supabase.table("categories")
-                .select("id")
-                .ilike("name", f"%{detected_category_name.split()[0]}%")
-                .limit(1)
-                .execute()
-            )
-            if cat_resp.data:
-                resolved_category_id = cat_resp.data[0]["id"]
-        except Exception:
-            pass  # category_id stays None — product still saves without a category
-
-    pc["category_id"] = resolved_category_id
-
-    # ── 3. Generate unique slug ───────────────────────────────────────────────
-    base_slug = slugify(pc["name"])
-    slug = base_slug
-    counter = 1
-    while True:
-        existing = supabase.table("products").select("id").eq("slug", slug).execute()
-        if not existing.data:
-            break
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-
-    pc["slug"] = slug
-
-    # ── 4. Insert product ─────────────────────────────────────────────────────
-    try:
-        insert_resp = supabase.table("products").insert(pc).execute()
-        if not insert_resp.data:
-            raise HTTPException(status_code=500, detail="Database insert returned no data.")
-        product_row = insert_resp.data[0]
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database insert error: {str(e)}")
-
-    # ── 5. Save product images ────────────────────────────────────────────────
-    product_id = product_row["id"]
-    image_rows = [
-        {
-            "product_id": product_id,
-            "image_url": url,
-            "alt_text": pc["name"],
-            "display_order": idx,
-            "is_primary": idx == 0,
-        }
-        for idx, url in enumerate(pc.get("images") or [])
-        if url
-    ]
-    if image_rows:
-        try:
-            supabase.table("product_images").insert(image_rows).execute()
-        except Exception:
-            pass  # non-fatal — product already created
-
-    return {
-        "message": "Product imported from Taobao successfully.",
-        "product": product_row,
-        "images_saved": len(image_rows),
-        "normalized": result["data"],
-    }
 
 
 @router.post("/{product_id}/images")
@@ -417,3 +405,224 @@ async def save_product_images(product_id: int, payload: dict, admin=Depends(get_
         return {"message": f"{len(rows)} image(s) saved"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CJ Dropshipping Import Endpoints (Free — no scraping needed)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/cj/debug/{pid}")
+async def cj_debug_raw(pid: str, admin=Depends(get_admin_user)):
+    """Return raw CJ API response for a product — for debugging only."""
+    from core.cj_client import _cj_get
+    product_raw = await _cj_get("/product/query", {"pid": pid})
+    variant_raw = await _cj_get("/product/variant/query", {"pid": pid})
+    return {"product": product_raw, "variants": variant_raw}
+
+
+@router.get("/cj/search")
+async def cj_search(
+    keyword: str = Query(..., min_length=1),
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    admin=Depends(get_admin_user),
+):
+    """Search CJ Dropshipping products by keyword (admin only)."""
+    try:
+        from core.cj_client import cj_search_products
+        return await cj_search_products(keyword=keyword, page=page, size=size)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CJ search error: {str(e)}")
+
+
+@router.get("/cj/detail/{pid}")
+async def cj_product_detail(pid: str, admin=Depends(get_admin_user)):
+    """Get full CJ product detail including variants (admin only)."""
+    try:
+        from core.cj_client import cj_get_product_detail
+        return await cj_get_product_detail(pid)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CJ detail error: {str(e)}")
+
+
+@router.post("/cj/import")
+async def cj_import_product(
+    payload: dict = Body(..., example={"pid": "04A22450-67F0-4617-A132-E7AE7F8963B0", "category_id": None}),
+    admin=Depends(get_admin_user),
+):
+    """
+    Import a single CJ Dropshipping product into the store.
+    Body: { "pid": "<cj_product_id>", "category_id": <optional_int> }
+    """
+    pid = (payload or {}).get("pid", "").strip()
+    if not pid:
+        raise HTTPException(status_code=422, detail="'pid' is required.")
+
+    category_id_override = (payload or {}).get("category_id")
+
+    try:
+        from core.cj_client import cj_get_product_detail
+        result = await cj_get_product_detail(pid)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CJ fetch error: {str(e)}")
+
+    if result.get("status") != "success":
+        raise HTTPException(status_code=422, detail="Failed to get product detail from CJ.")
+
+    pc = result["data"]["_product_create"]
+    supabase = get_authenticated_client(admin["token"])
+
+    # Category — fetch all local categories and find best match
+    if category_id_override:
+        pc["category_id"] = category_id_override
+    else:
+        detected = result["data"].get("category", "")
+        try:
+            all_cats = supabase.table("categories").select("id, name").execute()
+            pc["category_id"] = _match_category(detected, all_cats.data or [])
+        except Exception:
+            pc["category_id"] = None
+
+    # Unique slug
+    base_slug = slugify(pc["name"])
+    slug = base_slug
+    counter = 1
+    while True:
+        existing = supabase.table("products").select("id").eq("slug", slug).execute()
+        if not existing.data:
+            break
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    pc["slug"] = slug
+
+    # Insert
+    try:
+        insert_resp = supabase.table("products").insert(pc).execute()
+        if not insert_resp.data:
+            raise HTTPException(status_code=500, detail="DB insert returned no data.")
+        product_row = insert_resp.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB insert error: {str(e)}")
+
+    # Save images
+    product_id = product_row["id"]
+    image_rows = [
+        {
+            "product_id": product_id,
+            "image_url": url,
+            "alt_text": pc["name"],
+            "display_order": idx,
+            "is_primary": idx == 0,
+        }
+        for idx, url in enumerate(pc.get("images") or [])
+        if url
+    ]
+    if image_rows:
+        try:
+            supabase.table("product_images").insert(image_rows).execute()
+        except Exception:
+            pass
+
+    return {
+        "message": "Product imported from CJ Dropshipping successfully.",
+        "product": product_row,
+        "images_saved": len(image_rows),
+        "normalized": result["data"],
+    }
+
+
+@router.post("/cj/import-bulk")
+async def cj_bulk_import(
+    payload: dict = Body(...),
+    admin=Depends(get_admin_user),
+):
+    """
+    Bulk import up to 50 CJ products by PID list.
+    Body: { "pids": ["pid1", "pid2", ...], "category_id": null }
+    """
+    pids = (payload or {}).get("pids", [])
+    category_id_override = (payload or {}).get("category_id")
+
+    if not pids:
+        raise HTTPException(status_code=422, detail="'pids' list is required.")
+    if len(pids) > 50:
+        raise HTTPException(status_code=422, detail="Maximum 50 PIDs per bulk request.")
+
+    from core.cj_client import cj_get_product_detail
+
+    async def _import_one(pid: str) -> dict:
+        try:
+            result = await cj_get_product_detail(pid.strip())
+            if result.get("status") != "success":
+                return {"pid": pid, "status": "error", "reason": "Detail fetch failed"}
+
+            pc = result["data"]["_product_create"]
+            supabase = get_authenticated_client(admin["token"])
+
+            # Category resolution
+            if category_id_override:
+                pc["category_id"] = category_id_override
+            else:
+                detected = result["data"].get("category", "")
+                try:
+                    all_cats = supabase.table("categories").select("id, name").execute()
+                    pc["category_id"] = _match_category(detected, all_cats.data or [])
+                except Exception:
+                    pc["category_id"] = None
+
+            base_slug = slugify(pc["name"])
+            slug = base_slug
+            counter = 1
+            while True:
+                existing = supabase.table("products").select("id").eq("slug", slug).execute()
+                if not existing.data:
+                    break
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            pc["slug"] = slug
+
+            insert_resp = supabase.table("products").insert(pc).execute()
+            if not insert_resp.data:
+                return {"pid": pid, "status": "error", "reason": "DB insert failed"}
+
+            product_row = insert_resp.data[0]
+            image_rows = [
+                {"product_id": product_row["id"], "image_url": url, "alt_text": pc["name"],
+                 "display_order": i, "is_primary": i == 0}
+                for i, url in enumerate(pc.get("images") or []) if url
+            ]
+            if image_rows:
+                try:
+                    supabase.table("product_images").insert(image_rows).execute()
+                except Exception:
+                    pass
+
+            return {"pid": pid, "status": "success", "product_id": product_row["id"], "name": product_row.get("name")}
+        except Exception as e:
+            return {"pid": pid, "status": "error", "reason": str(e)}
+
+    # Process 3 at a time
+    results = []
+    for i in range(0, len(pids), 3):
+        batch = pids[i:i + 3]
+        batch_results = await asyncio.gather(*[_import_one(pid) for pid in batch])
+        results.extend(batch_results)
+        if i + 3 < len(pids):
+            await asyncio.sleep(1)
+
+    success_count = sum(1 for r in results if r["status"] == "success")
+    return {
+        "message": f"Bulk import: {success_count}/{len(results)} succeeded.",
+        "total": len(results),
+        "success": success_count,
+        "failed": len(results) - success_count,
+        "results": results,
+    }

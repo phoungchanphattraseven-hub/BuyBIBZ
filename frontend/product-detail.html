@@ -130,39 +130,80 @@
             const hasFreeShipping = product.attributes?.free_shipping === true;
             const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
-            // Handle images - use product_images array if available, otherwise fallback to single image_url
-            const images = product.product_images && product.product_images.length > 0
-                ? product.product_images.sort((a, b) => a.display_order - b.display_order)
-                : [{ image_url: product.image_url || 'https://via.placeholder.com/600x600?text=No+Image', alt_text: product.name }];
+            // Build image list — priority:
+            // 1. product_images table rows (with display_order, alt_text)
+            // 2. product.images column (plain URL array from CJ import)
+            // 3. product.image_url fallback
+            let images;
+            if (product.product_images && product.product_images.length > 0) {
+                images = product.product_images
+                    .sort((a, b) => a.display_order - b.display_order)
+                    .map(img => ({ image_url: img.image_url, alt_text: img.alt_text || product.name }));
+            } else if (product.images && product.images.length > 0) {
+                images = product.images.map((url, i) => ({
+                    image_url: url,
+                    alt_text: `${product.name} — image ${i + 1}`
+                }));
+            } else {
+                images = [{ image_url: product.image_url || 'https://via.placeholder.com/600x600?text=No+Image', alt_text: product.name }];
+            }
 
             const mainImage = images[0];
 
             document.getElementById('product-content').innerHTML = `
                 <div class="product-detail-image-gallery">
-                    <div class="main-image-container">
-                        <img src="${mainImage.image_url}" alt="${mainImage.alt_text || product.name}" id="main-product-image" class="main-product-image">
+                    <div class="pd-gallery-layout">
+                        ${images.length > 1 ? `
+                        <div class="pd-thumbnails-vertical">
+                            ${images.map((img, i) => `
+                                <button class="pd-thumb ${i === 0 ? 'active' : ''}" onclick="selectImage(${i})" aria-label="View image ${i+1}">
+                                    <img src="${img.image_url}" alt="${img.alt_text || product.name}" loading="lazy" referrerpolicy="no-referrer">
+                                </button>
+                            `).join('')}
+                        </div>` : ''}
+                        <div class="pd-main-image-wrap">
+                            <div class="pd-main-image-container">
+                                <img src="${mainImage.image_url}" alt="${mainImage.alt_text || product.name}" id="main-product-image" class="main-product-image" referrerpolicy="no-referrer">
+                            </div>
+                            ${discount > 0 ? `<span class="pd-discount-badge">-${discount}%</span>` : ''}
+                            ${!inStock ? `<div class="pd-oos-overlay"><span>Out of Stock</span></div>` : ''}
+                        </div>
                     </div>
                     ${images.length > 1 ? `
-                    <div class="thumbnail-gallery">
-                        ${images.map((img, index) => `
-                            <div class="thumbnail ${index === 0 ? 'active' : ''}" onclick="selectImage(${index})">
-                                <img src="${img.image_url}" alt="${img.alt_text || product.name}">
+                    <div class="thumbnail-gallery pd-thumbnails-horizontal">
+                        ${images.map((img, i) => `
+                            <div class="thumbnail ${i === 0 ? 'active' : ''}" onclick="selectImage(${i})">
+                                <img src="${img.image_url}" alt="${img.alt_text || product.name}" loading="lazy" referrerpolicy="no-referrer">
                             </div>
                         `).join('')}
-                    </div>
-                    ` : ''}
+                    </div>` : ''}
                 </div>
+
                 <div class="product-detail-info">
+                    <!-- Breadcrumb -->
+                    <nav class="pd-breadcrumb" aria-label="Breadcrumb">
+                        <a href="index.html">Home</a>
+                        <span aria-hidden="true">›</span>
+                        ${category ? `<a href="products.html?category=${category.id}">${category.name}</a><span aria-hidden="true">›</span>` : ''}
+                        <span class="pd-breadcrumb-current">${product.name}</span>
+                    </nav>
+
+                    <!-- Badges row -->
                     <div class="product-detail-kicker">
                         ${category ? `<span class="product-category-pill">${category.name}</span>` : ''}
-                        ${hasFreeShipping ? `<span class="product-free-shipping-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>${_t('product.free_shipping')}</span>` : ''}
+                        ${hasFreeShipping ? `<span class="product-free-shipping-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Shipping</span>` : ''}
                     </div>
-                    <h1>${product.name}</h1>
 
-                    <div class="product-card-rating" style="margin-bottom: var(--space-lg); font-size: 1.1rem;">
+                    <!-- Title -->
+                    <h1 class="pd-title">${product.name}</h1>
+
+                    <!-- Rating -->
+                    <div class="pd-rating-row">
                         ${renderStars(product.rating_avg || 0, product.rating_count || 0)}
+                        ${product.rating_count > 0 ? `<span class="pd-rating-link" onclick="document.getElementById('reviews-section').scrollIntoView({behavior:'smooth'})">${product.rating_count} review${product.rating_count !== 1 ? 's' : ''}</span>` : '<span class="pd-rating-none">No reviews yet</span>'}
                     </div>
 
+                    <!-- Price -->
                     <div class="product-detail-price">
                         <span class="price-current">${formatPrice(product.price)}</span>
                         ${product.compare_price ? `
@@ -171,42 +212,149 @@
                         ` : ''}
                     </div>
 
-                    <p class="product-detail-desc">${product.description || 'No description available.'}</p>
-
-                    <div class="product-detail-meta product-purchase-meta">
-                        <div class="product-detail-meta-item">
-                            <span class="stock-indicator ${inStock ? 'in-stock' : 'out-of-stock'}"></span>
-                            <span class="value">
-                                ${inStock ? `${product.stock} ${_t('product.available')}` : _t('product.out_of_stock')}
-                            </span>
-                        </div>
+                    <!-- Stock indicator -->
+                    <div class="pd-stock-row">
+                        <span class="stock-indicator ${inStock ? 'in-stock' : 'out-of-stock'}"></span>
+                        <span class="pd-stock-label ${inStock ? 'text-success' : 'text-danger'}">
+                            ${inStock ? `In Stock <span class="pd-stock-count">(${product.stock} available)</span>` : 'Out of Stock'}
+                        </span>
                     </div>
 
+                    <!-- Description -->
+                    <div class="pd-description-wrap">
+                        <div class="pd-description" id="pd-description"></div>
+                        <button class="pd-desc-toggle" id="pd-desc-toggle" onclick="toggleDescription()" style="display:none">Show more</button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="pd-divider"></div>
+
+                    <!-- Variants / Attributes -->
                     ${renderAttributes(product.attributes)}
 
+                    <!-- Actions -->
                     ${inStock ? `
                     <div class="product-detail-actions">
-                        <div class="qty-selector">
-                            <button onclick="updateQty(-1)">−</button>
+                        <div class="qty-selector" aria-label="Quantity">
+                            <button onclick="updateQty(-1)" aria-label="Decrease quantity">−</button>
                             <span class="qty-value" id="qty-display">1</span>
-                            <button onclick="updateQty(1)">+</button>
+                            <button onclick="updateQty(1)" aria-label="Increase quantity">+</button>
                         </div>
-                        <button class="btn btn-primary btn-lg" onclick="addSelectedProductToCart(${product.id})" style="flex:1;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                            ${_t('product.add_to_cart_btn')}
+                        <button class="btn btn-primary btn-lg pd-add-btn" onclick="addSelectedProductToCart(${product.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                            Add to Cart
                         </button>
                     </div>
                     ` : `
-                    <button class="btn btn-secondary btn-lg" disabled style="opacity: 0.5; cursor: not-allowed;">
-                        ${_t('product.out_of_stock')}
+                    <button class="btn btn-secondary btn-lg" disabled style="opacity:0.5;cursor:not-allowed;width:100%;margin-bottom:var(--space-xl);">
+                        Out of Stock
                     </button>
                     `}
+
+                    <!-- Trust badges -->
+                    <div class="pd-trust-badges">
+                        <div class="pd-trust-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span>Secure Checkout</span>
+                        </div>
+                        <div class="pd-trust-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                            <span>Fast Delivery</span>
+                        </div>
+                        <div class="pd-trust-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            <span>Easy Returns</span>
+                        </div>
+                    </div>
+
+                    <!-- CJ detail images gallery (populated after render) -->
+                    <div class="pd-detail-gallery" id="pd-detail-gallery" style="display:none;"></div>
                 </div>
             `;
 
-            // Store images in window for selectImage function
+            // Set description safely (may contain HTML from CJ)
+            const descEl = document.getElementById('pd-description');
+            if (descEl) {
+                const raw = product.description || '';
+
+                // Parse the description HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(raw, 'text/html');
+
+                // Separate images from text content
+                const allImgs = Array.from(doc.querySelectorAll('img'));
+                const descImgUrls = allImgs
+                    .map(img => img.src || img.getAttribute('src') || '')
+                    .filter(src => src && src.startsWith('http'));
+
+                // Remove img tags from description to keep only text
+                allImgs.forEach(img => {
+                    const parent = img.parentElement;
+                    img.remove();
+                    // Remove empty wrapper elements left behind
+                    if (parent && parent !== doc.body && parent.innerHTML.trim() === '') {
+                        parent.remove();
+                    }
+                });
+
+                const textContent = doc.body.innerHTML.trim();
+
+                // Render text description
+                if (textContent && textContent !== '<br>' && textContent.length > 5) {
+                    descEl.innerHTML = textContent;
+                    requestAnimationFrame(() => {
+                        const toggleBtn = document.getElementById('pd-desc-toggle');
+                        if (toggleBtn && descEl.scrollHeight > descEl.clientHeight + 10) {
+                            toggleBtn.style.display = 'flex';
+                            toggleBtn.innerHTML = `Show more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+                        }
+                    });
+                } else {
+                    descEl.closest('.pd-description-wrap').style.display = 'none';
+                }
+
+                // Render CJ detail images gallery below add-to-cart
+                const galleryEl = document.getElementById('pd-detail-gallery');
+                if (galleryEl && descImgUrls.length > 0) {
+                    const PREVIEW = 3; // show 3 images before "Show more"
+                    const hasMore = descImgUrls.length > PREVIEW;
+
+                    galleryEl.innerHTML = `
+                        <div class="pd-detail-gallery-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            Product Details
+                            <span class="pd-detail-gallery-count">${descImgUrls.length} photos</span>
+                        </div>
+                        <div class="pd-detail-gallery-grid" id="pd-gallery-grid">
+                            ${descImgUrls.map((src, i) => `
+                                <div class="pd-detail-img-item ${i >= PREVIEW ? 'pd-detail-img-hidden' : ''}" data-index="${i}">
+                                    <img src="${src}" alt="${product.name} detail ${i + 1}" loading="lazy" referrerpolicy="no-referrer">
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${hasMore ? `
+                        <button class="pd-detail-gallery-toggle" id="pd-gallery-toggle" onclick="toggleGallery()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            Show all ${descImgUrls.length} photos
+                        </button>
+                        ` : ''}
+                    `;
+                    galleryEl.style.display = 'block';
+
+                    // Click any detail image to zoom fullscreen
+                    galleryEl.addEventListener('click', e => {
+                        const img = e.target.closest('.pd-detail-img-item')?.querySelector('img');
+                        if (!img) return;
+                        const overlay = document.createElement('div');
+                        overlay.className = 'pd-img-zoomed';
+                        overlay.innerHTML = `<img src="${img.src}" alt="${img.alt}" referrerpolicy="no-referrer">`;
+                        overlay.addEventListener('click', () => overlay.remove());
+                        document.body.appendChild(overlay);
+                    });
+                }
+            }
+
             window.productImages = images;
-            // Default selected image is the first (cover) image
             selectedImageUrl = mainImage.image_url;
 
             // Auto-select any variant that has only one option (e.g. single dimension, single weight)
@@ -221,17 +369,45 @@
             });
         }
 
+        function toggleGallery() {
+            const grid = document.getElementById('pd-gallery-grid');
+            const btn = document.getElementById('pd-gallery-toggle');
+            if (!grid || !btn) return;
+            const hidden = grid.querySelectorAll('.pd-detail-img-hidden');
+            const isExpanded = hidden.length === 0;
+            if (isExpanded) {
+                // Collapse — hide items after PREVIEW
+                grid.querySelectorAll('.pd-detail-img-item').forEach((el, i) => {
+                    if (i >= 3) el.classList.add('pd-detail-img-hidden');
+                });
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg> Show all photos`;
+                btn.classList.remove('expanded');
+            } else {
+                // Expand all
+                hidden.forEach(el => el.classList.remove('pd-detail-img-hidden'));
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg> Show less`;
+                btn.classList.add('expanded');
+            }
+        }
+
+        function toggleDescription() {
+            const desc = document.getElementById('pd-description');
+            const btn = document.getElementById('pd-desc-toggle');
+            if (!desc || !btn) return;
+            const isExpanded = desc.classList.toggle('pd-description--expanded');
+            btn.classList.toggle('expanded', isExpanded);
+            btn.innerHTML = isExpanded
+                ? `Show less <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`
+                : `Show more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+        }
+
         function selectImage(index) {
             const mainImg = document.getElementById('main-product-image');
-            const thumbnails = document.querySelectorAll('.thumbnail');
-            
             if (window.productImages && window.productImages[index]) {
                 mainImg.src = window.productImages[index].image_url;
                 mainImg.alt = window.productImages[index].alt_text || '';
-                selectedImageUrl = window.productImages[index].image_url; // track selected image
-                
-                // Update active thumbnail
-                thumbnails.forEach((thumb, i) => {
+                selectedImageUrl = window.productImages[index].image_url;
+                document.querySelectorAll('.pd-thumb, .thumbnail').forEach((thumb, i) => {
                     thumb.classList.toggle('active', i === index);
                 });
             }
@@ -248,18 +424,21 @@
                 material:         { label: 'Material',        type: 'text' },
                 weight:           { label: 'Weight',          type: 'chips' },
                 warranty:         { label: 'Warranty',        type: 'text' },
-                free_shipping:    { label: 'Free Shipping',   type: 'badge' },
-                brand:            { label: 'Brand',           type: 'text' },
+                free_shipping:    { label: 'Free Shipping',   type: 'hidden' },
+                brand:            { label: 'Brand',           type: 'hidden' },
                 model:            { label: 'Model',           type: 'text' },
                 dimensions:       { label: 'Dimensions',      type: 'chips' },
                 gender:           { label: 'Gender',          type: 'text' },
                 age_group:        { label: 'Age Group',       type: 'text' },
                 condition:        { label: 'Condition',       type: 'text' },
                 country_origin:   { label: 'Made In',         type: 'text' },
-                // ── Taobao-imported fields ──────────────────────
-                taobao_item_id:   { label: 'Taobao Item Id',  type: 'text' },
-                supplier_cost_usd:{ label: 'Supplier Cost',   type: 'hidden' }, // internal — hide from customers
-                variants:         { label: 'Variants',        type: 'hidden' }, // rendered separately as SKU table
+                // ── CJ / Taobao-imported fields ──────────────────────
+                cj_pid:           { label: 'CJ PID',          type: 'hidden' },
+                sku:              { label: 'SKU',              type: 'hidden' },
+                category:         { label: 'Category',         type: 'hidden' },
+                taobao_item_id:   { label: 'Taobao Item Id',   type: 'hidden' },
+                supplier_cost_usd:{ label: 'Supplier Cost',    type: 'hidden' },
+                variants:         { label: 'Variants',         type: 'hidden' },
             };
 
             // Color name → CSS color
@@ -300,6 +479,12 @@
 
                 // Skip hidden fields (internal data not shown to customers)
                 if (config.type === 'hidden') continue;
+
+                // Skip any value that is a URL (internal supplier/product links)
+                if (typeof rawValue === 'string' && /^https?:\/\//i.test(rawValue.trim())) continue;
+
+                // Skip keys that look like internal IDs or links even if not in config
+                if (/url|link|_id$|pid$|item_id/i.test(key) && !(ATTR_CONFIG[key]?.type === 'chips' || ATTR_CONFIG[key]?.type === 'color-swatches')) continue;
 
                 const isSelectableType = config.type === 'chips' || config.type === 'color-swatches';
 
@@ -366,18 +551,12 @@
                 }
             }
 
-            if (!optionSections && !detailSections) return '';
-
-            // ── Taobao SKU variant selector ───────────────────────────────────
-            // If the product has Taobao variants stored in attributes.variants,
-            // render them as a selectable chip group
+            // ── CJ / Taobao SKU variant selector ─────────────────────────────
+            // Build BEFORE the early-return so products that only have variants
+            // (and no other attributes) still render the selector.
             let variantSection = '';
             const taobaoVariants = attrs.variants;
             if (Array.isArray(taobaoVariants) && taobaoVariants.length > 0) {
-                // Cleaning legacy Chinese names can make multiple SKUs share
-                // the same visible label (for example, several "Standard"
-                // variants). Give those duplicates a stable SKU suffix so a
-                // click selects exactly one chip and one cart option.
                 const cleanedVariants = taobaoVariants
                     .filter(v => v && v.variant_name && v.variant_name !== 'Default')
                     .map((v, idx) => ({
@@ -395,17 +574,16 @@
                         const label = labelCount[v.label] > 1
                             ? `${v.label} · SKU ${v.sku_id || v.index + 1}`
                             : v.label;
-                        const price = v.retail_price_usd ? ` — $${v.retail_price_usd}` : '';
                         const outOfStock = (v.stock || 0) === 0;
                         const safeLabel = label.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                         return `<button type="button"
-                            class="variant-size-option${outOfStock ? ' disabled' : ''}"
+                            class="variant-size-option pd-variant-chip${outOfStock ? ' oos' : ''}"
                             data-value="${safeLabel}"
                             onclick="${outOfStock ? '' : `selectVariant('variant', '${safeLabel}')`}"
                             ${outOfStock ? 'disabled title="Out of stock"' : ''}
                             data-image="${v.image_url || ''}"
                             data-price="${v.retail_price_usd || ''}"
-                        >${label}${price}</button>`;
+                        >${label}${v.retail_price_usd ? `<span class="pd-chip-price">$${parseFloat(v.retail_price_usd).toFixed(2)}</span>` : ''}${outOfStock ? '<span class="pd-chip-oos">Out of stock</span>' : ''}</button>`;
                     }).join('');
 
                 if (variantChips) {
@@ -423,6 +601,8 @@
                 }
             }
 
+            if (!variantSection && !optionSections && !detailSections) return '';
+
             return `
                 ${variantSection ? `<div class="product-options">${variantSection}</div>` : ''}
                 ${optionSections ? `<div class="product-options">${optionSections}</div>` : ''}
@@ -436,13 +616,26 @@
         }
 
         function selectVariant(type, value) {
-            selectedVariants[type] = value;
             const selector = document.getElementById(`variant-${type}`);
             if (!selector) return;
 
+            // Toggle: clicking an already-selected variant deselects it
+            const isAlreadySelected = selectedVariants[type] === value;
+            if (isAlreadySelected) {
+                delete selectedVariants[type];
+                selector.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('selected');
+                    btn.setAttribute('aria-checked', 'false');
+                });
+                const note = document.getElementById(`${type}-selection-note`);
+                if (note) note.textContent = `Select ${selector.dataset.optionLabel || type}`;
+                closeVariantPopup();
+                return;
+            }
+
+            selectedVariants[type] = value;
             selector.classList.remove('variant-missing');
             selector.querySelectorAll('button').forEach(button => {
-                // Use data-value if present (Taobao variants), else fall back to text
                 const buttonValue = button.dataset.value
                     || (type === 'colors'
                         ? button.querySelector('b')?.textContent
@@ -451,25 +644,85 @@
                 button.classList.toggle('selected', isSelected);
                 button.setAttribute('aria-checked', String(isSelected));
 
-                // When selected, update the displayed price if variant has its own price
                 if (isSelected && button.dataset.price) {
                     const priceEl = document.querySelector('.price-current');
                     if (priceEl) priceEl.textContent = `$${button.dataset.price}`;
                 }
 
-                // When selected, update main image if variant has its own image
                 if (isSelected && button.dataset.image) {
                     const mainImg = document.getElementById('main-product-image');
                     if (mainImg) {
                         mainImg.src = button.dataset.image;
                         selectedImageUrl = button.dataset.image;
                     }
+                    showVariantImagePopup(button.dataset.image, value, button.dataset.price);
                 }
             });
+
             const note = document.getElementById(`${type}-selection-note`);
             if (note) note.textContent = typeof toEnglishProductText === 'function'
                 ? toEnglishProductText(value, value)
                 : value;
+        }
+
+        let _variantPopupTimer = null;
+        let _variantScrollListener = null;
+
+        function showVariantImagePopup(imgSrc, label, price) {
+            // Remove any existing popup and listeners
+            const existing = document.getElementById('variant-img-popup');
+            if (existing) existing.remove();
+            if (_variantPopupTimer) { clearTimeout(_variantPopupTimer); _variantPopupTimer = null; }
+            if (_variantScrollListener) { window.removeEventListener('scroll', _variantScrollListener); _variantScrollListener = null; }
+
+            const popup = document.createElement('div');
+            popup.id = 'variant-img-popup';
+            popup.className = 'variant-img-popup';
+            popup.setAttribute('role', 'dialog');
+            popup.setAttribute('aria-label', 'Selected variant preview');
+
+            const cleanLabel = typeof toEnglishProductText === 'function'
+                ? toEnglishProductText(label, label)
+                : label;
+
+            popup.innerHTML = `
+                <button class="variant-img-popup-close" onclick="closeVariantPopup()" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                <div class="variant-img-popup-img-wrap">
+                    <img src="${imgSrc}" alt="${cleanLabel}" referrerpolicy="no-referrer">
+                </div>
+                <div class="variant-img-popup-info">
+                    <span class="variant-img-popup-label">${cleanLabel}</span>
+                    ${price ? `<span class="variant-img-popup-price">$${parseFloat(price).toFixed(2)}</span>` : ''}
+                </div>
+                <div class="variant-img-popup-hint">Scroll up to see full image</div>
+            `;
+
+            document.body.appendChild(popup);
+            requestAnimationFrame(() => popup.classList.add('show'));
+
+            // Auto-dismiss when user scrolls up to see the main product image
+            const mainImg = document.getElementById('main-product-image');
+            _variantScrollListener = () => {
+                if (!mainImg) return;
+                const rect = mainImg.getBoundingClientRect();
+                // Main image is visible in viewport
+                if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+                    closeVariantPopup();
+                }
+            };
+            window.addEventListener('scroll', _variantScrollListener, { passive: true });
+        }
+
+        function closeVariantPopup() {
+            const popup = document.getElementById('variant-img-popup');
+            if (popup) {
+                popup.classList.remove('show');
+                setTimeout(() => popup.remove(), 300);
+            }
+            if (_variantPopupTimer) { clearTimeout(_variantPopupTimer); _variantPopupTimer = null; }
+            if (_variantScrollListener) { window.removeEventListener('scroll', _variantScrollListener); _variantScrollListener = null; }
         }
 
         async function addSelectedProductToCart(id) {

@@ -352,67 +352,172 @@
 
     <!-- Taobao Import Modal -->
     <div class="modal-backdrop" id="taobao-modal-backdrop" onclick="closeTaobaoModal()"></div>
-    <div class="modal product-editor-modal" id="taobao-modal" style="max-width:600px;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+    <div class="modal product-editor-modal" id="taobao-modal" style="max-width:640px;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+
         <!-- Sticky header -->
-        <div class="modal-header" style="padding:20px 24px 16px;flex-shrink:0;margin-bottom:0;">
+        <div class="modal-header" style="padding:20px 24px 0;flex-shrink:0;margin-bottom:0;border-bottom:none;">
             <div>
                 <span class="modal-eyebrow">Taobao / Tmall</span>
-                <h2>Import Product</h2>
+                <h2>Import Products</h2>
             </div>
             <button class="modal-close" type="button" onclick="closeTaobaoModal()" aria-label="Close">✕</button>
         </div>
 
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;padding:0 24px;flex-shrink:0;border-bottom:1px solid var(--border);margin-top:12px;">
+            <button id="tab-single" onclick="switchImportTab('single')"
+                style="padding:10px 18px;font-size:0.85rem;font-weight:600;border:none;border-bottom:2px solid var(--accent);background:none;color:var(--accent);cursor:pointer;">
+                Taobao URL
+            </button>
+            <button id="tab-bulk" onclick="switchImportTab('bulk')"
+                style="padding:10px 18px;font-size:0.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--text-muted);cursor:pointer;">
+                Taobao Bulk
+            </button>
+            <button id="tab-cj" onclick="switchImportTab('cj')"
+                style="padding:10px 18px;font-size:0.85rem;font-weight:600;border:none;border-bottom:2px solid transparent;background:none;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:5px;">
+                <span style="background:#10b981;color:#fff;font-size:0.65rem;padding:1px 5px;border-radius:3px;font-weight:700;">FREE</span>
+                CJ Dropshipping
+            </button>
+        </div>
         <!-- Scrollable body -->
         <div style="flex:1;overflow-y:auto;padding:20px 24px;">
 
-            <!-- Step 1: URL input -->
-            <div id="taobao-step-input">
+            <!-- SINGLE TAB -->
+            <div id="tab-content-single">
+                <div id="taobao-step-input">
+                    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+                        Paste any Taobao or Tmall product URL, or the numeric item ID. Works with any product category.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label" for="taobao-url-input">Product URL or Item ID</label>
+                        <input type="text" id="taobao-url-input" class="form-input"
+                            placeholder="https://item.taobao.com/item.htm?id=... or 1003783113480"
+                            style="font-size:0.83rem;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taobao-category-select">Override Category <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+                        <select id="taobao-category-select" class="form-select">
+                            <option value="">Auto-detect</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="taobao-step-preview" style="display:none;">
+                    <div id="taobao-preview-content"></div>
+                </div>
+                <div id="taobao-step-loading" style="display:none;text-align:center;padding:40px 20px;">
+                    <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+                    <p id="taobao-loading-msg" style="color:var(--text-muted);font-size:0.875rem;">Fetching from Taobao…<br><span style="font-size:0.8rem;opacity:0.6;">This usually takes 20–40 seconds</span></p>
+                </div>
+            </div>
+
+            <!-- BULK TAB -->
+            <div id="tab-content-bulk" style="display:none;">
                 <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
-                    Paste a Taobao or Tmall product URL (or numeric item ID). The product will be fetched, translated, and priced automatically.
+                    Paste up to <strong>20</strong> Taobao/Tmall URLs or item IDs — one per line. All will be imported automatically. Any category, any product type.
                 </p>
                 <div class="form-group">
-                    <label class="form-label" for="taobao-url-input">Product URL or Item ID</label>
-                    <input type="text" id="taobao-url-input" class="form-input"
-                        placeholder="https://item.taobao.com/item.htm?id=... or 1003783113480"
-                        style="font-size:0.83rem;">
+                    <label class="form-label" for="bulk-urls-input">URLs / Item IDs <span style="font-weight:400;color:var(--text-muted)">(one per line)</span></label>
+                    <textarea id="bulk-urls-input" class="form-textarea" rows="8"
+                        placeholder="https://item.taobao.com/item.htm?id=123456&#10;789012345678&#10;https://detail.tmall.com/item.htm?id=999888"
+                        style="font-size:0.82rem;font-family:monospace;resize:vertical;"></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="taobao-category-select">Override Category <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
-                    <select id="taobao-category-select" class="form-select">
-                        <option value="">Auto-detect</option>
+                    <label class="form-label" for="bulk-category-select">Override Category <span style="font-weight:400;color:var(--text-muted)">(optional — applies to all)</span></label>
+                    <select id="bulk-category-select" class="form-select">
+                        <option value="">Auto-detect each</option>
                     </select>
+                </div>
+                <div id="bulk-results" style="display:none;margin-top:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:0.85rem;font-weight:600;">Import Progress</span>
+                        <span id="bulk-progress-label" style="font-size:0.8rem;color:var(--text-muted);">0 / 0</span>
+                    </div>
+                    <div style="background:var(--bg-input);border-radius:99px;height:6px;overflow:hidden;margin-bottom:14px;">
+                        <div id="bulk-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width 0.4s ease;border-radius:99px;"></div>
+                    </div>
+                    <div id="bulk-results-list" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;"></div>
                 </div>
             </div>
 
-            <!-- Step 2: Preview result -->
-            <div id="taobao-step-preview" style="display:none;">
-                <div id="taobao-preview-content"></div>
-            </div>
+            <!-- CJ DROPSHIPPING TAB (FREE) -->
+            <div id="tab-content-cj" style="display:none;">
+                <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;">
+                    ✅ <strong>100% Free</strong> — No Apify, no scraping. Official CJ Dropshipping API. 1M+ products worldwide.
+                    <a href="https://www.cjdropshipping.com" target="_blank" style="color:var(--accent);margin-left:4px;">Sign up free →</a>
+                </div>
 
-            <!-- Step 3: Loading spinner -->
-            <div id="taobao-step-loading" style="display:none;text-align:center;padding:40px 20px;">
-                <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-                <p id="taobao-loading-msg" style="color:var(--text-muted);font-size:0.875rem;">Fetching from Taobao via Apify…<br><span style="font-size:0.8rem;opacity:0.6;">This usually takes 20–40 seconds</span></p>
+                <!-- Search -->
+                <div id="cj-step-search">
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;">
+                        Search CJ's catalog of 1M+ products by keyword. Type a product name — not a URL.
+                    </p>
+                    <div style="display:flex;gap:8px;margin-bottom:10px;">
+                        <input type="text" id="cj-search-input" class="form-input" placeholder="Keyword (e.g. gaming keyboard) or paste a CJ product URL..."
+                            style="flex:1;" onkeydown="if(event.key==='Enter') runCjSearch()">
+                        <button class="btn btn-primary" onclick="runCjSearch()" style="flex-shrink:0;">Search</button>
+                    </div>
+                    <!-- Quick keyword chips -->
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+                        <span style="font-size:0.72rem;color:var(--text-muted);">Quick search:</span>
+                        <button onclick="cjQuickSearch('gaming keyboard')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Gaming Keyboard</button>
+                        <button onclick="cjQuickSearch('gaming mouse')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Gaming Mouse</button>
+                        <button onclick="cjQuickSearch('gaming headset')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Headset</button>
+                        <button onclick="cjQuickSearch('gaming chair')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Gaming Chair</button>
+                        <button onclick="cjQuickSearch('mechanical keyboard')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Mechanical Keyboard</button>
+                        <button onclick="cjQuickSearch('rgb mousepad')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Mousepad</button>
+                        <button onclick="cjQuickSearch('gaming monitor')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Monitor</button>
+                        <button onclick="cjQuickSearch('webcam')" class="btn btn-secondary" style="padding:2px 8px;font-size:0.72rem;height:auto;">Webcam</button>
+                    </div>
+                    <div id="cj-search-results" style="display:none;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                            <span id="cj-result-count" style="font-size:0.8rem;color:var(--text-muted);"></span>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <button class="btn btn-secondary btn-sm" id="cj-prev-btn" onclick="cjChangePage(-1)" style="padding:4px 10px;font-size:0.78rem;">← Prev</button>
+                                <span id="cj-page-label" style="font-size:0.78rem;color:var(--text-muted);">Page 1</span>
+                                <button class="btn btn-secondary btn-sm" id="cj-next-btn" onclick="cjChangePage(1)" style="padding:4px 10px;font-size:0.78rem;">Next →</button>
+                            </div>
+                        </div>
+                        <div id="cj-product-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:340px;overflow-y:auto;"></div>
+                    </div>
+                    <div id="cj-search-loading" style="display:none;text-align:center;padding:30px;">
+                        <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:#10b981;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
+                        <p style="font-size:0.82rem;color:var(--text-muted);">Searching CJ catalog…</p>
+                    </div>
+                </div>
             </div>
 
         </div>
 
-        <!-- Sticky footer buttons — always visible -->
+        <!-- Sticky footers (one per state) -->
         <div id="taobao-footer-input" style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card);">
             <button class="btn btn-secondary" onclick="closeTaobaoModal()">Cancel</button>
-            <button class="btn btn-primary" id="taobao-preview-btn" onclick="runTaobaoPreview()">
-                Preview Product
-            </button>
+            <button class="btn btn-primary" id="taobao-preview-btn" onclick="runTaobaoPreview()">Preview Product</button>
         </div>
 
         <div id="taobao-footer-preview" style="padding:14px 24px;border-top:1px solid var(--border);display:none;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card);">
             <button class="btn btn-secondary" onclick="taobaoBackToInput()">← Back</button>
-            <button class="btn btn-primary" id="taobao-import-btn" onclick="runTaobaoImport()" style="background:#10b981;border-color:#10b981;">
-                ✓ Import to Store
-            </button>
+            <button class="btn btn-primary" id="taobao-import-btn" onclick="runTaobaoImport()" style="background:#10b981;border-color:#10b981;">✓ Import to Store</button>
         </div>
 
         <div id="taobao-footer-loading" style="padding:14px 24px;border-top:1px solid var(--border);display:none;flex-shrink:0;background:var(--bg-card);"></div>
+
+        <div id="taobao-footer-bulk" style="padding:14px 24px;border-top:1px solid var(--border);display:none;gap:8px;justify-content:space-between;align-items:center;flex-shrink:0;background:var(--bg-card);">
+            <span id="bulk-footer-note" style="font-size:0.8rem;color:var(--text-muted);"></span>
+            <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary" onclick="closeTaobaoModal()">Close</button>
+                <button class="btn btn-primary" id="bulk-start-btn" onclick="runBulkImport()" style="background:#10b981;border-color:#10b981;">↑ Start Bulk Import</button>
+            </div>
+        </div>
+
+        <div id="taobao-footer-cj" style="padding:14px 24px;border-top:1px solid var(--border);display:none;gap:8px;justify-content:space-between;align-items:center;flex-shrink:0;background:var(--bg-card);">
+            <span id="cj-selected-label" style="font-size:0.8rem;color:var(--text-muted);">0 selected</span>
+            <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary" onclick="closeTaobaoModal()">Close</button>
+                <button class="btn btn-primary" id="cj-import-selected-btn" onclick="runCjImportSelected()" style="background:#10b981;border-color:#10b981;" disabled>
+                    ↓ Import Selected
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- UI Notification System -->
@@ -453,6 +558,10 @@
                 const taobaoSelect = document.getElementById('taobao-category-select');
                 allCategories.forEach(cat => {
                     taobaoSelect.add(new Option(cat.name, cat.id));
+                });
+                const bulkCatSelect = document.getElementById('bulk-category-select');
+                allCategories.forEach(cat => {
+                    bulkCatSelect.add(new Option(cat.name, cat.id));
                 });
             } catch (err) {}
 
@@ -1089,6 +1198,7 @@
             _taobaoPreviewData = null;
             document.getElementById('taobao-url-input').value = '';
             taobaoShowStep('input');
+            switchImportTab('single');
             document.getElementById('taobao-modal').classList.add('active');
             document.getElementById('taobao-modal-backdrop').classList.add('active');
             setTimeout(() => document.getElementById('taobao-url-input').focus(), 100);
@@ -1103,10 +1213,116 @@
             document.getElementById('taobao-step-input').style.display    = step === 'input'   ? '' : 'none';
             document.getElementById('taobao-step-preview').style.display  = step === 'preview' ? '' : 'none';
             document.getElementById('taobao-step-loading').style.display  = step === 'loading' ? '' : 'none';
-            // Footer buttons
             document.getElementById('taobao-footer-input').style.display   = step === 'input'   ? 'flex' : 'none';
             document.getElementById('taobao-footer-preview').style.display = step === 'preview' ? 'flex' : 'none';
             document.getElementById('taobao-footer-loading').style.display = step === 'loading' ? 'block' : 'none';
+            document.getElementById('taobao-footer-bulk').style.display    = 'none';
+        }
+
+        function switchImportTab(tab) {
+            const isSingle = tab === 'single';
+            const isBulk = tab === 'bulk';
+            const isCj = tab === 'cj';
+
+            document.getElementById('tab-content-single').style.display = isSingle ? '' : 'none';
+            document.getElementById('tab-content-bulk').style.display = isBulk ? '' : 'none';
+            document.getElementById('tab-content-cj').style.display = isCj ? '' : 'none';
+
+            // Tab button styles
+            [
+                ['tab-single', isSingle],
+                ['tab-bulk', isBulk],
+                ['tab-cj', isCj],
+            ].forEach(([id, active]) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.borderBottomColor = active ? 'var(--accent)' : 'transparent';
+                    el.style.color = active ? 'var(--accent)' : 'var(--text-muted)';
+                }
+            });
+
+            // Footer visibility
+            document.getElementById('taobao-footer-input').style.display   = isSingle ? 'flex' : 'none';
+            document.getElementById('taobao-footer-preview').style.display = 'none';
+            document.getElementById('taobao-footer-loading').style.display = 'none';
+            document.getElementById('taobao-footer-bulk').style.display    = isBulk ? 'flex' : 'none';
+            document.getElementById('taobao-footer-cj').style.display      = isCj ? 'flex' : 'none';
+        }
+
+        async function runBulkImport() {
+            const raw = document.getElementById('bulk-urls-input').value.trim();
+            if (!raw) { showToast('Please enter at least one URL or item ID.', 'warning'); return; }
+
+            const items = raw.split('\n').map(s => s.trim()).filter(Boolean);
+            if (items.length > 20) { showToast('Maximum 20 items per bulk import.', 'warning'); return; }
+
+            const categoryId = document.getElementById('bulk-category-select').value || null;
+
+            // Show progress UI
+            const resultsBox = document.getElementById('bulk-results');
+            const resultsList = document.getElementById('bulk-results-list');
+            const progressBar = document.getElementById('bulk-progress-bar');
+            const progressLabel = document.getElementById('bulk-progress-label');
+            const startBtn = document.getElementById('bulk-start-btn');
+
+            resultsBox.style.display = 'block';
+            resultsList.innerHTML = '';
+            progressBar.style.width = '0%';
+            progressLabel.textContent = `0 / ${items.length}`;
+            startBtn.disabled = true;
+            startBtn.textContent = 'Importing…';
+            document.getElementById('bulk-footer-note').textContent = `Importing ${items.length} product${items.length > 1 ? 's' : ''}…`;
+
+            // Add pending rows
+            items.forEach((item, i) => {
+                const short = item.length > 50 ? '...' + item.slice(-40) : item;
+                resultsList.innerHTML += `
+                    <div id="bulk-row-${i}" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:var(--bg-input);font-size:0.78rem;">
+                        <div style="width:8px;height:8px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
+                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);">${short}</span>
+                        <span id="bulk-status-${i}" style="font-weight:600;color:var(--text-muted);">Pending</span>
+                    </div>`;
+            });
+
+            try {
+                const result = await api.bulkImportTaobao(items, categoryId ? parseInt(categoryId) : null);
+                const results = result.results || [];
+
+                results.forEach((r, i) => {
+                    const row = document.getElementById(`bulk-row-${i}`);
+                    const statusEl = document.getElementById(`bulk-status-${i}`);
+                    if (!row) return;
+                    const ok = r.status === 'success';
+                    row.style.background = ok ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)';
+                    row.querySelector('div').style.cssText = 'display:none';
+                    statusEl.textContent = ok ? '✓ Saved' : '✗ ' + (r.reason || 'Failed');
+                    statusEl.style.color = ok ? '#10b981' : '#ef4444';
+                    const pct = ((i + 1) / results.length) * 100;
+                    progressBar.style.width = pct + '%';
+                    progressLabel.textContent = `${i + 1} / ${results.length}`;
+                });
+
+                const successCount = results.filter(r => r.status === 'success').length;
+                document.getElementById('bulk-footer-note').textContent = `Done: ${successCount} imported, ${results.length - successCount} failed.`;
+                startBtn.textContent = 'Import More';
+                startBtn.disabled = false;
+                startBtn.onclick = () => {
+                    document.getElementById('bulk-urls-input').value = '';
+                    resultsBox.style.display = 'none';
+                    startBtn.textContent = '↑ Start Bulk Import';
+                    startBtn.onclick = runBulkImport;
+                };
+
+                if (successCount > 0) {
+                    showToast(`${successCount} product${successCount > 1 ? 's' : ''} imported successfully!`, 'success');
+                    loadProducts();
+                    loadDashboard();
+                }
+            } catch (err) {
+                showToast('Bulk import error: ' + err.message, 'error');
+                startBtn.disabled = false;
+                startBtn.textContent = '↑ Start Bulk Import';
+            }
         }
 
         function taobaoBackToInput() {
@@ -1231,6 +1447,153 @@
             } catch (err) {
                 taobaoShowStep('preview');
                 showToast('Import failed: ' + err.message, 'error');
+            }
+        }
+
+        // ── CJ Dropshipping Tab ──────────────────────────────────
+        let _cjPage = 1;
+        let _cjLastKeyword = '';
+        let _cjSelectedPids = new Set();
+
+        async function runCjSearch(page = 1) {
+            const keyword = document.getElementById('cj-search-input').value.trim();
+            if (!keyword) { showToast('Enter a keyword to search.', 'warning'); return; }
+
+            // Detect CJ product URL — extract PID and import directly
+            // Supports both numeric PIDs and UUID PIDs:
+            // e.g. .../product/name-p-2411080752081626200.html  (numeric)
+            // e.g. .../product/name-p-C45CC908-5C1D-4104-BEA3-BFC82D3DA44C.html  (UUID)
+            const cjUrlMatch = keyword.match(/cjdropshipping\.com\/product\/[^?#]*-p-([A-F0-9\-]{8,}|\d{10,})\.html/i)
+                || keyword.match(/cjdropshipping\.com\/.*[?&]pid=([^&]+)/i);
+            if (cjUrlMatch) {
+                const pid = cjUrlMatch[1];
+                showToast(`CJ URL detected — importing product (PID: ${pid})...`, 'info');
+                document.getElementById('cj-search-input').value = '';
+                try {
+                    const result = await api.cjImportProduct(pid);
+                    showToast(`✓ "${result.product?.name || 'Product'}" imported successfully!`, 'success');
+                    // Refresh products list if visible
+                    if (typeof loadProducts === 'function') loadProducts();
+                } catch (err) {
+                    showToast('Import failed: ' + err.message, 'error');
+                }
+                return;
+            }
+
+            // Detect non-CJ URLs (Taobao, Tmall, etc.)
+            if (keyword.startsWith('http') || keyword.includes('taobao.com') || keyword.includes('tmall.com')) {
+                showToast('That looks like a non-CJ URL. Only cjdropshipping.com URLs are supported here. Use keywords to search, e.g. "gaming keyboard".', 'warning');
+                return;
+            }
+
+            _cjPage = page;
+            _cjLastKeyword = keyword;
+            _cjSelectedPids.clear();
+            updateCjSelectedLabel();
+            document.getElementById('cj-search-results').style.display = 'none';
+            document.getElementById('cj-search-loading').style.display = 'block';
+            try {
+                const data = await api.cjSearch(keyword, page, 20);
+                renderCjResults(data);
+            } catch (err) {
+                showToast('CJ search error: ' + err.message, 'error');
+            } finally {
+                document.getElementById('cj-search-loading').style.display = 'none';
+            }
+        }
+
+        function renderCjResults(data) {
+            const products = data.products || [];
+            const total = data.total || 0;
+            const pages = data.pages || 1;
+            document.getElementById('cj-result-count').textContent = `${total.toLocaleString()} products found`;
+            document.getElementById('cj-page-label').textContent = `Page ${_cjPage} / ${pages}`;
+            document.getElementById('cj-prev-btn').disabled = _cjPage <= 1;
+            document.getElementById('cj-next-btn').disabled = _cjPage >= pages;
+            const grid = document.getElementById('cj-product-grid');
+            if (!products.length) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:20px;">No products found. Try a different keyword.</div>';
+            } else {
+                grid.innerHTML = products.map(p => `
+                    <div id="cjcard-${p.cj_pid}" onclick="toggleCjProduct('${p.cj_pid}', this)"
+                        style="display:flex;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s ease;background:var(--bg-card);">
+                        <img src="${p.image_url || ''}" referrerpolicy="no-referrer"
+                            style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;"
+                            onerror="this.src='https://via.placeholder.com/56?text=No+Img'">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.78rem;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${p.name}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;">${p.category}</div>
+                            <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px;">
+                                <span style="font-size:0.85rem;font-weight:700;color:#10b981;">$${p.retail_price_usd}</span>
+                                <span style="font-size:0.7rem;color:var(--text-muted);">cost $${p.supplier_cost_usd}</span>
+                            </div>
+                        </div>
+                    </div>`).join('');
+            }
+            document.getElementById('cj-search-results').style.display = 'block';
+        }
+
+        function toggleCjProduct(pid, card) {
+            if (_cjSelectedPids.has(pid)) {
+                _cjSelectedPids.delete(pid);
+                card.style.borderColor = 'var(--border)';
+                card.style.background = 'var(--bg-card)';
+            } else {
+                _cjSelectedPids.add(pid);
+                card.style.borderColor = '#10b981';
+                card.style.background = 'rgba(16,185,129,0.06)';
+            }
+            updateCjSelectedLabel();
+        }
+
+        function updateCjSelectedLabel() {
+            const count = _cjSelectedPids.size;
+            document.getElementById('cj-selected-label').textContent =
+                count === 0 ? '0 selected' : `${count} product${count > 1 ? 's' : ''} selected`;
+            document.getElementById('cj-import-selected-btn').disabled = count === 0;
+        }
+
+        function cjChangePage(delta) { runCjSearch(_cjPage + delta); }
+
+        function cjQuickSearch(keyword) {
+            document.getElementById('cj-search-input').value = keyword;
+            runCjSearch(1);
+        }
+
+        async function runCjImportSelected() {
+            if (!_cjSelectedPids.size) return;
+            const pids = Array.from(_cjSelectedPids);
+            const btn = document.getElementById('cj-import-selected-btn');
+            btn.disabled = true;
+            btn.textContent = `Importing ${pids.length}…`;
+            document.getElementById('cj-selected-label').textContent = 'Importing…';
+            try {
+                const result = await api.cjBulkImport(pids, null);
+                const successCount = result.success || 0;
+                const failCount = result.failed || 0;
+                (result.results || []).forEach(r => {
+                    const card = document.getElementById(`cjcard-${r.pid}`);
+                    if (!card) return;
+                    card.style.borderColor = r.status === 'success' ? '#10b981' : '#ef4444';
+                    const tag = document.createElement('div');
+                    tag.style.cssText = 'font-size:0.7rem;font-weight:700;margin-top:3px;';
+                    tag.style.color = r.status === 'success' ? '#10b981' : '#ef4444';
+                    tag.textContent = r.status === 'success' ? '✓ Imported' : '✗ ' + (r.reason || 'Failed');
+                    card.querySelector('div:last-child').appendChild(tag);
+                });
+                if (successCount > 0) {
+                    showToast(`${successCount} product${successCount > 1 ? 's' : ''} imported!`, 'success');
+                    loadProducts(); loadDashboard();
+                }
+                if (failCount > 0) showToast(`${failCount} failed to import.`, 'error');
+                _cjSelectedPids.clear();
+                btn.textContent = '↓ Import Selected';
+                btn.disabled = true;
+                document.getElementById('cj-selected-label').textContent = '0 selected';
+            } catch (err) {
+                showToast('CJ import error: ' + err.message, 'error');
+                btn.disabled = false;
+                btn.textContent = '↓ Import Selected';
             }
         }
     </script>
