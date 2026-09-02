@@ -16,6 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const submitBtn = document.getElementById('save-all-btn');
 
+    // Profile hero (avatar + name + email)
+    const heroAvatar = document.getElementById('ph-avatar');
+    const heroName = document.getElementById('ph-name');
+    const heroEmail = document.getElementById('ph-email');
+    function updateHero(user) {
+        if (!user || !heroAvatar) return;
+        const displayName = user.full_name || user.email?.split('@')[0] || 'User';
+        heroName.textContent = displayName;
+        heroEmail.textContent = user.email || '';
+        heroAvatar.textContent = displayName.charAt(0).toUpperCase();
+    }
+
     // Load initial data
     async function loadData() {
         // STEP 1: Immediately load from localStorage cache for instant display
@@ -23,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cachedUser) {
             try {
                 const user = JSON.parse(cachedUser);
+                updateHero(user);
                 // Display all cached fields immediately to prevent flash
                 if (user.full_name) nameInput.value = user.full_name;
                 if (user.email) emailInput.value = user.email;
@@ -54,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await api.getProfile();
             if (data && data.user) {
                 const user = data.user;
+                updateHero(user);
                 nameInput.value = user.full_name || '';
                 phoneInput.value = user.phone || '';
                 emailInput.value = user.email || '';
@@ -113,7 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const updatedProfile = await api.updateProfile(payload);
             apiSuccess = true;
-            
+
+            // Refresh the hero directly from the payload so it always
+            // reflects the save, independent of the storage cache
+            updateHero({ full_name: payload.full_name, email: heroEmail.textContent });
+
             // Update local storage user data with FULL profile for instant display on next load
             const userStr = localStorage.getItem('buybibz_user'); // Fixed: use underscore
             if (userStr && updatedProfile.profile) {
@@ -125,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 userObj.city = updatedProfile.profile.city;
                 userObj.postal_code = updatedProfile.profile.postal_code;
                 localStorage.setItem('buybibz_user', JSON.stringify(userObj)); // Fixed: use underscore
-                
+                updateHero(userObj);
+
                 if (typeof renderNavbar === 'function') {
                     renderNavbar();
                 }

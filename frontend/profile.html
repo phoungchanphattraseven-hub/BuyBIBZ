@@ -29,8 +29,8 @@
 
     <header class="navbar" id="navbar"></header>
 
-    <main class="profile-page" style="background: var(--bg-secondary); min-height: 100vh;">
-        <div class="container" style="max-width: 600px; padding: var(--space-2xl) var(--space-md);">
+    <main class="profile-page">
+        <div class="container profile-container">
         <a class="page-back" href="index.html">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
             <span data-i18n="common.back">Back</span>
@@ -39,35 +39,41 @@
                 <h1 data-i18n="profile.title">Settings</h1>
             </div>
 
+            <!-- Profile hero -->
+            <div class="profile-hero">
+                <div class="profile-avatar" id="ph-avatar">U</div>
+                <div class="profile-hero-info">
+                    <div class="profile-hero-name" id="ph-name">&nbsp;</div>
+                    <div class="profile-hero-email" id="ph-email">&nbsp;</div>
+                </div>
+                <a class="profile-hero-orders" href="orders.html">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    <span data-i18n="nav.orders">My Orders</span>
+                </a>
+            </div>
+
             <form id="combined-settings-form">
                 <!-- Personal Information -->
                 <div class="settings-group">
-                    <div class="settings-header" data-i18n="profile.personal">Personal Information</div>
+                    <div class="settings-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span data-i18n="profile.personal">Personal Information</span>
+                    </div>
                     <div class="settings-list">
                         <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span data-i18n="profile.name">Name</span>
-                            </div>
+                            <label class="settings-label" for="profile-name"><span data-i18n="profile.name">Name</span></label>
                             <div class="settings-control">
-                                <input type="text" id="profile-name" class="settings-input" placeholder="John Doe">
+                                <input type="text" id="profile-name" class="settings-input" placeholder="John Doe" autocomplete="name">
                             </div>
                         </div>
                         <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-                                <span data-i18n="profile.phone">Phone</span>
-                                <span style="color: var(--status-error); margin-left: 4px;">*</span>
-                            </div>
+                            <label class="settings-label" for="profile-phone"><span data-i18n="profile.phone">Phone</span><span class="req">*</span></label>
                             <div class="settings-control">
-                                <input type="tel" id="profile-phone" class="settings-input" placeholder="+1 (555) 000-0000" required>
+                                <input type="tel" id="profile-phone" class="settings-input" placeholder="+1 (555) 000-0000" autocomplete="tel" required>
                             </div>
                         </div>
                         <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                                <span data-i18n="profile.email">Email</span>
-                            </div>
+                            <label class="settings-label" for="profile-email"><span data-i18n="profile.email">Email</span></label>
                             <div class="settings-control">
                                 <input type="email" id="profile-email" class="settings-input" disabled>
                             </div>
@@ -78,32 +84,29 @@
                 <!-- Shipping Address -->
                 <div class="settings-group">
                     <div class="settings-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
                         <span data-i18n="profile.shipping">Shipping Address</span>
-                        <span style="color: var(--status-error); font-size: var(--font-xs); font-weight: 500; margin-left: var(--space-sm);">* Required for checkout</span>
+                        <span class="settings-note"><span style="color: var(--status-error);">*</span> <span data-i18n="profile.required_for_checkout">Required for checkout</span></span>
                     </div>
                     <div class="settings-list">
                         <div class="settings-item">
-                            <div class="settings-label">
-                                <span data-i18n="profile.street">Street</span>
-                                <span style="color: var(--status-error);">*</span>
-                            </div>
+                            <label class="settings-label" for="profile-address"><span data-i18n="profile.street">Street</span><span class="req">*</span></label>
                             <div class="settings-control">
-                                <input type="text" id="profile-address" class="settings-input" placeholder="123 Main St" required>
+                                <input type="text" id="profile-address" class="settings-input" placeholder="123 Main St" autocomplete="street-address" required>
                             </div>
                         </div>
-                        <div class="settings-item">
-                            <div class="settings-label">
-                                <span data-i18n="profile.city">City</span>
-                                <span style="color: var(--status-error);">*</span>
+                        <div class="settings-row">
+                            <div class="settings-item">
+                                <label class="settings-label" for="profile-city"><span data-i18n="profile.city">City</span><span class="req">*</span></label>
+                                <div class="settings-control">
+                                    <input type="text" id="profile-city" class="settings-input" placeholder="New York" autocomplete="address-level2" required>
+                                </div>
                             </div>
-                            <div class="settings-control">
-                                <input type="text" id="profile-city" class="settings-input" placeholder="New York" required>
-                            </div>
-                        </div>
-                        <div class="settings-item">
-                            <div class="settings-label" data-i18n="profile.postal">Postal Code</div>
-                            <div class="settings-control">
-                                <input type="text" id="profile-postal" class="settings-input" placeholder="10001">
+                            <div class="settings-item">
+                                <label class="settings-label" for="profile-postal"><span data-i18n="profile.postal">Postal Code</span></label>
+                                <div class="settings-control">
+                                    <input type="text" id="profile-postal" class="settings-input" placeholder="10001" autocomplete="postal-code">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -111,31 +114,30 @@
 
                 <!-- Regional Settings -->
                 <div class="settings-group">
-                    <div class="settings-header" data-i18n="profile.regional">Regional</div>
+                    <div class="settings-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                        <span data-i18n="profile.regional">Regional</span>
+                    </div>
                     <div class="settings-list">
-                        <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                                <span data-i18n="profile.language">Language</span>
+                        <div class="settings-row">
+                            <div class="settings-item">
+                                <label class="settings-label" for="pref-language"><span data-i18n="profile.language">Language</span></label>
+                                <div class="settings-control">
+                                    <select id="pref-language" class="settings-select">
+                                        <option value="en">English (US)</option>
+                                        <option value="km">Khmer (ខ្មែរ)</option>
+                                        <option value="fr">French (Français)</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="settings-control">
-                                <select id="pref-language" class="settings-select" dir="rtl">
-                                    <option value="en">English (US)</option>
-                                    <option value="km">Khmer (ខ្មែរ)</option>
-                                    <option value="fr">French (Français)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-                                <span data-i18n="profile.currency">Currency</span>
-                            </div>
-                            <div class="settings-control">
-                                <select id="pref-currency" class="settings-select" dir="rtl">
-                                    <option value="USD">USD ($)</option>
-                                    <option value="KHR">KHR (៛)</option>
-                                </select>
+                            <div class="settings-item">
+                                <label class="settings-label" for="pref-currency"><span data-i18n="profile.currency">Currency</span></label>
+                                <div class="settings-control">
+                                    <select id="pref-currency" class="settings-select">
+                                        <option value="USD">USD ($)</option>
+                                        <option value="KHR">KHR (៛)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -143,12 +145,15 @@
 
                 <!-- Notifications -->
                 <div class="settings-group">
-                    <div class="settings-header" data-i18n="profile.notifications">Notifications</div>
+                    <div class="settings-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span data-i18n="profile.notifications">Notifications</span>
+                    </div>
                     <div class="settings-list">
-                        <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                                <span data-i18n="profile.order_updates">Order Updates</span>
+                        <div class="settings-item settings-item-toggle">
+                            <div class="settings-toggle-info">
+                                <span class="settings-label" data-i18n="profile.order_updates">Order Updates</span>
+                                <span class="settings-desc" data-i18n="profile.order_updates_desc">Shipping and delivery status</span>
                             </div>
                             <div class="settings-control">
                                 <label class="toggle-switch">
@@ -157,10 +162,10 @@
                                 </label>
                             </div>
                         </div>
-                        <div class="settings-item">
-                            <div class="settings-label">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-tertiary);"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                <span data-i18n="profile.promotions">Promotions</span>
+                        <div class="settings-item settings-item-toggle">
+                            <div class="settings-toggle-info">
+                                <span class="settings-label" data-i18n="profile.promotions">Promotions</span>
+                                <span class="settings-desc" data-i18n="profile.promotions_desc">Deals, sales and new arrivals</span>
                             </div>
                             <div class="settings-control">
                                 <label class="toggle-switch">

@@ -373,6 +373,7 @@ input, textarea, select {
     justify-content: center;
     width: 42px;
     height: 42px;
+    min-height: 0;
     border-radius: var(--radius-md);
     color: var(--text-secondary);
     transition: all var(--transition-fast);
@@ -930,7 +931,8 @@ svg:not([class*="width"]):not([class*="size"]) {
 .product-card-add-btn {
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-md);
+    min-height: 0;
+    border-radius: 50%;
     background: var(--brand-primary);
     color: white;
     display: flex;
@@ -1580,65 +1582,185 @@ svg:not([class*="width"]):not([class*="size"]) {
     color: var(--text-primary);
 }
 
-/* ── Settings UI (Phone App Style) ────────────────────────── */
-.settings-group {
+/* ── Profile Page (Modern Card Style) ─────────────────────── */
+.profile-container {
+    max-width: 660px;
+}
+
+.profile-hero {
+    align-items: center;
+    background:
+        radial-gradient(120% 200% at 100% 0%, rgba(27, 140, 61, 0.14) 0%, transparent 55%),
+        var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    display: flex;
+    gap: var(--space-lg);
     margin-bottom: var(--space-2xl);
+    padding: var(--space-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-avatar {
+    align-items: center;
+    background: var(--brand-gradient);
+    border-radius: var(--radius-full);
+    color: #ffffff;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    height: 64px;
+    justify-content: center;
+    width: 64px;
+}
+
+.profile-hero-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-hero-name {
+    color: var(--text-primary);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-hero-email {
+    color: var(--text-tertiary);
+    font-size: var(--font-sm);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-hero-orders {
+    align-items: center;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    display: inline-flex;
+    flex-shrink: 0;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    gap: 6px;
+    padding: 8px 14px;
+    text-decoration: none;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.profile-hero-orders:hover {
+    border-color: var(--border-brand);
+    color: var(--brand-primary-light);
+}
+
+@media (max-width: 540px) {
+    .profile-hero {
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        row-gap: var(--space-md);
+    }
+
+    .profile-avatar {
+        height: 52px;
+        width: 52px;
+        font-size: 1.2rem;
+    }
+
+    .profile-hero-info {
+        flex: 1 1 55%;
+    }
+
+    .profile-hero-orders {
+        margin-left: 68px;
+    }
+}
+
+.settings-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-xl);
 }
 
 .settings-header {
-    font-size: var(--font-xs);
-    text-transform: uppercase;
-    font-weight: 600;
+    align-items: center;
+    color: var(--text-primary);
+    display: flex;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.settings-header svg {
+    color: var(--brand-primary-light);
+    flex-shrink: 0;
+}
+
+.settings-note {
     color: var(--text-tertiary);
-    margin-left: var(--space-md);
-    margin-bottom: var(--space-sm);
-    letter-spacing: 0.5px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+    margin-left: auto;
+    text-transform: none;
 }
 
 .settings-list {
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-subtle);
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.settings-row {
+    display: grid;
+    gap: var(--space-lg);
+    grid-template-columns: 1fr 1fr;
 }
 
 .settings-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-md) var(--space-lg);
-    border-bottom: 1px solid var(--border-subtle);
-    min-height: 56px;
-}
-
-.settings-item:last-child {
-    border-bottom: none;
+    flex-direction: column;
+    gap: var(--space-xs);
+    min-width: 0;
 }
 
 .settings-label {
-    font-weight: 500;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
+    color: var(--text-secondary);
+    display: inline-flex;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.settings-label .req {
+    color: var(--status-error);
+    margin-left: 3px;
 }
 
 .settings-control {
     display: flex;
-    align-items: center;
-    flex: 1;
-    justify-content: flex-end;
-    margin-left: var(--space-lg);
+    width: 100%;
 }
 
 .settings-input {
-    text-align: right;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 1rem;
-    padding: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+    padding: 12px 14px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     width: 100%;
     outline: none;
 }
@@ -1647,25 +1769,100 @@ svg:not([class*="width"]):not([class*="size"]) {
     color: var(--text-tertiary);
 }
 
+.settings-input:hover:not(:disabled) {
+    border-color: var(--border-default);
+}
+
+.settings-input:focus {
+    background: var(--bg-elevated);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(27, 140, 61, 0.15);
+}
+
 .settings-input:disabled {
     color: var(--text-tertiary);
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .settings-select {
     appearance: none;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1rem;
-    text-align: right;
-    padding-right: var(--space-md);
-    cursor: pointer;
-    outline: none;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>');
+    background-color: var(--bg-tertiary);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+    background-position: right 12px center;
     background-repeat: no-repeat;
-    background-position: right center;
-    direction: rtl; /* Tricky way to align select text right in some browsers */
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: var(--font-sm);
+    max-width: 100%;
+    padding: 12px 38px 12px 14px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    width: 100%;
+    outline: none;
+}
+
+.settings-select:hover {
+    border-color: var(--border-default);
+}
+
+.settings-select:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(27, 140, 61, 0.15);
+}
+
+/* Toggle rows (notifications) */
+.settings-item-toggle {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+
+.settings-toggle-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.settings-item-toggle .settings-label {
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.settings-desc {
+    color: var(--text-tertiary);
+    font-size: var(--font-xs);
+}
+
+.settings-control .toggle-switch {
+    flex-shrink: 0;
+}
+
+.settings-item-toggle .settings-control {
+    width: auto;
+}
+
+@media (max-width: 540px) {
+    .settings-group {
+        padding: var(--space-lg);
+    }
+
+    .settings-row {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-note {
+        display: none;
+    }
 }
 
 /* ── UI Elements ──────────────────────────────────────────── */
@@ -1687,7 +1884,7 @@ svg:not([class*="width"]):not([class*="size"]) {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--border-color);
+    background-color: var(--border-default);
     transition: .3s;
     border-radius: 24px;
 }
@@ -1706,7 +1903,7 @@ svg:not([class*="width"]):not([class*="size"]) {
 }
 
 input:checked + .toggle-slider {
-    background-color: var(--status-success);
+    background-color: var(--brand-primary);
 }
 
 input:focus + .toggle-slider {
@@ -7379,6 +7576,9 @@ body { letter-spacing: -0.01em; }
     right: 8px;
     width: 32px;
     height: 32px;
+    /* Keep the circular shape — the global touch-target min-height
+       would otherwise stretch this into an ellipse on mobile */
+    min-height: 0;
     border-radius: 50%;
     background: rgba(0,0,0,0.6);
     color: white;
@@ -7472,15 +7672,15 @@ body { letter-spacing: -0.01em; }
     }
     
     .variant-img-popup-close {
-        width: 28px;
-        height: 28px;
+        width: 34px;
+        height: 34px;
         top: 6px;
         right: 6px;
     }
-    
+
     .variant-img-popup-close svg {
-        width: 14px;
-        height: 14px;
+        width: 15px;
+        height: 15px;
     }
     
     .variant-img-popup-img-wrap {
