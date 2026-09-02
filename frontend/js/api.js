@@ -4,9 +4,18 @@
  */
 
 // Auto-detect API base URL
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000'
-    : window.location.origin;
+const API_BASE = (() => {
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    
+    // Development: backend always runs on port 8000
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://127.0.0.1:8000';
+    }
+    
+    // Production: use same origin
+    return window.location.origin;
+})();
 
 class ApiClient {
     constructor() {
