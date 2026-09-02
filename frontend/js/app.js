@@ -320,6 +320,9 @@ function renderNavbar() {
                     </div>
                 ` : `
                     <a href="${prefix}auth.html" class="nav-auth-btn nav-login-btn" data-i18n="nav.sign_in">${_t('nav.sign_in')}</a>
+                    <a href="${prefix}auth.html" class="nav-icon-btn nav-login-icon-btn" aria-label="${_t('nav.sign_in')}" title="${_t('nav.sign_in')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </a>
                 `}
 
                 <button class="nav-mobile-toggle" id="mobile-toggle" onclick="toggleMobileNav()">

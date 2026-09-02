@@ -422,6 +422,21 @@ input, textarea, select {
     background: var(--bg-glass-hover);
 }
 
+/* Sign-in icon: only shown on mobile, desktop keeps the text pill */
+.nav-login-icon-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .nav-login-btn {
+        display: none;
+    }
+
+    .nav-login-icon-btn {
+        display: flex;
+    }
+}
+
 .nav-user-menu {
     position: relative;
 }
