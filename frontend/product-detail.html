@@ -708,7 +708,60 @@
         let _variantPopupTimer = null;
         let _variantScrollListener = null;
 
+        // Popup sound effect using Web Audio API
+        function playPopupSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Create a pleasant notification sound
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } catch (e) {
+                // Silently fail if audio is not supported
+                console.log('Audio not supported:', e);
+            }
+        }
+
+        // Close sound effect
+        function playCloseSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Create a gentle close sound
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.08);
+                
+                gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // Silently fail if audio is not supported
+                console.log('Audio not supported:', e);
+            }
+        }
+
         function showVariantImagePopup(imgSrc, label, price) {
+            // Play popup sound
+            playPopupSound();
+            
             // Remove any existing popup and listeners
             const existing = document.getElementById('variant-img-popup');
             if (existing) existing.remove();
@@ -756,6 +809,9 @@
         }
 
         function closeVariantPopup() {
+            // Play close sound
+            playCloseSound();
+            
             const popup = document.getElementById('variant-img-popup');
             if (popup) {
                 popup.classList.remove('show');
