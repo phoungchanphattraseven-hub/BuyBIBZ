@@ -275,6 +275,10 @@ class ApiClient {
         });
     }
 
+    async deleteReview(reviewId) {
+        return this.delete(`/api/reviews/${reviewId}`);
+    }
+
     // ── Admin ───────────────────────────────
     async getDashboard() {
         return this.get('/api/admin/dashboard');

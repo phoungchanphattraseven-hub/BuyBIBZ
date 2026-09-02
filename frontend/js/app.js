@@ -208,7 +208,16 @@ async function updateCartBadge() {
 
     if (!api.isLoggedIn()) {
         badge.style.display = 'none';
+        // Clear cached cart count when logged out
+        localStorage.removeItem('cart_badge_count');
         return;
+    }
+
+    // Show cached count immediately for better UX
+    const cachedCount = localStorage.getItem('cart_badge_count');
+    if (cachedCount && parseInt(cachedCount) > 0) {
+        badge.textContent = cachedCount;
+        badge.style.display = 'flex';
     }
 
     try {
@@ -216,11 +225,21 @@ async function updateCartBadge() {
         if (data.count > 0) {
             badge.textContent = data.count;
             badge.style.display = 'flex';
+            // Cache the cart count for persistence
+            localStorage.setItem('cart_badge_count', data.count);
+        } else {
+            badge.style.display = 'none';
+            localStorage.removeItem('cart_badge_count');
+        }
+    } catch (error) {
+        console.log('Cart badge update failed:', error);
+        // Fallback to cached count if API fails
+        if (cachedCount && parseInt(cachedCount) > 0) {
+            badge.textContent = cachedCount;
+            badge.style.display = 'flex';
         } else {
             badge.style.display = 'none';
         }
-    } catch {
-        badge.style.display = 'none';
     }
 }
 
@@ -243,8 +262,11 @@ async function addToCartWithPrice(productId, quantity = 1, selectedOptions = {},
     const badge = document.getElementById('cart-badge');
     if (badge) {
         const currentCount = parseInt(badge.textContent) || 0;
-        badge.textContent = currentCount + quantity;
+        const newCount = currentCount + quantity;
+        badge.textContent = newCount;
         badge.style.display = 'flex';
+        // Cache the optimistic count
+        localStorage.setItem('cart_badge_count', newCount);
     }
 
     try {
@@ -260,6 +282,12 @@ async function addToCartWithPrice(productId, quantity = 1, selectedOptions = {},
             const revertedCount = Math.max(0, currentCount - quantity);
             badge.textContent = revertedCount;
             badge.style.display = revertedCount > 0 ? 'flex' : 'none';
+            // Update cache on error
+            if (revertedCount > 0) {
+                localStorage.setItem('cart_badge_count', revertedCount);
+            } else {
+                localStorage.removeItem('cart_badge_count');
+            }
         }
         showToast(err.message, 'error');
     }
@@ -462,11 +490,15 @@ async function handleLogout() {
     const prefix = isSubfolder ? '../' : '';
     try {
         await api.logout();
+        // Clear cached cart badge count on logout
+        localStorage.removeItem('cart_badge_count');
         showToast(typeof i18n !== 'undefined' ? i18n.t('common.signed_out') : 'Signed out successfully', 'info');
         setTimeout(() => window.location.href = `${prefix}index.html`, 500);
     } catch (err) {
         // Clear session anyway
         api.clearSession();
+        // Clear cached cart badge count on logout
+        localStorage.removeItem('cart_badge_count');
         window.location.href = `${prefix}index.html`;
     }
 }
@@ -602,6 +634,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFooter();
     renderMobileBottomNav();
     initScrollAnimations();
+    
+    // Update cart badge immediately (will show cached count, then update with API)
+    updateCartBadge();
+    
     // Apply translations to static data-i18n elements after render
     if (typeof i18n !== 'undefined') {
         i18n.applyTranslations();
@@ -697,6 +733,13 @@ async function updateMobileCartBadge() {
         return;
     }
 
+    // Show cached count immediately for better UX
+    const cachedCount = localStorage.getItem('cart_badge_count');
+    if (cachedCount && parseInt(cachedCount) > 0) {
+        badge.textContent = cachedCount;
+        badge.style.display = 'flex';
+    }
+
     try {
         const data = await api.getCart();
         if (data.count > 0) {
@@ -705,8 +748,15 @@ async function updateMobileCartBadge() {
         } else {
             badge.style.display = 'none';
         }
-    } catch {
-        badge.style.display = 'none';
+    } catch (error) {
+        console.log('Mobile cart badge update failed:', error);
+        // Fallback to cached count if API fails
+        if (cachedCount && parseInt(cachedCount) > 0) {
+            badge.textContent = cachedCount;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
     }
 }
 

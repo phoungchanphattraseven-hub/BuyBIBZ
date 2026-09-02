@@ -36,6 +36,12 @@ function initAuth() {
     if (title) title.textContent = _t('auth.welcome_back');
     if (subtitle) subtitle.textContent = _t('auth.sign_in_subtitle');
 
+    // Password toggle functionality
+    initPasswordToggles();
+
+    // Remember me functionality
+    initRememberMe();
+
     // Login form
     const loginFormEl = document.getElementById('login-form-el');
     if (loginFormEl) {
@@ -142,3 +148,55 @@ function requireAdmin() {
     return true;
 }
 
+// Password toggle functionality
+function initPasswordToggles() {
+    const toggleButtons = document.querySelectorAll('.password-toggle');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const wrapper = button.closest('.password-input-wrapper');
+            const input = wrapper.querySelector('input[type="password"], input[type="text"]');
+            const eyeIcon = button.querySelector('.eye-icon');
+            const eyeOffIcon = button.querySelector('.eye-off-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+            }
+        });
+    });
+}
+
+// Remember me functionality
+function initRememberMe() {
+    const rememberMeCheckbox = document.getElementById('remember-me');
+    const emailInput = document.getElementById('login-email');
+    
+    if (!rememberMeCheckbox || !emailInput) return;
+    
+    // Load saved email if exists
+    const savedEmail = localStorage.getItem('buybibz-remembered-email');
+    if (savedEmail) {
+        emailInput.value = savedEmail;
+        rememberMeCheckbox.checked = true;
+    }
+    
+    // Update remember me on login
+    const loginFormEl = document.getElementById('login-form-el');
+    if (loginFormEl) {
+        const originalSubmit = loginFormEl.onsubmit;
+        loginFormEl.addEventListener('submit', (e) => {
+            if (rememberMeCheckbox.checked) {
+                localStorage.setItem('buybibz-remembered-email', emailInput.value);
+            } else {
+                localStorage.removeItem('buybibz-remembered-email');
+            }
+        });
+    }
+}

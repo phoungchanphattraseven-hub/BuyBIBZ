@@ -31,6 +31,10 @@
 
     <main class="product-detail">
         <div class="container">
+            <a class="page-back" href="products.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                <span data-i18n="common.back">Back</span>
+            </a>
             <!-- Loading skeleton -->
             <div class="product-detail-grid" id="product-content">
                 <div class="product-detail-image-gallery">
@@ -46,8 +50,23 @@
 
             <!-- Reviews Section -->
             <div class="reviews-section" id="reviews-section" style="display: none;">
-                <h2 data-i18n="product.customer_reviews">Customer Reviews</h2>
-                <div id="reviews-list"></div>
+                <div class="reviews-header">
+                    <div class="reviews-heading">
+                        <h2 data-i18n="product.customer_reviews">Customer Reviews</h2>
+                        <div class="reviews-summary" id="reviews-summary" style="display: none;">
+                            <span class="reviews-summary-score" id="reviews-avg-score"></span>
+                            <div class="reviews-summary-meta">
+                                <span id="reviews-avg-stars"></span>
+                                <span class="reviews-summary-count" id="reviews-count-label"></span>
+                            </div>
+                            <a class="reviews-view-all" id="view-all-reviews-link" href="reviews.html">
+                                <span data-i18n="product.view_all_reviews">View all reviews</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div id="reviews-list" class="reviews-list"></div>
 
                 <div class="review-form" id="review-form-container" style="display: none;">
                     <h3 data-i18n="product.write_review">Write a Review</h3>
@@ -106,7 +125,7 @@
             try {
                 const product = await api.getProduct(productId);
                 renderProduct(product);
-                renderReviews(product.reviews || []);
+                renderReviews(product.reviews || [], product);
 
                 document.title = `${product.name} — BuyBIBZ`;
             } catch (err) {
@@ -845,15 +864,41 @@
             await addToCartWithPrice(id, selectedQty, optionsWithImage, variantPrice);
         }
 
-        function renderReviews(reviews) {
+        function renderReviews(reviews, product = null) {
             const section = document.getElementById('reviews-section');
             const list = document.getElementById('reviews-list');
             const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
             section.style.display = 'block';
 
+            // ── Summary: average score + stars + count ──
+            // Prefer the product's canonical aggregate (matches the hero rating row);
+            // fall back to computing from the review list.
+            const summary = document.getElementById('reviews-summary');
             if (reviews.length > 0) {
+                const avg = (product && product.rating_avg != null && product.rating_count > 0)
+                    ? product.rating_avg
+                    : reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length;
+                const count = (product && product.rating_count > 0) ? product.rating_count : reviews.length;
+                document.getElementById('reviews-avg-score').textContent = Number(avg).toFixed(1);
+                document.getElementById('reviews-avg-stars').innerHTML = renderStars(avg);
+                const countLabel = count === 1
+                    ? _t('product.based_on_one_review')
+                    : _t('product.based_on_reviews').replace('{n}', count);
+                document.getElementById('reviews-count-label').textContent = countLabel;
+                const viewAllLink = document.getElementById('view-all-reviews-link');
+                if (viewAllLink) viewAllLink.href = 'reviews.html?id=' + (product?.id || productId);
+                summary.style.display = 'flex';
+            }
+
+            if (reviews.length > 0) {
+                const currentUserId = api.isLoggedIn() ? api.getUser()?.id : null;
+                const isAdmin = api.isLoggedIn() && api.isAdmin();
                 list.innerHTML = reviews.map(review => {
                     const userName = review.profiles?.full_name || 'Anonymous';
+                    const canDelete = currentUserId != null && (
+                        (review.user_id != null && String(review.user_id) === String(currentUserId))
+                        || isAdmin
+                    );
                     return `
                         <div class="review-card">
                             <div class="review-header">
@@ -864,16 +909,31 @@
                                         <div class="review-date">${formatDate(review.created_at)}</div>
                                     </div>
                                 </div>
-                                <div class="product-card-rating">
-                                    ${renderStars(review.rating)}
+                                <div class="review-actions">
+                                    <div class="review-rating">
+                                        ${renderStars(review.rating)}
+                                    </div>
+                                    ${canDelete ? `
+                                    <button class="review-delete" data-review-id="${review.id}" title="${_t('product.delete_review')}" aria-label="${_t('product.delete_review')}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                    </button>` : ''}
                                 </div>
                             </div>
                             ${review.comment ? `<p class="review-comment">${review.comment}</p>` : ''}
                         </div>
                     `;
                 }).join('');
+                wireReviewDelete(list, _t);
             } else {
-                list.innerHTML = `<p class="text-secondary" style="margin-bottom: var(--space-lg);">${_t('product.no_reviews')}</p>`;
+                list.innerHTML = `
+                    <div class="reviews-empty">
+                        <div class="reviews-empty-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <p>${_t('product.no_reviews')}</p>
+                        <span>${_t('product.be_first_review')}</span>
+                    </div>
+                `;
             }
 
             // Show review form if logged in
@@ -882,6 +942,39 @@
                 initStarRating();
                 initReviewForm();
             }
+        }
+
+        // Two-step delete: first click arms the button ("Confirm?"), second click deletes.
+        function wireReviewDelete(container, _t) {
+            const TRASH_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+            container.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.review-delete');
+                if (!btn || btn.disabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!btn.classList.contains('confirming')) {
+                    btn.classList.add('confirming');
+                    btn.innerHTML = `<span>${_t('product.delete_confirm')}</span>`;
+                    setTimeout(() => {
+                        if (btn.isConnected) {
+                            btn.classList.remove('confirming');
+                            btn.innerHTML = TRASH_SVG;
+                        }
+                    }, 3000);
+                    return;
+                }
+
+                btn.disabled = true;
+                try {
+                    await api.deleteReview(btn.dataset.reviewId);
+                    showToast(_t('product.review_deleted'), 'success');
+                    setTimeout(() => window.location.reload(), 500);
+                } catch (err) {
+                    showToast(err.message, 'error');
+                    btn.disabled = false;
+                }
+            });
         }
 
         function initStarRating() {
