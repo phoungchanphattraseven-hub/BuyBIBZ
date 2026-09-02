@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Validate Orders.html</title>
+</head>
+<body>
+    <h1>Validation Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        // Test if the problematic code works
+        try {
+            const closeTag = (tag) => '</' + tag + '>';
+            
+            const testHtml = '<!DOCTYPE html>'
+                + '<html><head>'
+                + '<title>Test' + closeTag('title')
+                + '<style>body{margin:0}'
+                + closeTag('style')
+                + closeTag('head')
+                + '<body>Content'
+                + closeTag('body')
+                + closeTag('html');
+            
+            console.log('Test HTML created successfully');
+            document.getElementById('result').innerHTML = '<p style="color: green;">✅ Syntax is valid!</p>';
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = '<p style="color: red;">❌ Error: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>

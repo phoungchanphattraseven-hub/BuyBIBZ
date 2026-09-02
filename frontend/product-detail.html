@@ -564,18 +564,58 @@
                         index: idx,
                         label: toEnglishProductText(v.variant_name, 'Standard'),
                     }));
+
+                // Find the common prefix shared by all variant labels and strip it
+                // so "Vacuum Cleaner Black" and "Vacuum Cleaner White" → "Black" / "White"
+                const allLabels = cleanedVariants.map(v => v.label);
+                let commonWords = allLabels.length > 1
+                    ? allLabels[0].split(' ').filter(word =>
+                        word.length > 1 && allLabels.every(l => l.startsWith(word) || l.includes(' ' + word + ' ') || l.endsWith(' ' + word))
+                        && allLabels.filter(l => !l.includes(word)).length === 0
+                    )
+                    : [];
+                // Simple prefix strip: find how many leading words all labels share
+                const firstWords = allLabels[0].split(' ');
+                let prefixLen = 0;
+                for (let i = 0; i < firstWords.length; i++) {
+                    if (allLabels.every(l => l.split(' ')[i] === firstWords[i])) {
+                        prefixLen = i + 1;
+                    } else break;
+                }
+                const stripPrefix = prefixLen > 0 && prefixLen < firstWords.length
+                    ? firstWords.slice(0, prefixLen).join(' ')
+                    : '';
+
+                const shortenLabel = (label) => {
+                    // First try prefix stripping
+                    if (stripPrefix && label.startsWith(stripPrefix)) {
+                        const stripped = label.slice(stripPrefix.length).trim();
+                        if (stripped) return stripped;
+                    }
+                    // Fallback: if label is long (> 4 words), take the last 3 words
+                    // This handles CJ names like "Vacuum Cleaner ... A White Wireless" → "A White Wireless"
+                    const words = label.split(' ');
+                    if (words.length > 4) {
+                        return words.slice(-3).join(' ');
+                    }
+                    return label;
+                };
+
                 const labelCount = cleanedVariants.reduce((counts, variant) => {
-                    counts[variant.label] = (counts[variant.label] || 0) + 1;
+                    const short = shortenLabel(variant.label);
+                    counts[short] = (counts[short] || 0) + 1;
                     return counts;
                 }, {});
 
                 const variantChips = cleanedVariants
-                    .map((v) => {
-                        const label = labelCount[v.label] > 1
-                            ? `${v.label} · SKU ${v.sku_id || v.index + 1}`
-                            : v.label;
+                    .map((v, i) => {
+                        const shortLabel = shortenLabel(v.label);
+                        const displayLabel = labelCount[shortLabel] > 1
+                            ? `${shortLabel} · ${v.sku_id || i + 1}`
+                            : shortLabel;
                         const outOfStock = (v.stock || 0) === 0;
-                        const safeLabel = label.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        // Store short label as value so cart shows "White Wireless" not full product name
+                        const safeLabel = displayLabel.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                         return `<button type="button"
                             class="variant-size-option pd-variant-chip${outOfStock ? ' oos' : ''}"
                             data-value="${safeLabel}"
@@ -583,7 +623,7 @@
                             ${outOfStock ? 'disabled title="Out of stock"' : ''}
                             data-image="${v.image_url || ''}"
                             data-price="${v.retail_price_usd || ''}"
-                        >${label}${v.retail_price_usd ? `<span class="pd-chip-price">$${parseFloat(v.retail_price_usd).toFixed(2)}</span>` : ''}${outOfStock ? '<span class="pd-chip-oos">Out of stock</span>' : ''}</button>`;
+                        >${displayLabel}${v.retail_price_usd ? `<span class="pd-chip-price">$${parseFloat(v.retail_price_usd).toFixed(2)}</span>` : ''}${outOfStock ? '<span class="pd-chip-oos">Out of stock</span>' : ''}</button>`;
                     }).join('');
 
                 if (variantChips) {
@@ -734,10 +774,19 @@
                 showToast(`Please choose ${missing.map(selector => selector.dataset.optionLabel).join(' and ')}.`, 'warning');
                 return;
             }
-            // Include the selected image URL so the cart shows the right image
+
+            // Build options with image
             const optionsWithImage = { ...selectedVariants };
             if (selectedImageUrl) optionsWithImage._selected_image = selectedImageUrl;
-            await addToCart(id, selectedQty, optionsWithImage);
+
+            // Find selected variant price from the active chip's data-price
+            let variantPrice = null;
+            document.querySelectorAll('.variant-selector button.selected[data-price]').forEach(btn => {
+                const p = parseFloat(btn.dataset.price);
+                if (!isNaN(p) && p > 0) variantPrice = p;
+            });
+
+            await addToCartWithPrice(id, selectedQty, optionsWithImage, variantPrice);
         }
 
         function renderReviews(reviews) {

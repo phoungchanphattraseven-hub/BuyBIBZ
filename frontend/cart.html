@@ -195,31 +195,40 @@
                 container.innerHTML = data.items.map(item => {
                     const product = item.products;
                     if (!product) return '';
-                    
-                    // Calculate original price (assuming 20% markup for demo, adjust as needed)
-                    const originalPrice = product.compare_at_price || product.price * 1.25;
-                    const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+
+                    // Use unit_price (variant override) if stored, else product.price
+                    const effectivePrice = (item.unit_price != null && item.unit_price > 0)
+                        ? parseFloat(item.unit_price)
+                        : parseFloat(product.price);
+
+                    // Only show compare/strikethrough price when it's the base product price
+                    // (not a variant override — comparing $63.99 to $4.99 variant is misleading)
+                    const hasVariantOverride = item.unit_price != null && item.unit_price > 0;
+                    const hasDiscount = !hasVariantOverride && product.compare_price && parseFloat(product.compare_price) > effectivePrice;
                     const isOutOfStock = !product.stock || product.stock <= 0;
-                    
-                    // Use pending quantity if exists, otherwise use server quantity
+
                     const displayQty = pendingUpdates.has(item.id) ? pendingUpdates.get(item.id) : item.quantity;
                     const selectedOptions = item.selected_options || {};
                     const selectedImage = selectedOptions._selected_image || product.image_url || 'https://via.placeholder.com/200x200?text=No+Image';
+
                     const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions', variant: 'Variant' };
                     const selectedOptionsHtml = Object.entries(selectedOptions)
                         .filter(([key]) => key !== '_selected_image')
-                        .map(([key, value]) => `
-                        <span class="cart-item-variant"><b>${toEnglishProductText(optionLabels[key] || key.replace(/_/g, ' '))}</b>${toEnglishProductText(value, 'Standard')}</span>
-                    `).join('');
+                        .map(([key, value]) => {
+                            let cleanValue = toEnglishProductText(value, value);
+                            // If value is very long (full product name), take last 3 words only
+                            const words = cleanValue.split(' ');
+                            if (words.length > 4) cleanValue = words.slice(-3).join(' ');
+                            return `<span class="cart-item-variant"><b>${toEnglishProductText(optionLabels[key] || key.replace(/_/g, ' '))}</b> ${cleanValue}</span>`;
+                        }).join('');
+
                     const freeShippingBadge = product.attributes?.free_shipping === true
                         ? `<span class="cart-item-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Free shipping</span>`
                         : '';
-                    const outOfStockBadge = isOutOfStock
-                        ? `<span class="cart-item-oos-badge">Out of stock</span>`
-                        : '';
-                    
+                    const outOfStockBadge = isOutOfStock ? `<span class="cart-item-oos-badge">Out of stock</span>` : '';
+
                     return `
-                        <div class="cart-item${isOutOfStock ? ' cart-item-oos' : ''}" id="cart-item-${item.id}" data-item-id="${item.id}" data-price="${product.price}">
+                        <div class="cart-item${isOutOfStock ? ' cart-item-oos' : ''}" id="cart-item-${item.id}" data-item-id="${item.id}" data-price="${effectivePrice}">
                             <a href="product-detail.html?id=${product.id}" class="cart-item-image">
                                 <img src="${selectedImage}" alt="${product.name}" style="${isOutOfStock ? 'opacity:0.5;' : ''}">
                             </a>
@@ -230,8 +239,8 @@
                                 ${(selectedOptionsHtml || freeShippingBadge || outOfStockBadge) ? `<div class="cart-item-variants">${selectedOptionsHtml}${freeShippingBadge}${outOfStockBadge}</div>` : ''}
                                 <div class="cart-item-footer">
                                     <div class="cart-item-pricing">
-                                        ${hasDiscount ? `<div class="cart-item-price-compare">${formatPrice(originalPrice)}</div>` : ''}
-                                        <div class="cart-item-price">${formatPrice(product.price)}</div>
+                                        ${hasDiscount ? `<div class="cart-item-price-compare">${formatPrice(product.compare_price)}</div>` : ''}
+                                        <div class="cart-item-price">${formatPrice(effectivePrice)}</div>
                                     </div>
                                     <div class="cart-qty-controls${isOutOfStock ? ' cart-qty-controls-disabled' : ''}">
                                         <button class="cart-qty-btn" onclick="changeQuantity(${item.id}, -1)" ${isOutOfStock ? 'disabled' : ''}>−</button>

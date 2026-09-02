@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JS Syntax Test</title>
+</head>
+<body>
+    <h1>JavaScript Syntax Validation Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        try {
+            console.log('Testing basic JavaScript...');
+            
+            // Test the closeTag function
+            const closeTag = (tag) => '</' + tag + '>';
+            console.log('closeTag function works:', closeTag('div'));
+            
+            // Test if string concatenation works
+            const testHtml = '<!DOCTYPE html>'
+                + '<html><head>'
+                + '<title>Test</title>'
+                + closeTag('head')
+                + '<body>'
+                + 'Content'
+                + closeTag('body')
+                + closeTag('html');
+            
+            console.log('String concatenation works');
+            
+            document.getElementById('result').innerHTML = '<p style="color: green;">✅ JavaScript syntax is valid!</p>';
+            
+        } catch (error) {
+            console.error('JavaScript error:', error);
+            document.getElementById('result').innerHTML = '<p style="color: red;">❌ JavaScript error: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>

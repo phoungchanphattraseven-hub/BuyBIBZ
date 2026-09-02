@@ -98,6 +98,7 @@ class CartItemCreate(BaseModel):
     product_id: int
     quantity: int = Field(default=1, ge=1)
     selected_options: Dict[str, str] = Field(default_factory=dict)
+    unit_price: Optional[float] = Field(default=None, ge=0)  # variant price override
 
 
 class CartItemUpdate(BaseModel):

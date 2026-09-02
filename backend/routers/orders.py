@@ -56,13 +56,16 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             # Check if this product breaks the free-shipping rule
             if not (product.get("attributes") or {}).get("free_shipping"):
                 all_free_shipping = False
-            item_subtotal = round(product["price"] * item["quantity"], 2)
+            # Use unit_price (variant override) if stored, else product base price
+            unit_price = item.get("unit_price")
+            effective_price = round(float(unit_price), 2) if unit_price is not None else round(float(product["price"]), 2)
+            item_subtotal = round(effective_price * item["quantity"], 2)
             subtotal += item_subtotal
             order_items_data.append({
                 "product_id": product_id,
                 "product_name": product["name"],
                 "product_image": product.get("image_url"),
-                "price": product["price"],
+                "price": effective_price,
                 "quantity": item["quantity"],
                 "subtotal": item_subtotal,
                 "selected_options": item.get("selected_options") or {},
@@ -135,7 +138,7 @@ async def list_orders(current_user=Depends(get_current_user)):
 
         response = (
             supabase.table("orders")
-            .select("*, order_items(*, products(name, image_url))")
+            .select("*, order_items(*)")
             .eq("user_id", user_id)
             .order("created_at", desc=True)
             .execute()

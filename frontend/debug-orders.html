@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Orders - BuyBIBZ</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #cce8f4; color: #0c5460; border: 1px solid #b6d4fe; }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .login-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Orders API Debug Tool</h1>
+        <p>This tool helps diagnose issues with the orders page.</p>
+        
+        <div id="status-container">
+            <div class="status info">Ready to start debugging...</div>
+        </div>
+        
+        <div class="login-form" id="login-form">
+            <h3>Login to Test</h3>
+            <input type="email" id="email" placeholder="Email" value="adminbuybiz@gmail.com">
+            <input type="password" id="password" placeholder="Password" value="BuyBIBZyourAdmin737">
+            <button onclick="testLogin()">Login</button>
+        </div>
+        
+        <div>
+            <button onclick="checkAuth()">1. Check Authentication</button>
+            <button onclick="testAPI()">2. Test API Connection</button>
+            <button onclick="testOrders()">3. Test Orders Endpoint</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        function addStatus(message, type = 'info') {
+            const container = document.getElementById('status-container');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            container.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function setResults(content) {
+            document.getElementById('results').innerHTML = content;
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                addStatus('Attempting login...', 'loading');
+                await api.login(email, password);
+                addStatus('✅ Login successful!', 'success');
+                document.getElementById('login-form').style.display = 'none';
+            } catch (error) {
+                addStatus(`❌ Login failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkAuth() {
+            addStatus('Checking authentication state...', 'loading');
+            
+            const isLoggedIn = api.isLoggedIn();
+            const token = api.getToken();
+            const user = api.getUser();
+            
+            if (isLoggedIn) {
+                addStatus('✅ User is logged in', 'success');
+                setResults(`<pre>Token: ${token ? 'Present' : 'Missing'}
+User: ${user ? JSON.stringify(user, null, 2) : 'No user data'}</pre>`);
+            } else {
+                addStatus('❌ User not logged in', 'error');
+                setResults('<p>Please login first using the form above.</p>');
+            }
+        }
+        
+        async function testAPI() {
+            try {
+                addStatus('Testing API connection...', 'loading');
+                const response = await api.get('/api/products?limit=1');
+                addStatus('✅ API connection working', 'success');
+                setResults(`<pre>Sample API Response:\n${JSON.stringify(response, null, 2)}</pre>`);
+            } catch (error) {
+                addStatus(`❌ API connection failed: ${error.message}`, 'error');
+                setResults(`<pre>Error details:\n${error.stack}</pre>`);
+            }
+        }
+        
+        async function testOrders() {
+            try {
+                addStatus('Testing orders endpoint...', 'loading');
+                const response = await api.getOrders();
+                addStatus('✅ Orders endpoint working', 'success');
+                
+                const orders = response.orders || [];
+                setResults(`<pre>Orders Response:
+Found ${orders.length} order(s)
+
+${JSON.stringify(response, null, 2)}</pre>`);
+                
+                if (orders.length === 0) {
+                    addStatus('ℹ️ No orders found - this might be why the orders page shows empty', 'info');
+                }
+            } catch (error) {
+                addStatus(`❌ Orders endpoint failed: ${error.message}`, 'error');
+                setResults(`<pre>Error details:\n${error.message}\n${error.stack || ''}</pre>`);
+            }
+        }
+        
+        async function runAllTests() {
+            setResults('');
+            addStatus('🧪 Running comprehensive test suite...', 'loading');
+            
+            await checkAuth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAPI();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testOrders();
+            
+            addStatus('🎯 Test suite complete!', 'success');
+        }
+        
+        // Auto-run auth check on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkAuth, 500);
+        });
+    </script>
+</body>
+</html>

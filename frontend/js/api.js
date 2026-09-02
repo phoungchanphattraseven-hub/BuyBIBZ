@@ -57,7 +57,7 @@ class ApiClient {
         localStorage.removeItem('buybibz_user');
     }
 
-    async request(endpoint, options = {}) {
+    async request(endpoint, options = {}, timeoutMs = 10000) {
         const url = `${this.baseUrl}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
@@ -69,11 +69,16 @@ class ApiClient {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+
         try {
             const response = await fetch(url, {
                 ...options,
                 headers,
+                signal: controller.signal,
             });
+            clearTimeout(timer);
 
             const data = await response.json();
 
@@ -84,7 +89,6 @@ class ApiClient {
                     const prefix = isSubfolder ? '../' : '';
                     const protectedPages = ['cart.html', 'profile.html', 'checkout.html', 'orders.html', 'admin.html'];
                     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-                    
                     if (isSubfolder) {
                         window.location.href = 'login.html';
                         return;
@@ -100,6 +104,10 @@ class ApiClient {
 
             return data;
         } catch (error) {
+            clearTimeout(timer);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timed out. Please check your connection and try again.');
+            }
             if (error.message.includes('Failed to fetch')) {
                 throw new Error('Cannot connect to server. Make sure the backend is running.');
             }

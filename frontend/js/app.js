@@ -226,6 +226,10 @@ async function updateCartBadge() {
 
 // ── Add to Cart (shared) ────────────────────────────────────
 async function addToCart(productId, quantity = 1, selectedOptions = {}) {
+    return addToCartWithPrice(productId, quantity, selectedOptions, null);
+}
+
+async function addToCartWithPrice(productId, quantity = 1, selectedOptions = {}, unitPrice = null) {
     if (!api.isLoggedIn()) {
         showToast(typeof i18n !== 'undefined' ? i18n.t('cart.sign_in_required') : 'Please sign in to add items to cart', 'warning');
         window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.pathname.split('/').pop())}`;
@@ -234,33 +238,28 @@ async function addToCart(productId, quantity = 1, selectedOptions = {}) {
 
     // Show success immediately (optimistic)
     showToast(typeof i18n !== 'undefined' ? i18n.t('cart.added') : 'Added to cart!', 'success');
-    
+
     // Update badge optimistically
     const badge = document.getElementById('cart-badge');
     if (badge) {
         const currentCount = parseInt(badge.textContent) || 0;
-        const newCount = currentCount + quantity;
-        badge.textContent = newCount;
+        badge.textContent = currentCount + quantity;
         badge.style.display = 'flex';
     }
 
     try {
-        // Make API call in background
-        await api.addToCart(productId, quantity, selectedOptions);
-        
-        // Sync badge with actual cart count
+        const body = { product_id: productId, quantity, selected_options: selectedOptions };
+        if (unitPrice !== null && !isNaN(unitPrice) && unitPrice > 0) {
+            body.unit_price = unitPrice;
+        }
+        await api.request('/api/cart', { method: 'POST', body: JSON.stringify(body) });
         updateCartBadge();
     } catch (err) {
-        // Revert badge on error
         if (badge) {
             const currentCount = parseInt(badge.textContent) || 0;
             const revertedCount = Math.max(0, currentCount - quantity);
-            if (revertedCount > 0) {
-                badge.textContent = revertedCount;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
+            badge.textContent = revertedCount;
+            badge.style.display = revertedCount > 0 ? 'flex' : 'none';
         }
         showToast(err.message, 'error');
     }
@@ -374,9 +373,12 @@ function toggleMobileNav() {
         menu.innerHTML = `
             <div class="offcanvas-header">
                 <h3 data-i18n="nav.menu">${_t('nav.menu')}</h3>
-                <button class="offcanvas-close" onclick="toggleMobileNav()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </button>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button class="nav-icon-btn theme-toggle" type="button" onclick="toggleTheme()" style="width:36px;height:36px;" title="Toggle theme"></button>
+                    <button class="offcanvas-close" onclick="toggleMobileNav()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
             </div>
             <div class="offcanvas-body">
                 <a href="${prefix}index.html" class="offcanvas-link ${currentPage === 'index.html' ? 'active' : ''}">
@@ -427,6 +429,8 @@ function toggleMobileNav() {
             menu.classList.add('open');
             toggle?.classList.add('is-open');
             document.body.style.overflow = 'hidden';
+            // Initialize theme toggle icon inside drawer
+            setTheme(document.documentElement.dataset.theme || getPreferredTheme());
         });
     } else {
         // Toggle existing drawer

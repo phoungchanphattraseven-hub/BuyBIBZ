@@ -1,70 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <script>
-        (function () {
-            try {
-                var theme = localStorage.getItem('buybibz-theme');
-                if (theme !== 'dark' && theme !== 'light') theme = 'light';
-                document.documentElement.setAttribute('data-theme', theme);
-                document.documentElement.style.colorScheme = theme;
-            } catch (e) {}
-        })();
-    </script>
-    <style>
-        html, body { background-color: #fcfdfb; }
-        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
-    </style>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>My Orders — BuyBIBZ</title>
-    <meta name="description" content="View your order history.">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#06060a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="../logo/logo.jpg">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
 
-    <header class="navbar" id="navbar"></header>
-
-    <main class="orders-page">
-        <div class="container">
-            <div class="page-header">
-                <h1 data-i18n="orders.title">My Orders</h1>
-                <p data-i18n="orders.subtitle">Track and view your past orders</p>
-            </div>
-
-            <div id="orders-list">
-                <!-- Loaded dynamically -->
-                <div id="orders-skeleton">
-                    <div class="skeleton" style="height: 80px; width: 100%; margin-bottom: 16px; border-radius: 10px;"></div>
-                    <div class="skeleton" style="height: 80px; width: 100%; margin-bottom: 16px; border-radius: 10px;"></div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="footer" id="footer"></footer>
-
-    <script src="js/disable-zoom.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/pwa-install.js"></script>
-    <script>
-        // Simple debug log
-        console.log('orders.html script loaded');
-        
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOMContentLoaded fired');
-            
-            // Check auth but don't stop execution - requireAuth will redirect if needed
-            requireAuth();
-            
-            console.log('Starting loadOrders');
+            if (!requireAuth()) return;
 
             // Show timeout fallback if orders never load after 12s
             const skeletonTimeout = setTimeout(() => {
@@ -72,7 +8,7 @@
                 if (skeleton) {
                     skeleton.innerHTML = `
                         <div style="text-align:center;padding:var(--space-4xl);background:var(--bg-glass);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);">
-                            <div style="font-size:2.5rem;margin-bottom:var(--space-md);opacity:0.4;">&#9201;</div>
+                            <div style="font-size:2.5rem;margin-bottom:var(--space-md);opacity:0.4;">⏱️</div>
                             <h3 style="margin-bottom:var(--space-sm);">Taking too long</h3>
                             <p class="text-secondary" style="margin-bottom:var(--space-xl);">The server is not responding. Please check your connection or try again.</p>
                             <button class="btn btn-primary" onclick="location.reload()">Retry</button>
@@ -80,10 +16,7 @@
                 }
             }, 12000);
 
-            loadOrders().finally(() => {
-                console.log('loadOrders completed');
-                clearTimeout(skeletonTimeout);
-            });
+            loadOrders().finally(() => clearTimeout(skeletonTimeout));
         });
 
         // Store orders for print lookup — avoids embedding JSON in onclick attributes
@@ -94,25 +27,7 @@
             const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
             try {
-                console.log('Loading orders...');
-                
-                // Check if user is logged in
-                if (!api.isLoggedIn()) {
-                    console.error('User not logged in');
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: var(--space-4xl); background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
-                            <div style="font-size: 3rem; margin-bottom: var(--space-md); opacity: 0.5;">&#128274;</div>
-                            <h2 style="margin-bottom: var(--space-sm);">Authentication Required</h2>
-                            <p class="text-secondary" style="margin-bottom: var(--space-xl);">Please log in to view your orders.</p>
-                            <a href="auth.html?redirect=orders.html" class="btn btn-primary">Login</a>
-                        </div>
-                    `;
-                    return;
-                }
-
-                console.log('User is logged in, calling API...');
                 const data = await api.getOrders();
-                console.log('Orders API response:', data);
 
                 // Clear skeleton — we have a response now
                 container.innerHTML = '';
@@ -123,7 +38,7 @@
                 if (!data.orders || data.orders.length === 0) {
                     container.innerHTML = `
                         <div style="text-align: center; padding: var(--space-4xl); background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
-                            <div style="font-size: 3rem; margin-bottom: var(--space-md); opacity: 0.5;">&#128230;</div>
+                            <div style="font-size: 3rem; margin-bottom: var(--space-md); opacity: 0.5;">📦</div>
                             <h2 style="margin-bottom: var(--space-sm);">${_t('orders.no_orders')}</h2>
                             <p class="text-secondary" style="margin-bottom: var(--space-xl);">${_t('orders.no_orders_desc')}</p>
                             <a href="products.html" class="btn btn-primary">${_t('orders.start_shopping')}</a>
@@ -266,15 +181,7 @@
                 }, { once: false });
                 
             } catch (err) {
-                console.error('Orders loading error:', err);
-                container.innerHTML = `
-                    <div style="text-align: center; padding: var(--space-4xl); background: var(--bg-glass); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
-                        <div style="font-size: 3rem; margin-bottom: var(--space-md); opacity: 0.5;">&#9888;</div>
-                        <h2 style="margin-bottom: var(--space-sm);">Failed to Load Orders</h2>
-                        <p class="text-secondary" style="margin-bottom: var(--space-md);">${err.message}</p>
-                        <button class="btn btn-primary" onclick="location.reload()">Retry</button>
-                    </div>
-                `;
+                container.innerHTML = `<p class="text-secondary">${_t('orders.load_error')}: ${err.message}</p>`;
             }
         }
 
@@ -311,11 +218,11 @@
                                 <div class="tracker-progress-bar" style="--progress: 100%;"></div>
                             </div>
                             <div class="tracker-step completed">
-                                <div class="step-icon">&#10003;</div>
+                                <div class="step-icon">✓</div>
                                 <div class="step-label">${_t('orders.placed')}</div>
                             </div>
                             <div class="tracker-step active">
-                                <div class="step-icon">&#10005;</div>
+                                <div class="step-icon">✕</div>
                                 <div class="step-label">${_t('orders.cancelled')}</div>
                             </div>
                         </div>
@@ -339,17 +246,17 @@
                     statusText = _t('orders.status_processing');
                     break;
                 case 'shipped':
-                    s1 = 'completed'; icon1 = '&#10003;'; s2 = 'completed'; icon2 = '&#10003;';
-                    s3 = 'active'; icon3 = '&#x1F69A;'; pPercent = '66.66%';
+                    s1 = 'completed'; icon1 = '✓'; s2 = 'completed'; icon2 = '✓';
+                    s3 = 'active'; icon3 = '🚚'; pPercent = '66.66%';
                     statusText = _t('orders.status_shipped');
                     break;
                 case 'delivered':
-                    s1 = 'completed'; icon1 = '&#10003;'; s2 = 'completed'; icon2 = '&#10003;';
-                    s3 = 'completed'; icon3 = '&#10003;'; s4 = 'completed'; icon4 = '&#x1F381;'; pPercent = '100%';
+                    s1 = 'completed'; icon1 = '✓'; s2 = 'completed'; icon2 = '✓';
+                    s3 = 'completed'; icon3 = '✓'; s4 = 'completed'; icon4 = '🎁'; pPercent = '100%';
                     statusText = _t('orders.status_delivered');
                     break;
                 default:
-                    s1 = 'active'; icon1 = '&#x1F6D2;'; pPercent = '0%';
+                    s1 = 'active'; icon1 = '🛒'; pPercent = '0%';
                     statusText = _t('orders.status_default');
             }
 
@@ -407,7 +314,8 @@
                 </tr>
             `).join('');
 
-            // Build receipt using string concatenation to avoid parser issues
+            // Build receipt using string parts — NO closing HTML tags in JS source
+            // (</style>, </head>, </body>, </html> inside a <script> block terminate it early)
             const closeTag = (tag) => '</' + tag + '>';
 
             const receiptHtml = '<!DOCTYPE html>'
@@ -482,6 +390,4 @@
             printWindow.focus();
             printWindow.print();
         }
-    </script>
-</body>
-</html>
+    

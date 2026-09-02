@@ -6,6 +6,19 @@ from models.schemas import CartItemCreate, CartItemUpdate
 router = APIRouter(prefix="/api/cart", tags=["Cart"])
 
 
+def _effective_price(item: dict) -> float:
+    """Return the price to use for this cart item.
+    unit_price (variant override) takes precedence over product.price."""
+    unit_price = item.get("unit_price")
+    if unit_price is not None:
+        try:
+            return float(unit_price)
+        except (TypeError, ValueError):
+            pass
+    product = item.get("products") or {}
+    return float(product.get("price", 0))
+
+
 @router.get("")
 async def get_cart(current_user=Depends(get_current_user)):
     """Get the current user's cart items with product details."""
@@ -23,8 +36,10 @@ async def get_cart(current_user=Depends(get_current_user)):
         )
 
         items = response.data if response and response.data else []
+
+        # Use unit_price (variant) if set, otherwise fall back to product.price
         subtotal = sum(
-            item["products"]["price"] * item["quantity"]
+            _effective_price(item) * item["quantity"]
             for item in items
             if item.get("products")
         )
@@ -60,7 +75,7 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
         # Check product exists and has stock
         product = (
             supabase.table("products")
-            .select("id, stock, is_active")
+            .select("id, price, stock, is_active")
             .eq("id", item.product_id)
             .maybe_single()
             .execute()
@@ -70,21 +85,22 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
         if product.data["stock"] < item.quantity:
             raise HTTPException(status_code=400, detail="Insufficient stock")
 
-        # A product with a different selected color/size is a separate cart item.
-        # Strip display-only metadata (_selected_image) before comparing variants.
-        selected_options = item.selected_options or {}
-        selected_image = selected_options.pop("_selected_image", None)  # extract, don't compare
+        # Resolve the effective price: use variant price if provided, else product price
+        effective_price = round(float(item.unit_price), 2) if item.unit_price is not None else None
+
+        # Strip display-only metadata (_selected_image) before comparing variants
+        selected_options = dict(item.selected_options or {})
+        selected_image = selected_options.pop("_selected_image", None)
 
         existing = (
             supabase.table("cart_items")
-            .select("id, quantity, selected_options")
+            .select("id, quantity, selected_options, unit_price")
             .eq("user_id", user_id)
             .eq("product_id", item.product_id)
             .execute()
         )
 
         def options_match(cart_opts: dict, incoming_opts: dict) -> bool:
-            """Compare only variant keys, ignoring _selected_image."""
             a = {k: v for k, v in (cart_opts or {}).items() if k != "_selected_image"}
             b = {k: v for k, v in (incoming_opts or {}).items() if k != "_selected_image"}
             return a == b
@@ -102,32 +118,37 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
             new_qty = matching_item["quantity"] + item.quantity
             if new_qty > product.data["stock"]:
                 raise HTTPException(status_code=400, detail="Insufficient stock")
-            # Merge: update quantity and refresh the selected image to the latest one chosen
             merged_options = {
                 **{k: v for k, v in (matching_item.get("selected_options") or {}).items() if k != "_selected_image"},
                 **selected_options,
             }
             if selected_image:
                 merged_options["_selected_image"] = selected_image
+            update_data = {"quantity": new_qty, "selected_options": merged_options}
+            # Update price if a variant price is provided
+            if effective_price is not None:
+                update_data["unit_price"] = effective_price
             response = (
                 supabase.table("cart_items")
-                .update({"quantity": new_qty, "selected_options": merged_options})
+                .update(update_data)
                 .eq("id", matching_item["id"])
                 .execute()
             )
             return {"message": "Cart updated", "item": response.data[0] if response.data else None}
         else:
-            # New variant combination — store image alongside the variant options
             if selected_image:
                 selected_options["_selected_image"] = selected_image
+            insert_data = {
+                "user_id": user_id,
+                "product_id": item.product_id,
+                "quantity": item.quantity,
+                "selected_options": selected_options,
+            }
+            if effective_price is not None:
+                insert_data["unit_price"] = effective_price
             response = (
                 supabase.table("cart_items")
-                .insert({
-                    "user_id": user_id,
-                    "product_id": item.product_id,
-                    "quantity": item.quantity,
-                    "selected_options": selected_options,
-                })
+                .insert(insert_data)
                 .execute()
             )
             return {"message": "Item added to cart", "item": response.data[0] if response.data else None}
@@ -171,14 +192,7 @@ async def remove_cart_item(item_id: int, current_user=Depends(get_current_user))
         supabase = get_authenticated_client(current_user["token"])
         user_id = str(current_user["user"].id)
 
-        response = (
-            supabase.table("cart_items")
-            .delete()
-            .eq("id", item_id)
-            .eq("user_id", user_id)
-            .execute()
-        )
-
+        supabase.table("cart_items").delete().eq("id", item_id).eq("user_id", user_id).execute()
         return {"message": "Item removed from cart"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

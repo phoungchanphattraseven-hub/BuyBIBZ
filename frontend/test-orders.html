@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Orders API</title>
+    <script src="js/api.js"></script>
+</head>
+<body>
+    <h1>Orders API Test</h1>
+    <div id="status"></div>
+    <div id="results"></div>
+    
+    <script>
+        async function testOrders() {
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+            
+            try {
+                statusEl.innerHTML = '<p>Testing authentication...</p>';
+                
+                // Check if logged in
+                if (!api.isLoggedIn()) {
+                    statusEl.innerHTML = '<p style="color: red;">Not logged in. Please login first.</p>';
+                    return;
+                }
+                
+                statusEl.innerHTML = '<p style="color: blue;">Logged in. Testing orders API...</p>';
+                
+                // Test orders API
+                const response = await api.getOrders();
+                
+                statusEl.innerHTML = '<p style="color: green;">Orders API working!</p>';
+                resultsEl.innerHTML = '<pre>' + JSON.stringify(response, null, 2) + '</pre>';
+                
+            } catch (error) {
+                statusEl.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+                resultsEl.innerHTML = '<pre>Error details:\n' + error.stack + '</pre>';
+            }
+        }
+        
+        // Run test on page load
+        document.addEventListener('DOMContentLoaded', testOrders);
+    </script>
+</body>
+</html>
