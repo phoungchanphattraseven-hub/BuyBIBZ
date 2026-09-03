@@ -106,6 +106,7 @@
         let selectedQty = 1;
         let selectedVariants = {};
         let selectedImageUrl = null; // tracks the image the user clicked in the gallery
+        let originalMainImageSrc = null; // stores the original main image for hover restoration
 
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
@@ -141,6 +142,7 @@
         function renderProduct(product) {
             selectedQty = 1;
             selectedVariants = {};
+            originalMainImageSrc = null; // Reset original image for new product
             const category = product.categories;
             const discount = product.compare_price
                 ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
@@ -375,6 +377,7 @@
 
             window.productImages = images;
             selectedImageUrl = mainImage.image_url;
+            originalMainImageSrc = mainImage.image_url; // Initialize original image
 
             // Auto-select any variant that has only one option (e.g. single dimension, single weight)
             document.querySelectorAll('.variant-selector').forEach(selector => {
@@ -386,6 +389,9 @@
                     selectVariant(key, buttonValue);
                 }
             });
+
+            // Hover a variant chip → preview its image; click → select + price update
+            wireVariantHoverPreview();
         }
 
         function toggleGallery() {
@@ -426,6 +432,7 @@
                 mainImg.src = window.productImages[index].image_url;
                 mainImg.alt = window.productImages[index].alt_text || '';
                 selectedImageUrl = window.productImages[index].image_url;
+                originalMainImageSrc = window.productImages[index].image_url; // Update original to current selection
                 document.querySelectorAll('.pd-thumb, .thumbnail').forEach((thumb, i) => {
                     thumb.classList.toggle('active', i === index);
                 });
@@ -713,6 +720,7 @@
                     if (mainImg) {
                         mainImg.src = button.dataset.image;
                         selectedImageUrl = button.dataset.image;
+                        originalMainImageSrc = button.dataset.image; // Update original to current selection
                     }
                     showVariantImagePopup(button.dataset.image, value, button.dataset.price);
                 }
@@ -726,6 +734,7 @@
 
         let _variantPopupTimer = null;
         let _variantScrollListener = null;
+        let _variantPopupIsHover = false;
 
         // Popup sound effect using Web Audio API
         function playPopupSound() {
@@ -777,10 +786,10 @@
             }
         }
 
-        function showVariantImagePopup(imgSrc, label, price) {
-            // Play popup sound
-            playPopupSound();
-            
+        function showVariantImagePopup(imgSrc, label, price, opts = {}) {
+            // Hover previews pass { silent: true } so they don't beep
+            if (!opts.silent) playPopupSound();
+
             // Remove any existing popup and listeners
             const existing = document.getElementById('variant-img-popup');
             if (existing) existing.remove();
@@ -792,6 +801,7 @@
             popup.className = 'variant-img-popup';
             popup.setAttribute('role', 'dialog');
             popup.setAttribute('aria-label', 'Selected variant preview');
+            _variantPopupIsHover = !!opts.silent;
 
             const cleanLabel = typeof toEnglishProductText === 'function'
                 ? toEnglishProductText(label, label)
@@ -827,17 +837,73 @@
             window.addEventListener('scroll', _variantScrollListener, { passive: true });
         }
 
-        function closeVariantPopup() {
-            // Play close sound
-            playCloseSound();
-            
+        function closeVariantPopup(silent = false) {
+            // Play close sound (skipped for hover previews)
+            if (!silent) playCloseSound();
+
             const popup = document.getElementById('variant-img-popup');
             if (popup) {
                 popup.classList.remove('show');
                 setTimeout(() => popup.remove(), 300);
             }
+            _variantPopupIsHover = false;
             if (_variantPopupTimer) { clearTimeout(_variantPopupTimer); _variantPopupTimer = null; }
             if (_variantScrollListener) { window.removeEventListener('scroll', _variantScrollListener); _variantScrollListener = null; }
+        }
+
+        // Hover preview: change the main image to the variant's image without selecting it.
+        // Clicking the chip still runs selectVariant() (price + main image update + popup).
+        function wireVariantHoverPreview() {
+            document.querySelectorAll('.variant-selector button[data-image]').forEach(chip => {
+                if (chip.dataset.hoverWired) return;
+                chip.dataset.hoverWired = '1';
+                
+                chip.addEventListener('mouseenter', () => {
+                    const mainImg = document.getElementById('main-product-image');
+                    if (mainImg && chip.dataset.image) {
+                        // Store original image on first hover
+                        if (!originalMainImageSrc) {
+                            originalMainImageSrc = mainImg.src;
+                        }
+                        // Change main image to variant image
+                        mainImg.src = chip.dataset.image;
+                    }
+                });
+                
+                chip.addEventListener('mouseleave', () => {
+                    const mainImg = document.getElementById('main-product-image');
+                    if (mainImg && originalMainImageSrc) {
+                        // Restore original image
+                        mainImg.src = originalMainImageSrc;
+                    }
+                });
+            });
+            
+            // Also wire thumbnail gallery for hover functionality
+            document.querySelectorAll('.thumbnail, .pd-thumb').forEach(thumb => {
+                if (thumb.dataset.hoverWired) return;
+                thumb.dataset.hoverWired = '1';
+                
+                thumb.addEventListener('mouseenter', () => {
+                    const img = thumb.querySelector('img');
+                    const mainImg = document.getElementById('main-product-image');
+                    if (img && mainImg && img.src) {
+                        // Store original image on first hover
+                        if (!originalMainImageSrc) {
+                            originalMainImageSrc = mainImg.src;
+                        }
+                        mainImg.src = img.src;
+                    }
+                });
+                
+                thumb.addEventListener('mouseleave', () => {
+                    const mainImg = document.getElementById('main-product-image');
+                    if (mainImg && originalMainImageSrc) {
+                        // Restore original image
+                        mainImg.src = originalMainImageSrc;
+                    }
+                });
+            });
         }
 
         async function addSelectedProductToCart(id) {
