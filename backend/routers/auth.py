@@ -1,8 +1,18 @@
 from fastapi import APIRouter, HTTPException, status
 from core.config import get_supabase
-from models.schemas import UserRegister, UserLogin
+from models.schemas import UserRegister, UserLogin, TokenRefresh
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+
+def _session_payload(session) -> dict:
+    """Normalize a Supabase session into the API response shape."""
+    return {
+        "access_token": session.access_token,
+        "refresh_token": session.refresh_token,
+        "expires_in": getattr(session, "expires_in", None),
+        "expires_at": getattr(session, "expires_at", None),
+    }
 
 
 @router.post("/register")
@@ -27,10 +37,7 @@ async def register(user: UserRegister):
                     "id": str(response.user.id),
                     "email": response.user.email,
                 },
-                "session": {
-                    "access_token": response.session.access_token if response.session else None,
-                    "refresh_token": response.session.refresh_token if response.session else None,
-                } if response.session else None
+                "session": _session_payload(response.session) if response.session else None
             }
         raise HTTPException(status_code=400, detail="Registration failed")
     except Exception as e:
@@ -65,10 +72,7 @@ async def login(user: UserLogin):
                     "full_name": profile.data.get("full_name", "") if profile and profile.data else "",
                     "role": profile.data.get("role", "customer") if profile and profile.data else "customer",
                 },
-                "session": {
-                    "access_token": response.session.access_token,
-                    "refresh_token": response.session.refresh_token,
-                }
+                "session": _session_payload(response.session)
             }
         raise HTTPException(status_code=401, detail="Invalid credentials")
     except HTTPException:
@@ -76,6 +80,28 @@ async def login(user: UserLogin):
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
+
+
+
+
+@router.post("/refresh")
+async def refresh(body: TokenRefresh):
+    """Exchange a refresh token for a new access token.
+
+    Supabase access tokens are short-lived (1 hour by default); the frontend
+    calls this when a token is expired or about to expire so users stay
+    logged in instead of being signed out on every 401.
+    """
+    try:
+        supabase = get_supabase()
+        response = supabase.auth.refresh_session(body.refresh_token)
+        if response and response.session:
+            return {"session": _session_payload(response.session)}
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 
 

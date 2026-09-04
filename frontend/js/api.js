@@ -66,12 +66,90 @@ class ApiClient {
         localStorage.removeItem('buybibz_user');
     }
 
+    // ── Token refresh ─────────────────────────
+    // Supabase access tokens expire (~1 hour). When expired or about to
+    // expire, exchange the stored refresh token for a new session so users
+    // stay logged in instead of being signed out on the next 401.
+
+    async refreshTokens() {
+        // Dedupe concurrent refreshes into a single request
+        if (this._refreshPromise) return this._refreshPromise;
+        this._refreshPromise = (async () => {
+            try {
+                const sessionVal = localStorage.getItem('buybibz_session');
+                if (!sessionVal || sessionVal === 'undefined') return false;
+                const session = JSON.parse(sessionVal);
+                const refreshToken = session?.refresh_token;
+                if (!refreshToken) return false;
+
+                const res = await fetch(`${this.baseUrl}/api/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: refreshToken }),
+                });
+                if (!res.ok) return false;
+
+                const data = await res.json();
+                if (!data?.session?.access_token) return false;
+
+                // Preserve any extra fields, overwrite tokens + expiry
+                const newSession = { ...session, ...data.session };
+                localStorage.setItem('buybibz_session', JSON.stringify(newSession));
+                return true;
+            } catch (e) {
+                return false;
+            } finally {
+                this._refreshPromise = null;
+            }
+        })();
+        return this._refreshPromise;
+    }
+
+    // Returns true if a proactive refresh was needed but failed
+    async ensureFreshToken(endpoint) {
+        if (endpoint.startsWith('/api/auth/')) return false;
+        try {
+            const sessionVal = localStorage.getItem('buybibz_session');
+            if (!sessionVal || sessionVal === 'undefined') return false;
+            const session = JSON.parse(sessionVal);
+            const exp = session?.expires_at;
+            if (!exp) return false;
+            const expMs = exp < 1e12 ? exp * 1000 : exp; // seconds → ms
+            if (Date.now() >= expMs - 60000) {
+                return !(await this.refreshTokens());
+            }
+        } catch (e) {}
+        return false;
+    }
+
+    handleAuthFailure() {
+        this.clearSession();
+        const isSubfolder = window.location.pathname.includes('/admin/');
+        const prefix = isSubfolder ? '../' : '';
+        const protectedPages = ['cart.html', 'profile.html', 'checkout.html', 'orders.html', 'admin.html'];
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        if (isSubfolder) {
+            window.location.href = 'login.html';
+        } else if (protectedPages.includes(currentPage)) {
+            window.location.href = `auth.html?redirect=${encodeURIComponent(currentPage)}`;
+        } else if (typeof renderNavbar === 'function') {
+            renderNavbar();
+        }
+    }
+
     async request(endpoint, options = {}, timeoutMs = 10000) {
         const url = `${this.baseUrl}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
             ...options.headers,
         };
+
+        // Proactively refresh an expired/near-expiry token before sending
+        const proactiveFailed = await this.ensureFreshToken(endpoint);
+        if (proactiveFailed) {
+            this.handleAuthFailure();
+            throw new Error('Your session has expired. Please log in again.');
+        }
 
         const token = this.getToken();
         if (token) {
@@ -93,20 +171,14 @@ class ApiClient {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    this.clearSession();
-                    const isSubfolder = window.location.pathname.includes('/admin/');
-                    const prefix = isSubfolder ? '../' : '';
-                    const protectedPages = ['cart.html', 'profile.html', 'checkout.html', 'orders.html', 'admin.html'];
-                    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-                    if (isSubfolder) {
-                        window.location.href = 'login.html';
-                        return;
-                    } else if (protectedPages.includes(currentPage)) {
-                        window.location.href = `auth.html?redirect=${encodeURIComponent(currentPage)}`;
-                        return;
-                    } else if (typeof renderNavbar === 'function') {
-                        renderNavbar();
+                    // Token expired mid-session: try one refresh + retry
+                    if (!options._retried && !endpoint.startsWith('/api/auth/')) {
+                        const refreshed = await this.refreshTokens();
+                        if (refreshed) {
+                            return this.request(endpoint, { ...options, _retried: true }, timeoutMs);
+                        }
                     }
+                    this.handleAuthFailure();
                 }
                 throw new Error(data.detail || `Request failed (${response.status})`);
             }
@@ -170,7 +242,11 @@ class ApiClient {
     }
 
     async logout() {
-        await this.post('/api/auth/logout', {});
+        // Always clear the local session, even if the API call fails
+        // (e.g. token already expired)
+        try {
+            await this.post('/api/auth/logout', {});
+        } catch (e) {}
         this.clearSession();
     }
 

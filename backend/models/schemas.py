@@ -15,6 +15,10 @@ class UserLogin(BaseModel):
     password: str
 
 
+class TokenRefresh(BaseModel):
+    refresh_token: str
+
+
 class UserProfile(BaseModel):
     id: Optional[str] = None
     email: Optional[str] = None
