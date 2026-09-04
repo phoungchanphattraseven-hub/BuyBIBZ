@@ -268,6 +268,42 @@
         };
         let categoryList = [];
 
+        // Shop state persistence: remembers filters, page and scroll position so
+        // returning from a product detail page restores where the user left off
+        const SHOP_STATE_KEY = 'buybibz-shop-state';
+        let pendingScrollY = null;
+
+        function saveShopState() {
+            try {
+                sessionStorage.setItem(SHOP_STATE_KEY, JSON.stringify({
+                    url: window.location.pathname + window.location.search,
+                    page: currentPage,
+                    filters: currentFilters,
+                    scrollY: window.scrollY,
+                }));
+            } catch (e) {}
+        }
+
+        function restoreShopState() {
+            try {
+                const saved = JSON.parse(sessionStorage.getItem(SHOP_STATE_KEY) || 'null');
+                sessionStorage.removeItem(SHOP_STATE_KEY);
+                if (!saved || saved.url !== window.location.pathname + window.location.search) return null;
+                if (saved.filters) Object.assign(currentFilters, saved.filters);
+                currentPage = saved.page || 1;
+                return typeof saved.scrollY === 'number' ? saved.scrollY : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function restorePendingScroll() {
+            if (pendingScrollY === null) return;
+            const y = pendingScrollY;
+            pendingScrollY = null;
+            requestAnimationFrame(() => window.scrollTo(0, y));
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             // Parse URL params
             const params = new URLSearchParams(window.location.search);
@@ -275,6 +311,9 @@
             if (params.get('category')) currentFilters.category = params.get('category');
             if (params.get('sort')) currentFilters.sort = params.get('sort');
             if (params.get('featured')) currentFilters.featured = params.get('featured') === 'true';
+
+            // Restore state from a previous visit (returning from product detail)
+            pendingScrollY = restoreShopState();
 
             // Update title if searching
             if (currentFilters.search) {
@@ -322,6 +361,14 @@
 
             // Setup sticky search scroll behavior
             setupStickySearch();
+
+            // Persist shop state while browsing (throttled scroll save + save on leave)
+            let saveStateTimer = null;
+            window.addEventListener('scroll', () => {
+                clearTimeout(saveStateTimer);
+                saveStateTimer = setTimeout(saveShopState, 150);
+            }, { passive: true });
+            window.addEventListener('pagehide', saveShopState);
 
             // Initial products load
             loadProducts();
@@ -878,6 +925,9 @@
                     `;
                     document.getElementById('pagination').innerHTML = '';
                 }
+
+                // Scroll back to where the user was before navigating away
+                restorePendingScroll();
             } catch (err) {
                 grid.innerHTML = `
                     <div style="grid-column:1/-1; text-align:center; padding: var(--space-4xl);">

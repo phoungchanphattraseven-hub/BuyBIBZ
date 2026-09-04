@@ -109,6 +109,23 @@
         let originalMainImageSrc = null; // stores the original main image for hover restoration
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Back button: use browser history when coming from an internal page
+            // (enables fast back-navigation), otherwise fall back to the shop page
+            const backLink = document.querySelector('.page-back');
+            if (backLink) {
+                backLink.addEventListener('click', (e) => {
+                    let sameOriginRef = false;
+                    try {
+                        sameOriginRef = !!document.referrer &&
+                            new URL(document.referrer).origin === window.location.origin;
+                    } catch (err) {}
+                    if (sameOriginRef && history.length > 1) {
+                        e.preventDefault();
+                        history.back();
+                    }
+                });
+            }
+
             const params = new URLSearchParams(window.location.search);
             productId = parseInt(params.get('id'));
 
