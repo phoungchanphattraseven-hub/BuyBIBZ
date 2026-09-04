@@ -96,6 +96,8 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
     total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
+    shipping_fee NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    transaction_fee NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     shipping_name TEXT NOT NULL,
     shipping_address TEXT NOT NULL,
     shipping_city TEXT NOT NULL,

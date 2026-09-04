@@ -72,7 +72,9 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
             })
 
         shipping_fee = 0.0 if all_free_shipping else 2.25
-        total = round(subtotal + shipping_fee, 2)
+        # Transaction fee: 3% of the product subtotal (shipping excluded)
+        transaction_fee = round(subtotal * 0.03, 2)
+        total = round(subtotal + shipping_fee + transaction_fee, 2)
 
         # 3. Create the order
         order_response = (
@@ -82,6 +84,7 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
                 "order_uid": str(uuid4()),
                 "total": total,
                 "shipping_fee": shipping_fee,
+                "transaction_fee": transaction_fee,
                 "shipping_name": order.shipping_name,
                 "shipping_address": order.shipping_address,
                 "shipping_city": order.shipping_city,

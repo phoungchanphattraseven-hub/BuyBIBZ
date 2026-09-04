@@ -51,12 +51,15 @@ async def get_cart(current_user=Depends(get_current_user)):
             if item.get("products")
         )
         shipping_fee = 0.0 if (not items or all_free_shipping) else 2.25
-        total = round(subtotal + shipping_fee, 2)
+        # Transaction fee: 3% of the product subtotal (shipping excluded)
+        transaction_fee = round(subtotal * 0.03, 2)
+        total = round(subtotal + shipping_fee + transaction_fee, 2)
 
         return {
             "items": items,
             "subtotal": round(subtotal, 2),
             "shipping": shipping_fee,
+            "transaction_fee": transaction_fee,
             "total": total,
             "count": len(items),
         }

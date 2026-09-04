@@ -62,6 +62,10 @@
                         <span id="summary-shipping" style="color: var(--status-success);" data-i18n="cart.free">Free</span>
                     </div>
                     <div class="cart-summary-row">
+                        <span data-i18n="cart.transaction_fee">Transaction Fee (3%)</span>
+                        <span id="summary-fee">$0.00</span>
+                    </div>
+                    <div class="cart-summary-row">
                         <span data-i18n="cart.tax">Tax</span>
                         <span data-i18n="cart.tax_calculated">Calculated at checkout</span>
                     </div>
@@ -110,6 +114,7 @@
     <script>
         // Store last known shipping fee from server
         let currentShippingFee = 0;
+        let currentTransactionFee = 0;
 
         // Store pending updates to prevent conflicts
         const pendingUpdates = new Map();
@@ -195,6 +200,10 @@
                     shippingEl.textContent = _t('cart.free');
                     shippingEl.style.color = 'var(--status-success)';
                 }
+
+                // Transaction fee row (3% of subtotal)
+                currentTransactionFee = data.transaction_fee ?? 0;
+                document.getElementById('summary-fee').textContent = formatPrice(currentTransactionFee);
                 
                 container.innerHTML = data.items.map(item => {
                     const product = item.products;
@@ -320,7 +329,9 @@
             
             document.getElementById('summary-count').textContent = totalItems;
             document.getElementById('summary-subtotal').textContent = formatPrice(subtotal);
-            document.getElementById('summary-total').textContent = formatPrice(subtotal + currentShippingFee);
+            currentTransactionFee = Math.round(subtotal * 0.03 * 100) / 100;
+            document.getElementById('summary-fee').textContent = formatPrice(currentTransactionFee);
+            document.getElementById('summary-total').textContent = formatPrice(subtotal + currentShippingFee + currentTransactionFee);
         }
 
         async function saveQuantityToServer(itemId, quantity) {

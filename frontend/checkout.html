@@ -184,6 +184,10 @@
                             <span data-i18n="checkout.intl_shipping">International Shipping</span>
                             <span id="summary-shipping" style="color: var(--status-success);" data-i18n="cart.free">Free</span>
                         </div>
+                        <div class="cart-summary-row">
+                            <span data-i18n="cart.transaction_fee">Transaction Fee (3%)</span>
+                            <span id="summary-fee">$0.00</span>
+                        </div>
                         <div class="cart-summary-total">
                             <span data-i18n="cart.total">Total</span>
                             <span id="summary-total" style="color: var(--text-brand);">$0.00</span>
@@ -432,6 +436,7 @@
 
                 document.getElementById('summary-count').textContent = data.count;
                 document.getElementById('summary-subtotal').textContent = formatPrice(data.subtotal ?? data.total);
+                document.getElementById('summary-fee').textContent = formatPrice(data.transaction_fee ?? 0);
                 document.getElementById('summary-total').textContent = formatPrice(data.total);
 
                 const shippingEl = document.getElementById('summary-shipping');
