@@ -86,27 +86,65 @@
                     <div class="settings-header">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
                         <span data-i18n="profile.shipping">Shipping Address</span>
-                        <span class="settings-note"><span style="color: var(--status-error);">*</span> <span data-i18n="profile.required_for_checkout">Required for checkout</span></span>
                     </div>
                     <div class="settings-list">
                         <div class="settings-item">
-                            <label class="settings-label" for="profile-address"><span data-i18n="profile.street">Street</span><span class="req">*</span></label>
-                            <div class="settings-control">
-                                <input type="text" id="profile-address" class="settings-input" placeholder="123 Main St" autocomplete="street-address" required>
+                            <label class="settings-label" data-i18n="checkout.country">Country</label>
+                            <div class="country-locked" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+                                <span class="country-flag">🇰🇭</span>
+                                <span>Cambodia</span>
+                                <span class="country-note" style="font-size: 0.75rem; color: var(--text-tertiary); margin-left: auto;" data-i18n="checkout.country_locked">Cambodia only</span>
                             </div>
                         </div>
+                        
                         <div class="settings-row">
-                            <div class="settings-item">
-                                <label class="settings-label" for="profile-city"><span data-i18n="profile.city">City</span><span class="req">*</span></label>
+                            <div class="settings-item kh-combo-group">
+                                <label class="settings-label" for="profile_province"><span data-i18n="checkout.province">Province / City</span></label>
                                 <div class="settings-control">
-                                    <input type="text" id="profile-city" class="settings-input" placeholder="New York" autocomplete="address-level2" required>
+                                    <input type="text" id="profile_province" class="settings-input"
+                                           placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                    <input type="hidden" id="profile_province_code">
                                 </div>
                             </div>
-                            <div class="settings-item">
-                                <label class="settings-label" for="profile-postal"><span data-i18n="profile.postal">Postal Code</span></label>
+                            <div class="settings-item kh-combo-group">
+                                <label class="settings-label" for="profile_district"><span data-i18n="checkout.district">District / Khan / Srok</span></label>
                                 <div class="settings-control">
-                                    <input type="text" id="profile-postal" class="settings-input" placeholder="10001" autocomplete="postal-code">
+                                    <input type="text" id="profile_district" class="settings-input" disabled
+                                           placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                    <input type="hidden" id="profile_district_code">
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-row">
+                            <div class="settings-item kh-combo-group">
+                                <label class="settings-label" for="profile_commune"><span data-i18n="checkout.commune">Commune / Sangkat</span></label>
+                                <div class="settings-control">
+                                    <input type="text" id="profile_commune" class="settings-input" disabled
+                                           placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                    <input type="hidden" id="profile_commune_code">
+                                </div>
+                            </div>
+                            <div class="settings-item kh-combo-group">
+                                <label class="settings-label" for="profile_village"><span data-i18n="checkout.village">Village / Phum (Optional)</span></label>
+                                <div class="settings-control">
+                                    <input type="text" id="profile_village" class="settings-input" disabled
+                                           placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-item">
+                            <label class="settings-label" for="profile-address"><span data-i18n="checkout.street">Street Address / House No.</span></label>
+                            <div class="settings-control">
+                                <input type="text" id="profile-address" class="settings-input" placeholder="123 Main St" autocomplete="street-address">
+                            </div>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="settings-label" for="profile-postal"><span data-i18n="checkout.postal">Postal Code (Optional)</span></label>
+                            <div class="settings-control">
+                                <input type="text" id="profile-postal" class="settings-input" placeholder="10001" autocomplete="postal-code">
                             </div>
                         </div>
                     </div>
@@ -193,6 +231,8 @@
     <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/kh-address-data.js"></script>
+    <script src="js/kh-address.js"></script>
     <script src="js/pwa-install.js"></script>
     <script src="js/profile.js"></script>
 </body>

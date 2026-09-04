@@ -29,6 +29,14 @@ class UserProfile(BaseModel):
     city: Optional[str] = None
     postal_code: Optional[str] = None
     role: Optional[str] = "customer"
+    # Cambodia-specific address fields
+    province: Optional[str] = None
+    province_code: Optional[str] = None
+    district: Optional[str] = None
+    district_code: Optional[str] = None
+    commune: Optional[str] = None
+    commune_code: Optional[str] = None
+    village: Optional[str] = None
 
 
 class ProfileUpdate(BaseModel):
@@ -38,6 +46,14 @@ class ProfileUpdate(BaseModel):
     address: Optional[str] = None
     city: Optional[str] = None
     postal_code: Optional[str] = None
+    # Cambodia-specific address fields
+    province: Optional[str] = None
+    province_code: Optional[str] = None
+    district: Optional[str] = None
+    district_code: Optional[str] = None
+    commune: Optional[str] = None
+    commune_code: Optional[str] = None
+    village: Optional[str] = None
 
 
 # ── Products ──────────────────────────────────────────────
@@ -125,6 +141,15 @@ class OrderCreate(BaseModel):
     shipping_postal: Optional[str] = None
     shipping_phone: Optional[str] = None
     notes: Optional[str] = None
+    payment_method: Optional[str] = None
+    # Cambodia-specific address fields
+    shipping_province: Optional[str] = None
+    shipping_province_code: Optional[str] = None
+    shipping_district: Optional[str] = None
+    shipping_district_code: Optional[str] = None
+    shipping_commune: Optional[str] = None
+    shipping_commune_code: Optional[str] = None
+    shipping_village: Optional[str] = None
 
 
 class OrderStatusUpdate(BaseModel):
@@ -156,6 +181,14 @@ class OrderResponse(BaseModel):
     notes: Optional[str] = None
     created_at: Optional[str] = None
     order_items: Optional[List[OrderItemResponse]] = []
+    # Cambodia-specific address fields
+    shipping_province: Optional[str] = None
+    shipping_province_code: Optional[str] = None
+    shipping_district: Optional[str] = None
+    shipping_district_code: Optional[str] = None
+    shipping_commune: Optional[str] = None
+    shipping_commune_code: Optional[str] = None
+    shipping_village: Optional[str] = None
 
 
 # ── Reviews ───────────────────────────────────────────────

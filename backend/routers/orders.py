@@ -77,24 +77,62 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
         total = round(subtotal + shipping_fee + transaction_fee, 2)
 
         # 3. Create the order
-        order_response = (
-            supabase.table("orders")
-            .insert({
-                "user_id": user_id,
-                "order_uid": str(uuid4()),
-                "total": total,
-                "shipping_fee": shipping_fee,
-                "transaction_fee": transaction_fee,
-                "shipping_name": order.shipping_name,
-                "shipping_address": order.shipping_address,
-                "shipping_city": order.shipping_city,
-                "shipping_postal": order.shipping_postal,
-                "shipping_phone": order.shipping_phone,
-                "notes": order.notes,
-                "status": "pending",
-            })
-            .execute()
-        )
+        order_data = {
+            "user_id": user_id,
+            "order_uid": str(uuid4()),
+            "total": total,
+            "shipping_fee": shipping_fee,
+            "transaction_fee": transaction_fee,
+            "shipping_name": order.shipping_name,
+            "shipping_address": order.shipping_address,
+            "shipping_city": order.shipping_city,
+            "shipping_postal": order.shipping_postal,
+            "shipping_phone": order.shipping_phone,
+            "notes": order.notes,
+            "status": "pending",
+        }
+        
+        # Add Cambodia-specific address fields if provided
+        if hasattr(order, 'payment_method') and order.payment_method:
+            order_data["payment_method"] = order.payment_method
+        if hasattr(order, 'shipping_province') and order.shipping_province:
+            order_data["shipping_province"] = order.shipping_province
+        if hasattr(order, 'shipping_province_code') and order.shipping_province_code:
+            order_data["shipping_province_code"] = order.shipping_province_code
+        if hasattr(order, 'shipping_district') and order.shipping_district:
+            order_data["shipping_district"] = order.shipping_district
+        if hasattr(order, 'shipping_district_code') and order.shipping_district_code:
+            order_data["shipping_district_code"] = order.shipping_district_code
+        if hasattr(order, 'shipping_commune') and order.shipping_commune:
+            order_data["shipping_commune"] = order.shipping_commune
+        if hasattr(order, 'shipping_commune_code') and order.shipping_commune_code:
+            order_data["shipping_commune_code"] = order.shipping_commune_code
+        if hasattr(order, 'shipping_village') and order.shipping_village:
+            order_data["shipping_village"] = order.shipping_village
+        
+        # Try to create order, handle case where Cambodia columns don't exist yet
+        try:
+            order_response = (
+                supabase.table("orders")
+                .insert(order_data)
+                .execute()
+            )
+        except Exception as insert_error:
+            # If error mentions missing columns, remove Cambodia fields and retry
+            error_str = str(insert_error).lower()
+            if any(col in error_str for col in ['shipping_province', 'shipping_district', 'shipping_commune', 'shipping_village', 'payment_method']):
+                cambodia_fields = ["shipping_province", "shipping_province_code", "shipping_district", 
+                                  "shipping_district_code", "shipping_commune", "shipping_commune_code", 
+                                  "shipping_village", "payment_method"]
+                for field in cambodia_fields:
+                    order_data.pop(field, None)
+                order_response = (
+                    supabase.table("orders")
+                    .insert(order_data)
+                    .execute()
+                )
+            else:
+                raise insert_error
 
         if not order_response or not order_response.data:
             raise HTTPException(status_code=500, detail="Failed to create order")

@@ -43,65 +43,92 @@
             <div class="checkout-layout">
                 <!-- Shipping Form -->
                 <div class="checkout-form-card">
-                    <h2>Shipping Details</h2>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-xl);">
+                        <h2 style="margin: 0;" data-i18n="checkout.shipping_details">Shipping Details</h2>
+                        <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span style="font-size: var(--font-sm); color: var(--text-secondary);">🇰🇭 Cambodia</span>
+                        </div>
+                    </div>
                     
                     <!-- Address from profile (if available) -->
                     <div id="saved-address-display" style="display: none;">
-                        <div style="padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); margin-bottom: var(--space-lg);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
-                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    <h3 style="font-size: var(--font-base); font-weight: 700; margin: 0;" data-i18n="checkout.delivery_address">Delivery Address</h3>
+                        <div class="address-card">
+                            <div class="address-card-header">
+                                <div class="address-card-title">
+                                    <div class="address-card-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    </div>
+                                    <h3 data-i18n="checkout.delivery_address">Delivery Address</h3>
                                 </div>
-                                <button type="button" class="btn btn-ghost btn-sm" id="btn-edit-address" style="font-size: var(--font-xs); padding: 4px 12px;" data-i18n="checkout.edit">
-                                    Edit
+                                <button type="button" class="btn-edit-address" id="btn-edit-address" data-i18n="checkout.edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                    <span data-i18n="checkout.edit">Edit</span>
                                 </button>
                             </div>
-                            <div id="saved-address-content" style="font-size: var(--font-sm); line-height: 1.6; color: var(--text-secondary);">
+                            <div id="saved-address-content" class="address-card-content">
                                 <!-- Filled by JS -->
                             </div>
                         </div>
                         
                         <!-- Order Notes when using saved address -->
-                        <div class="form-group">
+                        <div class="form-group" style="margin-top: var(--space-lg);">
                             <label class="form-label" for="notes-saved" data-i18n="checkout.order_notes">Order Notes (Optional)</label>
                             <textarea id="notes-saved" class="form-textarea" rows="3" data-i18n-placeholder="checkout.notes_placeholder" placeholder="Special instructions for delivery..."></textarea>
                         </div>
                         
-                        <div style="margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-subtle);">
-                            <h3 style="font-size: var(--font-lg); margin-bottom: var(--space-md);" data-i18n="checkout.payment_method">Payment Method</h3>
+                        <div class="payment-section">
+                            <h3 class="payment-section-title" data-i18n="checkout.payment_method">Payment Method</h3>
                             
                             <!-- Cash on Delivery -->
-                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); margin-bottom: var(--space-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('cod', this)">
-                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                    <input type="radio" name="payment" value="cod" checked style="accent-color: var(--brand-primary);">
-                                    <span style="font-weight: 600;" data-i18n="checkout.cod">Cash on Delivery (COD)</span>
-                                    <span class="badge-new" style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: var(--status-success); color: white;" data-i18n="checkout.cod_available">Available</span>
+                            <label class="payment-option payment-option-selected" onclick="selectPayment('cod', this)">
+                                <div class="payment-option-content">
+                                    <div class="payment-option-radio">
+                                        <input type="radio" name="payment" value="cod" checked>
+                                        <span class="radio-indicator"></span>
+                                    </div>
+                                    <div class="payment-option-details">
+                                        <div class="payment-option-header">
+                                            <span class="payment-option-name" data-i18n="checkout.cod">Cash on Delivery</span>
+                                            <span class="payment-option-badge payment-option-badge-success" data-i18n="checkout.cod_available">Available</span>
+                                        </div>
+                                        <p class="payment-option-desc" data-i18n="checkout.cod_desc">Pay with cash when your order is delivered</p>
+                                    </div>
                                 </div>
-                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;" data-i18n="checkout.cod_desc">
-                                    Pay with cash when your order is delivered
-                                </p>
                             </label>
                             
                             <!-- KHQR Payment -->
-                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('khqr', this)">
-                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                    <input type="radio" name="payment" value="khqr" style="accent-color: var(--brand-primary);">
-                                    <span style="font-weight: 600;" data-i18n="checkout.khqr">KHQR (Bakong)</span>
-                                    <span style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: rgba(255, 193, 7, 0.15); color: var(--status-warning); border: 1px solid var(--status-warning);" data-i18n="checkout.khqr_instant">Instant</span>
+                            <label class="payment-option" onclick="selectPayment('khqr', this)">
+                                <div class="payment-option-content">
+                                    <div class="payment-option-radio">
+                                        <input type="radio" name="payment" value="khqr">
+                                        <span class="radio-indicator"></span>
+                                    </div>
+                                    <div class="payment-option-details">
+                                        <div class="payment-option-header">
+                                            <span class="payment-option-name" data-i18n="checkout.khqr">KHQR (Bakong)</span>
+                                            <span class="payment-option-badge payment-option-badge-warning" data-i18n="checkout.khqr_instant">Instant</span>
+                                        </div>
+                                        <p class="payment-option-desc" data-i18n="checkout.khqr_desc">Scan QR code with any Cambodian banking app</p>
+                                    </div>
                                 </div>
-                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;" data-i18n="checkout.khqr_desc">
-                                    Scan QR code with any Cambodian banking app
-                                </p>
                             </label>
                         </div>
                         
-                        <button type="button" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-2xl);" id="submit-saved-btn" data-i18n="checkout.place_order">
+                        <button type="button" class="btn btn-primary btn-lg btn-full" id="submit-saved-btn" data-i18n="checkout.place_order">
                             Place Order
                         </button>
                     </div>
 
                     <form id="checkout-form">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-xl);">
+                            <h2 style="margin: 0;" data-i18n="checkout.shipping_details">Shipping Details</h2>
+                            <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <span style="font-size: var(--font-sm); color: var(--text-secondary);">🇰🇭 Cambodia</span>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
                             <label class="form-label" for="shipping_name" data-i18n="checkout.full_name">Full Name</label>
                             <input type="text" id="shipping_name" class="form-input" required>
@@ -113,19 +140,51 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="shipping_address" data-i18n="checkout.street">Street Address</label>
-                            <input type="text" id="shipping_address" class="form-input" required>
+                            <label class="form-label" for="shipping_country" data-i18n="checkout.country">Country</label>
+                            <div class="country-locked">
+                                <span class="country-flag">🇰🇭</span>
+                                <span>Cambodia</span>
+                                <span class="country-note" data-i18n="checkout.country_locked">Cambodia only</span>
+                            </div>
                         </div>
-                        
+
                         <div class="grid grid-2 gap-md">
-                            <div class="form-group">
-                                <label class="form-label" for="shipping_city" data-i18n="checkout.city">City</label>
-                                <input type="text" id="shipping_city" class="form-input" required>
+                            <div class="form-group kh-combo-group">
+                                <label class="form-label" for="shipping_province" data-i18n="checkout.province">Province / City</label>
+                                <input type="text" id="shipping_province" class="form-input"
+                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                <input type="hidden" id="shipping_province_code">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="shipping_postal" data-i18n="checkout.postal">Postal/Zip Code</label>
-                                <input type="text" id="shipping_postal" class="form-input" required>
+                            <div class="form-group kh-combo-group">
+                                <label class="form-label" for="shipping_district" data-i18n="checkout.district">District / Khan / Srok</label>
+                                <input type="text" id="shipping_district" class="form-input" disabled
+                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                <input type="hidden" id="shipping_district_code">
                             </div>
+                        </div>
+
+                        <div class="grid grid-2 gap-md">
+                            <div class="form-group kh-combo-group">
+                                <label class="form-label" for="shipping_commune" data-i18n="checkout.commune">Commune / Sangkat</label>
+                                <input type="text" id="shipping_commune" class="form-input" disabled
+                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                                <input type="hidden" id="shipping_commune_code">
+                            </div>
+                            <div class="form-group kh-combo-group">
+                                <label class="form-label" for="shipping_village" data-i18n="checkout.village">Village / Phum (Optional)</label>
+                                <input type="text" id="shipping_village" class="form-input" disabled
+                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="shipping_address" data-i18n="checkout.street">Street Address / House No.</label>
+                            <input type="text" id="shipping_address" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="shipping_postal" data-i18n="checkout.postal">Postal Code (Optional)</label>
+                            <input type="text" id="shipping_postal" class="form-input">
                         </div>
                         
                         <div class="form-group">
@@ -133,35 +192,45 @@
                             <textarea id="notes" class="form-textarea" rows="3" data-i18n-placeholder="checkout.notes_placeholder" placeholder="Special instructions for delivery..."></textarea>
                         </div>
                         
-                        <div style="margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-subtle);">
-                            <h3 style="font-size: var(--font-lg); margin-bottom: var(--space-md);" data-i18n="checkout.payment_method">Payment Method</h3>
+                        <div class="payment-section">
+                            <h3 class="payment-section-title" data-i18n="checkout.payment_method">Payment Method</h3>
                             
                             <!-- Cash on Delivery -->
-                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); margin-bottom: var(--space-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('cod', this)">
-                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                    <input type="radio" name="payment" value="cod" checked style="accent-color: var(--brand-primary);">
-                                    <span style="font-weight: 600;" data-i18n="checkout.cod">Cash on Delivery (COD)</span>
-                                    <span class="badge-new" style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: var(--status-success); color: white;" data-i18n="checkout.cod_available">Available</span>
+                            <label class="payment-option payment-option-selected" onclick="selectPayment('cod', this)">
+                                <div class="payment-option-content">
+                                    <div class="payment-option-radio">
+                                        <input type="radio" name="payment" value="cod" checked>
+                                        <span class="radio-indicator"></span>
+                                    </div>
+                                    <div class="payment-option-details">
+                                        <div class="payment-option-header">
+                                            <span class="payment-option-name" data-i18n="checkout.cod">Cash on Delivery</span>
+                                            <span class="payment-option-badge payment-option-badge-success" data-i18n="checkout.cod_available">Available</span>
+                                        </div>
+                                        <p class="payment-option-desc" data-i18n="checkout.cod_desc">Pay with cash when your order is delivered</p>
+                                    </div>
                                 </div>
-                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;" data-i18n="checkout.cod_desc">
-                                    Pay with cash when your order is delivered
-                                </p>
                             </label>
                             
                             <!-- KHQR Payment -->
-                            <label style="display: block; padding: var(--space-lg); background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast);" onclick="selectPayment('khqr', this)">
-                                <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                    <input type="radio" name="payment" value="khqr" style="accent-color: var(--brand-primary);">
-                                    <span style="font-weight: 600;" data-i18n="checkout.khqr">KHQR (Bakong)</span>
-                                    <span style="margin-left: auto; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; background: rgba(255, 193, 7, 0.15); color: var(--status-warning); border: 1px solid var(--status-warning);" data-i18n="checkout.khqr_instant">Instant</span>
+                            <label class="payment-option" onclick="selectPayment('khqr', this)">
+                                <div class="payment-option-content">
+                                    <div class="payment-option-radio">
+                                        <input type="radio" name="payment" value="khqr">
+                                        <span class="radio-indicator"></span>
+                                    </div>
+                                    <div class="payment-option-details">
+                                        <div class="payment-option-header">
+                                            <span class="payment-option-name" data-i18n="checkout.khqr">KHQR (Bakong)</span>
+                                            <span class="payment-option-badge payment-option-badge-warning" data-i18n="checkout.khqr_instant">Instant</span>
+                                        </div>
+                                        <p class="payment-option-desc" data-i18n="checkout.khqr_desc">Scan QR code with any Cambodian banking app</p>
+                                    </div>
                                 </div>
-                                <p style="font-size: var(--font-xs); color: var(--text-tertiary); margin: var(--space-xs) 0 0 28px;" data-i18n="checkout.khqr_desc">
-                                    Scan QR code with any Cambodian banking app
-                                </p>
                             </label>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-2xl);" id="submit-btn" data-i18n="checkout.place_order">
+                        <button type="submit" class="btn btn-primary btn-lg btn-full" style="margin-top: var(--space-2xl);" id="submit-btn" data-i18n="checkout.place_order">
                             Place Order
                         </button>
                     </form>
@@ -205,6 +274,8 @@
     <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/kh-address-data.js"></script>
+    <script src="js/kh-address.js"></script>
     <script src="js/pwa-install.js"></script>
     <script>
         let selectedPaymentMethod = 'cod';
@@ -212,71 +283,200 @@
         function selectPayment(method, element) {
             selectedPaymentMethod = method;
             
-            // Update border styles
-            document.querySelectorAll('label[onclick^="selectPayment"]').forEach(label => {
-                label.style.borderColor = 'var(--border-default)';
-                label.style.background = 'var(--bg-tertiary)';
+            // Update styles using CSS classes
+            document.querySelectorAll('.payment-option').forEach(label => {
+                label.classList.remove('payment-option-selected');
             });
             
-            element.style.borderColor = 'var(--border-brand)';
-            element.style.background = 'rgba(27, 140, 61, 0.05)';
+            element.classList.add('payment-option-selected');
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!requireAuth()) return;
-            
+
             let savedAddress = null;
-            
+
+            // Cascading Cambodia address pickers (province → district → commune → village)
+            const addressPickers = window.KHAddressUI ? KHAddressUI.initCheckoutPickers() : null;
+
             // Load profile to check for saved address
             try {
+                console.log('Loading profile for checkout...');
+                
+                // First try to get cached data from localStorage for instant display
+                const cachedUser = localStorage.getItem('buybibz_user');
+                if (cachedUser) {
+                    try {
+                        const user = JSON.parse(cachedUser);
+                        console.log('Cached user data:', user);
+                        
+                        if (user.phone) {
+                            savedAddress = user;
+                            
+                            // Show the saved address display from cache
+                            document.getElementById('saved-address-display').style.display = 'block';
+                            
+                            // Build address display with Cambodia-specific fields if available
+                            let addressLines = [
+                                `<strong>${user.full_name || ''}</strong>`,
+                                user.phone
+                            ];
+                            
+                            // Build location parts
+                            let locationParts = [];
+                            if (user.address) locationParts.push(user.address);
+                            if (user.province || user.city) locationParts.push(user.province || user.city);
+                            if (user.district) locationParts.push(user.district);
+                            if (user.commune) locationParts.push(user.commune);
+                            if (user.village) locationParts.push(user.village);
+                            if (user.postal_code) locationParts.push(user.postal_code);
+                            
+                            if (locationParts.length > 0) {
+                                addressLines.push(locationParts.join(', '));
+                            }
+                            
+                            document.getElementById('saved-address-content').innerHTML = addressLines.join('<br>');
+                            console.log('Address display updated from cache:', addressLines);
+
+                            // Hide the form initially
+                            document.getElementById('checkout-form').style.display = 'none';
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse cached user:', e);
+                    }
+                }
+                
+                // Then load fresh data from API
                 const profileResult = await api.getProfile();
+                console.log('Profile result:', profileResult);
+                
                 if (profileResult && profileResult.user) {
                     const p = profileResult.user;
-                    
-                    // Check if user has complete address
-                    if (p.address && p.city && p.phone) {
+                    console.log('User profile data from API:', p);
+
+                    // Check if user has complete address (now only requires phone)
+                    if (p.phone) {
                         savedAddress = p;
-                        
+
                         // Show the saved address display
                         document.getElementById('saved-address-display').style.display = 'block';
-                        document.getElementById('saved-address-content').innerHTML = `
-                            <strong style="color: var(--text-primary);">${p.full_name || api.getUser()?.full_name || ''}</strong><br>
-                            ${p.phone}<br>
-                            ${p.address}<br>
-                            ${p.city}${p.postal_code ? ', ' + p.postal_code : ''}
-                        `;
                         
+                        // Build address display with Cambodia-specific fields if available
+                        let addressLines = [
+                            `<strong>${p.full_name || api.getUser()?.full_name || ''}</strong>`,
+                            p.phone
+                        ];
+                        
+                        // Build location parts
+                        let locationParts = [];
+                        if (p.address) locationParts.push(p.address);
+                        if (p.province || p.city) locationParts.push(p.province || p.city);
+                        if (p.district) locationParts.push(p.district);
+                        if (p.commune) locationParts.push(p.commune);
+                        if (p.village) locationParts.push(p.village);
+                        if (p.postal_code) locationParts.push(p.postal_code);
+                        
+                        if (locationParts.length > 0) {
+                            addressLines.push(locationParts.join(', '));
+                        }
+                        
+                        document.getElementById('saved-address-content').innerHTML = addressLines.join('<br>');
+                        console.log('Address display updated from API:', addressLines);
+
                         // Hide the form initially
                         document.getElementById('checkout-form').style.display = 'none';
-                        
-                        // Edit button shows the form
-                        document.getElementById('btn-edit-address').addEventListener('click', () => {
-                            document.getElementById('saved-address-display').style.display = 'none';
-                            document.getElementById('checkout-form').style.display = 'block';
+
+                        // Only add edit button listener if not already added
+                        if (!document.getElementById('btn-edit-address').hasAttribute('data-listener-added')) {
+                            document.getElementById('btn-edit-address').setAttribute('data-listener-added', 'true');
                             
-                            // Pre-fill the form
-                            document.getElementById('shipping_name').value = p.full_name || api.getUser()?.full_name || '';
-                            document.getElementById('shipping_phone').value = p.phone || '';
-                            document.getElementById('shipping_address').value = p.address || '';
-                            document.getElementById('shipping_city').value = p.city || '';
-                            document.getElementById('shipping_postal').value = p.postal_code || '';
-                        });
+                            // Edit button shows the form
+                            document.getElementById('btn-edit-address').addEventListener('click', () => {
+                                document.getElementById('saved-address-display').style.display = 'none';
+                                document.getElementById('checkout-form').style.display = 'block';
+
+                                // Pre-fill the form
+                                document.getElementById('shipping_name').value = p.full_name || api.getUser()?.full_name || '';
+                                document.getElementById('shipping_phone').value = p.phone || '';
+                                document.getElementById('shipping_address').value = p.address || '';
+                                document.getElementById('shipping_postal').value = p.postal_code || '';
+                                
+                                // Pre-fill Cambodia address fields if available
+                                if (addressPickers) {
+                                    if (p.province_code) {
+                                        document.getElementById('shipping_province_code').value = p.province_code;
+                                        document.getElementById('shipping_province').value = p.province || p.city || '';
+                                        document.getElementById('shipping_district').disabled = false;
+                                        
+                                        if (p.district_code) {
+                                            document.getElementById('shipping_district_code').value = p.district_code;
+                                            document.getElementById('shipping_district').value = p.district || '';
+                                            document.getElementById('shipping_commune').disabled = false;
+                                            
+                                            if (p.commune_code) {
+                                                document.getElementById('shipping_commune_code').value = p.commune_code;
+                                                document.getElementById('shipping_commune').value = p.commune || '';
+                                                document.getElementById('shipping_village').disabled = false;
+                                                
+                                                if (p.village) {
+                                                    document.getElementById('shipping_village').value = p.village;
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        // Fallback to legacy city field
+                                        addressPickers.preselect(p.city);
+                                    }
+                                }
+                            });
+                        }
                     } else {
+                        console.log('User does not have phone number, showing form');
                         // No complete address, show form with warning
                         const user = api.getUser();
                         if (user) {
                             document.getElementById('shipping_name').value = user.full_name || '';
                             if (user.phone) document.getElementById('shipping_phone').value = user.phone;
                         }
-                        
+
                         if (p.address) document.getElementById('shipping_address').value = p.address;
-                        if (p.city) document.getElementById('shipping_city').value = p.city;
                         if (p.postal_code) document.getElementById('shipping_postal').value = p.postal_code;
                         if (p.phone) document.getElementById('shipping_phone').value = p.phone;
+                        
+                        // Pre-fill Cambodia address fields if available
+                        if (addressPickers) {
+                            if (p.province_code) {
+                                document.getElementById('shipping_province_code').value = p.province_code;
+                                document.getElementById('shipping_province').value = p.province || p.city || '';
+                                document.getElementById('shipping_district').disabled = false;
+                                
+                                if (p.district_code) {
+                                    document.getElementById('shipping_district_code').value = p.district_code;
+                                    document.getElementById('shipping_district').value = p.district || '';
+                                    document.getElementById('shipping_commune').disabled = false;
+                                    
+                                    if (p.commune_code) {
+                                        document.getElementById('shipping_commune_code').value = p.commune_code;
+                                        document.getElementById('shipping_commune').value = p.commune || '';
+                                        document.getElementById('shipping_village').disabled = false;
+                                        
+                                        if (p.village) {
+                                            document.getElementById('shipping_village').value = p.village;
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Fallback to legacy city field
+                                addressPickers.preselect(p.city);
+                            }
+                        }
                     }
                 }
             } catch (err) {
                 console.error('Failed to load profile address:', err);
+                // Show form on error
+                document.getElementById('checkout-form').style.display = 'block';
+                document.getElementById('saved-address-display').style.display = 'none';
             }
 
             loadCheckoutSummary();
@@ -304,12 +504,57 @@
                     notes: document.getElementById('notes-saved')?.value || null,
                     payment_method: selectedPaymentMethod,
                 };
+                
+                // Add Cambodia-specific address fields if available
+                if (savedAddress.province) {
+                    orderData.shipping_province = savedAddress.province;
+                    orderData.shipping_province_code = savedAddress.province_code;
+                }
+                if (savedAddress.district) {
+                    orderData.shipping_district = savedAddress.district;
+                    orderData.shipping_district_code = savedAddress.district_code;
+                }
+                if (savedAddress.commune) {
+                    orderData.shipping_commune = savedAddress.commune;
+                    orderData.shipping_commune_code = savedAddress.commune_code;
+                }
+                if (savedAddress.village) {
+                    orderData.shipping_village = savedAddress.village;
+                }
             } else {
+                // Validate required fields (name and phone)
+                if (!document.getElementById('shipping_name').value.trim()) {
+                    showToast(typeof i18n !== 'undefined' ? i18n.t('checkout.name_required') : 'Name is required', 'warning');
+                    document.getElementById('shipping_name').focus();
+                    return;
+                }
+                if (!document.getElementById('shipping_phone').value.trim()) {
+                    showToast(typeof i18n !== 'undefined' ? i18n.t('checkout.phone_required') : 'Phone number is required', 'warning');
+                    document.getElementById('shipping_phone').focus();
+                    return;
+                }
+
+                const provinceName = document.getElementById('shipping_province').value.trim();
+                const districtName = document.getElementById('shipping_district').value.trim();
+                const communeName = document.getElementById('shipping_commune').value.trim();
+                const villageName = document.getElementById('shipping_village')?.value.trim() || '';
+                
+                const provinceCode = document.getElementById('shipping_province_code').value;
+                const districtCode = document.getElementById('shipping_district_code').value;
+                const communeCode = document.getElementById('shipping_commune_code').value;
+
                 orderData = {
                     shipping_name: document.getElementById('shipping_name').value,
                     shipping_phone: document.getElementById('shipping_phone').value,
                     shipping_address: document.getElementById('shipping_address').value,
-                    shipping_city: document.getElementById('shipping_city').value,
+                    shipping_city: provinceName,
+                    shipping_province: provinceName,
+                    shipping_province_code: provinceCode,
+                    shipping_district: districtName,
+                    shipping_district_code: districtCode,
+                    shipping_commune: communeName,
+                    shipping_commune_code: communeCode,
+                    shipping_village: villageName || null,
                     shipping_postal: document.getElementById('shipping_postal').value,
                     notes: document.getElementById('notes').value || null,
                     payment_method: selectedPaymentMethod,
@@ -357,13 +602,26 @@
                         <div style="font-size: var(--font-sm); color: #666;">${_t('checkout.scan_desc')}</div>
                     </div>
                     
-                    <div style="padding: var(--space-lg); background: var(--bg-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-lg); margin-bottom: var(--space-xl); text-align: left;">
-                        <div style="font-size: var(--font-sm); font-weight: 600; margin-bottom: var(--space-md); color: var(--text-primary);">${_t('checkout.delivery_to')}</div>
-                        <div style="font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.6;">
-                            ${orderData.shipping_name}<br>
+                    <div class="address-card">
+                        <div class="address-card-header">
+                            <div class="address-card-title">
+                                <div class="address-card-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </div>
+                                <h3>${_t('checkout.delivery_to')}</h3>
+                            </div>
+                        </div>
+                        <div class="address-card-content">
+                            <strong>${orderData.shipping_name}</strong><br>
                             ${orderData.shipping_phone}<br>
-                            ${orderData.shipping_address}<br>
-                            ${orderData.shipping_city}${orderData.shipping_postal ? ', ' + orderData.shipping_postal : ''}
+                            ${(() => {
+                                const addressParts = [orderData.shipping_address, orderData.shipping_city];
+                                if (orderData.shipping_district) addressParts.push(orderData.shipping_district);
+                                if (orderData.shipping_commune) addressParts.push(orderData.shipping_commune);
+                                if (orderData.shipping_village) addressParts.push(orderData.shipping_village);
+                                if (orderData.shipping_postal) addressParts.push(orderData.shipping_postal);
+                                return addressParts.filter(Boolean).join(', ');
+                            })()}
                         </div>
                     </div>
                     

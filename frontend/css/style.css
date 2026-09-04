@@ -7880,7 +7880,7 @@ body { letter-spacing: -0.01em; }
         min-width: 24px;
         min-height: 24px;
     }
-    
+
     .remember-me-checkbox:checked::after {
         left: 8px;
         top: 3px;
@@ -7889,3 +7889,308 @@ body { letter-spacing: -0.01em; }
         border-width: 0 3px 3px 0;
     }
 }
+
+/* ── Cambodia address combo picker ─────────────────────── */
+.kh-combo-group {
+    position: relative;
+}
+
+.kh-combo-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    max-height: 264px;
+    overflow-y: auto;
+    z-index: 60;
+    box-shadow: var(--shadow-lg);
+    display: none;
+}
+
+.kh-combo-list.open {
+    display: block;
+}
+
+.kh-combo-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.kh-combo-item:hover,
+.kh-combo-item.active {
+    background: var(--bg-tertiary);
+}
+
+.kh-combo-item .en {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.kh-combo-item .km {
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+}
+
+.kh-combo-empty {
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+}
+
+.country-locked {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: default;
+}
+
+.country-locked .country-note {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.country-locked .country-flag {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* ── Address Card ─────────────────────────────────────────── */
+.address-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-lg);
+    transition: all var(--transition-base);
+}
+
+.address-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.address-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-tertiary);
+}
+
+.address-card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.address-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: rgba(27, 140, 61, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+}
+
+.address-card-title h3 {
+    font-size: var(--font-base);
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.btn-edit-address {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: transparent;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-edit-address:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.btn-edit-address svg {
+    width: 16px;
+    height: 16px;
+}
+
+.address-card-content {
+    padding: var(--space-lg);
+    font-size: var(--font-sm);
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+.address-card-content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ── Payment Section ───────────────────────────────────────── */
+.payment-section {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.payment-section-title {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.payment-option {
+    display: block;
+    padding: var(--space-lg);
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.payment-option:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-elevated);
+}
+
+.payment-option-selected {
+    border-color: var(--brand-primary);
+    background: rgba(27, 140, 61, 0.05);
+}
+
+.payment-option-content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+}
+
+.payment-option-radio {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.payment-option-radio input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.radio-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-default);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.payment-option-radio input:checked + .radio-indicator {
+    border-color: var(--brand-primary);
+    background: var(--brand-primary);
+}
+
+.radio-indicator::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0);
+    transition: all var(--transition-fast);
+}
+
+.payment-option-radio input:checked + .radio-indicator::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.payment-option-details {
+    flex: 1;
+}
+
+.payment-option-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+}
+
+.payment-option-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-base);
+}
+
+.payment-option-badge {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.payment-option-badge-success {
+    background: var(--status-success);
+    color: white;
+}
+
+.payment-option-badge-warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: var(--status-warning);
+    border: 1px solid var(--status-warning);
+}
+
+.payment-option-desc {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.btn-full {
+    width: 100%;
+}
+

@@ -52,19 +52,28 @@ async def get_current_user_profile(current_user=Depends(get_current_user)):
             .maybe_single()
             .execute()
         )
-        return {
-            "user": {
-                "id": str(user.id),
-                "email": user.email,
-                "full_name": profile.data.get("full_name", "") if profile.data else "",
-                "phone": profile.data.get("phone", "") if profile.data else "",
-                "avatar_url": profile.data.get("avatar_url", "") if profile.data else "",
-                "address": profile.data.get("address", "") if profile.data else "",
-                "city": profile.data.get("city", "") if profile.data else "",
-                "postal_code": profile.data.get("postal_code", "") if profile.data else "",
-                "role": profile.data.get("role", "customer") if profile.data else "customer",
-            }
+        # Build user response with backward compatibility for new fields
+        user_data = {
+            "id": str(user.id),
+            "email": user.email,
+            "full_name": profile.data.get("full_name", "") if profile.data else "",
+            "phone": profile.data.get("phone", "") if profile.data else "",
+            "avatar_url": profile.data.get("avatar_url", "") if profile.data else "",
+            "address": profile.data.get("address", "") if profile.data else "",
+            "city": profile.data.get("city", "") if profile.data else "",
+            "postal_code": profile.data.get("postal_code", "") if profile.data else "",
+            "role": profile.data.get("role", "customer") if profile.data else "customer",
         }
+        
+        # Add Cambodia-specific address fields if they exist in the profile
+        if profile.data:
+            cambodia_fields = ["province", "province_code", "district", "district_code", 
+                             "commune", "commune_code", "village"]
+            for field in cambodia_fields:
+                if field in profile.data:
+                    user_data[field] = profile.data.get(field, "")
+        
+        return {"user": user_data}
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -89,12 +98,30 @@ async def update_current_user_profile(
             
         update_payload["updated_at"] = "now()"
 
-        response = (
-            supabase.table("profiles")
-            .update(update_payload)
-            .eq("id", str(user.id))
-            .execute()
-        )
+        # Try to update profile, handle case where Cambodia columns don't exist yet
+        try:
+            response = (
+                supabase.table("profiles")
+                .update(update_payload)
+                .eq("id", str(user.id))
+                .execute()
+            )
+        except Exception as update_error:
+            # If error mentions missing columns, remove Cambodia fields and retry
+            error_str = str(update_error).lower()
+            if any(col in error_str for col in ['province', 'district', 'commune', 'village']):
+                cambodia_fields = ["province", "province_code", "district", "district_code", 
+                                  "commune", "commune_code", "village"]
+                for field in cambodia_fields:
+                    update_payload.pop(field, None)
+                response = (
+                    supabase.table("profiles")
+                    .update(update_payload)
+                    .eq("id", str(user.id))
+                    .execute()
+                )
+            else:
+                raise update_error
         
         if not response or not response.data:
             raise HTTPException(status_code=400, detail="Profile update failed")
