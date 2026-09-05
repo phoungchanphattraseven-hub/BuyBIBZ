@@ -1389,7 +1389,49 @@
             }
         }
 
+        function playOrderSuccessSound() {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                const audioCtx = new AudioContextClass();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                // High quality ascending success chime (C5 -> E5 -> C6)
+                const notes = [
+                    { freq: 523.25, time: 0, duration: 0.2, vol: 0.15 },    // C5
+                    { freq: 659.25, time: 0.12, duration: 0.25, vol: 0.2 }, // E5
+                    { freq: 1046.50, time: 0.24, duration: 0.65, vol: 0.25 } // C6
+                ];
+
+                notes.forEach(note => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(note.freq, now + note.time);
+
+                    gain.gain.setValueAtTime(0, now + note.time);
+                    gain.gain.linearRampToValueAtTime(note.vol, now + note.time + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + note.time + note.duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now + note.time);
+                    osc.stop(now + note.time + note.duration);
+                });
+            } catch (e) {
+                console.warn('Could not play order success sound:', e);
+            }
+        }
+
         function showKHQRModal(res, orderData) {
+            playOrderSuccessSound();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo(0, 0);
             const total = document.getElementById('summary-total').textContent;
             document.getElementById('step-2-indicator').classList.remove('progress-step-active');
             document.getElementById('step-3-indicator').classList.add('progress-step-active');
@@ -1425,9 +1467,13 @@
                     </div>
                 </div>
             `;
+            window.scrollTo(0, 0);
         }
 
         function showOrderSuccessScreen(res) {
+            playOrderSuccessSound();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo(0, 0);
             document.getElementById('step-2-indicator').classList.remove('progress-step-active');
             document.getElementById('step-3-indicator').classList.add('progress-step-active');
 
@@ -1449,6 +1495,7 @@
                     </div>
                 </div>
             `;
+            window.scrollTo(0, 0);
         }
     </script>
 </body>
