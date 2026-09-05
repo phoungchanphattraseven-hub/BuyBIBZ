@@ -6,6 +6,28 @@ from core.auth import get_admin_user
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 
+@router.get("/stats")
+async def get_stats(admin=Depends(get_admin_user)):
+    """Get basic stats for about page."""
+    try:
+        supabase = get_authenticated_client(admin["token"])
+        
+        # Count total users
+        users = supabase.table("profiles").select("id", count="exact").execute()
+        total_users = users.count if users.count else 0
+        
+        # Count total products
+        products = supabase.table("products").select("id", count="exact").execute()
+        total_products = products.count if products.count else 0
+        
+        return {
+            "total_users": total_users,
+            "total_products": total_products
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/dashboard")
 async def get_dashboard(admin=Depends(get_admin_user)):
     """Get admin dashboard statistics."""

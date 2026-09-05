@@ -29,91 +29,241 @@
 
     <header class="navbar" id="navbar"></header>
 
-    <main class="about-page" style="padding-top: calc(var(--nav-height) + var(--space-2xl)); padding-bottom: var(--space-4xl); min-height: 100vh;">
-        <div class="container" style="max-width: 900px;">
-        <a class="page-back" href="index.html">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            <span data-i18n="common.back">Back</span>
-        </a>
+    <main class="about-page" style="padding-top: calc(var(--nav-height) + var(--space-xl)); padding-bottom: var(--space-4xl); min-height: 100vh;">
+        <div class="container" style="max-width: 860px;">
+            <a class="page-back" href="index.html" style="margin-bottom: var(--space-xl);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                <span data-i18n="common.back">Back</span>
+            </a>
             
-            <!-- Hero Section -->
-            <div style="text-align: center; margin-bottom: var(--space-4xl);">
-                <h1 style="font-size: var(--font-4xl); font-weight: 900; margin-bottom: var(--space-md); background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" data-i18n="about.title">About BuyBIBZ</h1>
-                <p style="font-size: var(--font-lg); color: var(--text-secondary); max-width: 600px; margin: 0 auto;" data-i18n="about.subtitle">Your trusted online marketplace for quality products at great prices</p>
+            <!-- Hero Header Section -->
+            <div style="text-align: center; margin-bottom: var(--space-3xl);">
+                <div style="display: inline-flex; align-items: center; gap: 12px; padding: 8px 20px 8px 10px; background: rgba(27, 140, 61, 0.08); border: 1px solid rgba(27, 140, 61, 0.2); border-radius: 999px; margin-bottom: var(--space-xl); backdrop-filter: blur(12px);">
+                    <img src="logo/logo-square.png" alt="BuyBIBZ Logo" style="width: 44px; height: 44px; border-radius: 12px; object-fit: contain; background: #ffffff; padding: 3px; box-shadow: 0 4px 12px rgba(27, 140, 61, 0.15);">
+                    <div style="text-align: left;">
+                        <span style="font-weight: 800; font-size: 1.05rem; color: var(--text-primary); display: block; line-height: 1.1;">BuyBIBZ</span>
+                        <span style="font-size: 0.72rem; color: var(--brand-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">Official Store • Cambodia</span>
+                    </div>
+                </div>
+                <h1 style="font-size: clamp(2.2rem, 5vw, 3rem); font-weight: 900; margin-bottom: var(--space-sm); background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.03em;" data-i18n="about.title">About BuyBIBZ</h1>
+                <p style="font-size: var(--font-lg); color: var(--text-secondary); max-width: 620px; margin: 0 auto; line-height: 1.6;" data-i18n="about.subtitle">Cambodia's trusted online marketplace — quality products, fair prices, fast delivery nationwide.</p>
             </div>
 
             <!-- Story Section -->
-            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl);">
-                <h2 style="font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-lg); display: flex; align-items: center; gap: var(--space-sm);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
+            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl); border-radius: 20px; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--brand-gradient);"></div>
+                <h2 style="font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-lg); display: flex; align-items: center; gap: var(--space-md);">
+                    <div style="width: 40px; height: 40px; background: rgba(27, 140, 61, 0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
+                    </div>
                     <span data-i18n="about.story_title">Our Story</span>
                 </h2>
-                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--space-md);" data-i18n="about.story_1">
-                    Founded in 2024, BuyBIBZ started with a simple mission: to make online shopping accessible, affordable, and enjoyable for everyone. We believe that great products shouldn't come with complicated processes or inflated prices.
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--space-md); font-size: 0.98rem;" data-i18n="about.story_1">
+                    BuyBIBZ was founded in 2024 in Phnom Penh, Cambodia, with a clear mission: to bring convenient, affordable, and trustworthy online shopping to Cambodian consumers. We saw that many shoppers struggled with unreliable sellers, overpriced products, and slow deliveries — so we built something better.
                 </p>
-                <p style="color: var(--text-secondary); line-height: 1.8;" data-i18n="about.story_2">
-                    Today, we're proud to serve thousands of customers across Cambodia and beyond, offering a carefully curated selection of products ranging from electronics to home goods, all backed by our commitment to quality and customer satisfaction.
+                <p style="color: var(--text-secondary); line-height: 1.8; font-size: 0.98rem;" data-i18n="about.story_2">
+                    Today, BuyBIBZ serves customers across all 25 provinces of Cambodia, offering thousands of carefully curated products — from electronics and fashion to home essentials and beauty. We work directly with trusted suppliers and brands to guarantee authentic products at competitive prices, with delivery in 10–13 days.
                 </p>
+            </div>
+
+            <!-- Mission & Vision -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl);">
+                <div class="glass-card" style="padding: var(--space-xl); border-radius: 20px;">
+                    <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                        <div style="width: 44px; height: 44px; background: rgba(27, 140, 61, 0.12); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--brand-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg>
+                        </div>
+                        <h3 style="font-size: var(--font-lg); font-weight: 700;" data-i18n="about.mission_title">Our Mission</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.7;" data-i18n="about.mission_desc">To empower Cambodian shoppers with a modern, reliable, and user-friendly e-commerce platform that offers genuine products at fair prices — making quality shopping accessible to everyone, everywhere in Cambodia.</p>
+                </div>
+
+                <div class="glass-card" style="padding: var(--space-xl); border-radius: 20px;">
+                    <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                        <div style="width: 44px; height: 44px; background: rgba(27, 140, 61, 0.12); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--brand-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <h3 style="font-size: var(--font-lg); font-weight: 700;" data-i18n="about.vision_title">Our Vision</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.7;" data-i18n="about.vision_desc">To become Cambodia's leading e-commerce platform, trusted by millions of customers for quality, convenience, and value — while supporting local businesses and contributing to the growth of the digital economy in Southeast Asia.</p>
+                </div>
             </div>
 
             <!-- Values Grid -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl);">
-                
-                <div class="glass-card" style="padding: var(--space-xl); text-align: center;">
-                    <div style="width: 56px; height: 56px; background: rgba(27, 140, 61, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl);">
+                <div class="glass-card" style="padding: var(--space-xl); text-align: center; border-radius: 20px;">
+                    <div style="width: 56px; height: 56px; background: rgba(27, 140, 61, 0.12); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md); color: var(--brand-primary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
                     </div>
-                    <h3 style="font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-sm);" data-i18n="about.quality_title">Quality First</h3>
-                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.6;" data-i18n="about.quality_desc">Every product is carefully selected and tested to ensure it meets our high standards.</p>
+                    <h3 style="font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-xs);" data-i18n="about.quality_title">100% Authentic</h3>
+                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.6;" data-i18n="about.quality_desc">Every product is sourced directly from verified suppliers and brands. We guarantee authenticity and quality on every order.</p>
                 </div>
 
-                <div class="glass-card" style="padding: var(--space-xl); text-align: center;">
-                    <div style="width: 56px; height: 56px; background: rgba(27, 140, 61, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M12 3v6"/></svg>
+                <div class="glass-card" style="padding: var(--space-xl); text-align: center; border-radius: 20px;">
+                    <div style="width: 56px; height: 56px; background: rgba(27, 140, 61, 0.12); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md); color: var(--brand-primary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M12 3v6"/></svg>
                     </div>
-                    <h3 style="font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-sm);" data-i18n="about.delivery_title">Fast Delivery</h3>
-                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.6;" data-i18n="about.delivery_desc">Quick and reliable shipping to get your orders to you as soon as possible.</p>
+                    <h3 style="font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-xs);" data-i18n="about.delivery_title">Nationwide Delivery</h3>
+                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.6;" data-i18n="about.delivery_desc">Fast delivery to all 25 provinces. Phnom Penh orders arrive in 10–12 days, provinces in 12–13 days.</p>
                 </div>
 
-                <div class="glass-card" style="padding: var(--space-xl); text-align: center;">
-                    <div style="width: 56px; height: 56px; background: rgba(27, 140, 61, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <div class="glass-card" style="padding: var(--space-xl); text-align: center; border-radius: 20px;">
+                    <div style="width: 56px; height: 56px; background: rgba(27, 140, 61, 0.12); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md); color: var(--brand-primary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </div>
-                    <h3 style="font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-sm);" data-i18n="about.customer_title">Customer Focus</h3>
-                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.6;" data-i18n="about.customer_desc">Your satisfaction is our priority. We're here to help every step of the way.</p>
+                    <h3 style="font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-xs);" data-i18n="about.customer_title">24/7 Support</h3>
+                    <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.6;" data-i18n="about.customer_desc">Our dedicated customer service team is available via phone, email, and Telegram to help you with any questions or issues.</p>
                 </div>
+            </div>
 
+            <!-- What We Offer -->
+            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl); border-radius: 20px;">
+                <h2 style="font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-lg); display: flex; align-items: center; gap: var(--space-md);">
+                    <div style="width: 40px; height: 40px; background: rgba(27, 140, 61, 0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    </div>
+                    <span data-i18n="about.offer_title">What We Offer</span>
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="color: var(--brand-primary); font-size: 18px; margin-top: 1px;">✦</div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 3px; font-size: 0.95rem;" data-i18n="about.offer_electronics">Electronics & Gadgets</div>
+                            <div style="color: var(--text-secondary); font-size: var(--font-xs);" data-i18n="about.offer_electronics_desc">Phones, accessories, smart devices</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="color: var(--brand-primary); font-size: 18px; margin-top: 1px;">✦</div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 3px; font-size: 0.95rem;" data-i18n="about.offer_fashion">Fashion & Apparel</div>
+                            <div style="color: var(--text-secondary); font-size: var(--font-xs);" data-i18n="about.offer_fashion_desc">Clothing, shoes, bags & watches</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="color: var(--brand-primary); font-size: 18px; margin-top: 1px;">✦</div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 3px; font-size: 0.95rem;" data-i18n="about.offer_home">Home & Living</div>
+                            <div style="color: var(--text-secondary); font-size: var(--font-xs);" data-i18n="about.offer_home_desc">Furniture, kitchen, home décor</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="color: var(--brand-primary); font-size: 18px; margin-top: 1px;">✦</div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 3px; font-size: 0.95rem;" data-i18n="about.offer_beauty">Health & Beauty</div>
+                            <div style="color: var(--text-secondary); font-size: var(--font-xs);" data-i18n="about.offer_beauty_desc">Skincare, cosmetics, wellness</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl); border-radius: 20px;">
+                <h2 style="font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; gap: var(--space-md);">
+                    <div style="width: 40px; height: 40px; background: rgba(27, 140, 61, 0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                    </div>
+                    <span data-i18n="about.payment_title">Payment Methods</span>
+                </h2>
+                <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-lg); font-size: 0.95rem;" data-i18n="about.payment_desc">We support the most popular payment methods in Cambodia for your convenience:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-md);">
+                    <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 18px; background: rgba(27, 140, 61, 0.08); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.2);">
+                        <span style="font-size: 20px;">🏦</span>
+                        <span style="font-weight: 600; font-size: var(--font-sm); color: var(--text-primary);">KHQR (Bakong)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 18px; background: rgba(27, 140, 61, 0.08); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.2);">
+                        <span style="font-size: 20px;">💵</span>
+                        <span style="font-weight: 600; font-size: var(--font-sm); color: var(--text-primary);">Cash on Delivery</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 18px; background: rgba(27, 140, 61, 0.08); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.2);">
+                        <span style="font-size: 20px;">🏧</span>
+                        <span style="font-weight: 600; font-size: var(--font-sm); color: var(--text-primary);">Bank Transfer</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Stats Section -->
-            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl);">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-xl); text-align: center;">
+            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl); border-radius: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-xl); text-align: center;">
                     <div>
-                        <div style="font-size: var(--font-4xl); font-weight: 900; color: var(--brand-primary-light); margin-bottom: var(--space-xs);">10K+</div>
-                        <div style="color: var(--text-secondary); font-size: var(--font-sm);" data-i18n="about.happy_customers">Happy Customers</div>
+                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; color: var(--brand-primary-light); margin-bottom: 4px; letter-spacing: -0.03em;" id="stat-customers">500+</div>
+                        <div style="color: var(--text-secondary); font-size: var(--font-xs); font-weight: 500;" data-i18n="about.happy_customers">Happy Customers</div>
                     </div>
                     <div>
-                        <div style="font-size: var(--font-4xl); font-weight: 900; color: var(--brand-primary-light); margin-bottom: var(--space-xs);">5K+</div>
-                        <div style="color: var(--text-secondary); font-size: var(--font-sm);" data-i18n="about.products">Products</div>
+                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; color: var(--brand-primary-light); margin-bottom: 4px; letter-spacing: -0.03em;" id="stat-products">100+</div>
+                        <div style="color: var(--text-secondary); font-size: var(--font-xs); font-weight: 500;" data-i18n="about.products">Products</div>
                     </div>
                     <div>
-                        <div style="font-size: var(--font-4xl); font-weight: 900; color: var(--brand-primary-light); margin-bottom: var(--space-xs);">50+</div>
-                        <div style="color: var(--text-secondary); font-size: var(--font-sm);" data-i18n="about.categories">Categories</div>
+                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; color: var(--brand-primary-light); margin-bottom: 4px; letter-spacing: -0.03em;">25</div>
+                        <div style="color: var(--text-secondary); font-size: var(--font-xs); font-weight: 500;" data-i18n="about.provinces_covered">Provinces Covered</div>
                     </div>
                     <div>
-                        <div style="font-size: var(--font-4xl); font-weight: 900; color: var(--brand-primary-light); margin-bottom: var(--space-xs);">99%</div>
-                        <div style="color: var(--text-secondary); font-size: var(--font-sm);" data-i18n="about.satisfaction">Satisfaction Rate</div>
+                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 900; color: var(--brand-primary-light); margin-bottom: 4px; letter-spacing: -0.03em;">24/7</div>
+                        <div style="color: var(--text-secondary); font-size: var(--font-xs); font-weight: 500;" data-i18n="about.support_available">Support Available</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Info Section -->
+            <div class="glass-card" style="padding: var(--space-2xl); margin-bottom: var(--space-2xl); border-radius: 20px;">
+                <h2 style="font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-lg); display: flex; align-items: center; gap: var(--space-md);">
+                    <div style="width: 40px; height: 40px; background: rgba(27, 140, 61, 0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
+                    <span data-i18n="about.contact_title">Contact & Location</span>
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                    <div style="padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span data-i18n="about.address_label">Address</span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: var(--font-sm); line-height: 1.5; margin: 0;" data-i18n="about.address_value">Phnom Penh, Cambodia</p>
+                    </div>
+                    <div style="padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <span data-i18n="about.phone_label">Phone</span>
+                        </div>
+                        <a href="tel:+855010794157" style="color: var(--brand-primary); font-weight: 600; font-size: var(--font-sm); text-decoration: none;">010 794 157</a>
+                    </div>
+                    <div style="padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            <span data-i18n="about.email_label">Email</span>
+                        </div>
+                        <a href="mailto:phoungchanphattraseven@gmail.com" style="color: var(--brand-primary); font-weight: 600; font-size: var(--font-sm); text-decoration: none; word-break: break-all; display: block;">phoungchanphattraseven@gmail.com</a>
+                    </div>
+                    <div style="padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                            <span>Facebook</span>
+                        </div>
+                        <a href="https://www.facebook.com/profile.php?id=61563734835769" target="_blank" rel="noopener noreferrer" style="color: var(--brand-primary); font-weight: 600; font-size: var(--font-sm); text-decoration: none;">BuyBIBZ Official</a>
+                    </div>
+                    <div style="padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                            <span>TikTok</span>
+                        </div>
+                        <a href="https://www.tiktok.com/@buybibiz" target="_blank" rel="noopener noreferrer" style="color: var(--brand-primary); font-weight: 600; font-size: var(--font-sm); text-decoration: none;">@buybibiz</a>
+                    </div>
+                    <div style="padding: var(--space-md); background: rgba(27, 140, 61, 0.04); border-radius: 14px; border: 1px solid rgba(27, 140, 61, 0.1);">
+                        <div style="font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            <span>Telegram</span>
+                        </div>
+                        <a href="https://t.me/buybibiz" target="_blank" rel="noopener noreferrer" style="color: var(--brand-primary); font-weight: 600; font-size: var(--font-sm); text-decoration: none;">@buybibiz</a>
                     </div>
                 </div>
             </div>
 
             <!-- CTA Section -->
-            <div style="text-align: center; padding: var(--space-2xl) 0;">
-                <h2 style="font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-md);" data-i18n="about.cta_title">Ready to Start Shopping?</h2>
-                <p style="color: var(--text-secondary); margin-bottom: var(--space-xl);" data-i18n="about.cta_desc">Discover amazing products at unbeatable prices</p>
+            <div class="glass-card" style="text-align: center; padding: var(--space-3xl) var(--space-xl); border-radius: 24px; background: linear-gradient(135deg, rgba(27, 140, 61, 0.12) 0%, rgba(27, 140, 61, 0.03) 100%); border: 1px solid rgba(27, 140, 61, 0.2);">
+                <h2 style="font-size: var(--font-2xl); font-weight: 800; margin-bottom: var(--space-xs);" data-i18n="about.cta_title">Ready to Start Shopping?</h2>
+                <p style="color: var(--text-secondary); margin-bottom: var(--space-xl); max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.6;" data-i18n="about.cta_desc">Join thousands of happy customers — browse our collection and find your next favorite product.</p>
                 <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
-                    <a href="products.html" class="btn btn-primary btn-lg" data-i18n="about.browse_products">Browse Products</a>
-                    <a href="customer-service.html" class="btn btn-secondary btn-lg" data-i18n="about.contact_us">Contact Us</a>
+                    <a href="products.html" class="btn btn-primary btn-lg" style="padding: 12px 28px; border-radius: 12px;" data-i18n="about.browse_products">Browse Products</a>
+                    <a href="customer-service.html" class="btn btn-secondary btn-lg" style="padding: 12px 28px; border-radius: 12px;" data-i18n="about.contact_us">Contact Us</a>
                 </div>
             </div>
 
@@ -128,6 +278,42 @@
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
     <script src="js/pwa-install.js"></script>
+    <script>
+        // Fetch real stats from the database
+        async function loadRealStats() {
+            try {
+                // Fetch total products count from database
+                const productsResponse = await api.get('/api/products');
+                if (productsResponse && Array.isArray(productsResponse)) {
+                    const productCount = productsResponse.length;
+                    const productStatEl = document.getElementById('stat-products');
+                    if (productStatEl) {
+                        productStatEl.textContent = productCount.toLocaleString() + '+';
+                    }
+                }
+
+                // Fetch total users count from database
+                try {
+                    const statsResponse = await api.get('/api/admin/stats');
+                    if (statsResponse && statsResponse.total_users) {
+                        const customerStatEl = document.getElementById('stat-customers');
+                        if (customerStatEl) {
+                            customerStatEl.textContent = statsResponse.total_users.toLocaleString() + '+';
+                        }
+                    }
+                } catch (err) {
+                    // If not admin or endpoint doesn't exist, use default
+                    console.log('Admin stats not available, using default');
+                }
+            } catch (error) {
+                console.error('Could not load real stats:', error);
+                // Keep default values if API fails
+            }
+        }
+
+        // Load stats when page loads
+        document.addEventListener('DOMContentLoaded', loadRealStats);
+    </script>
 </body>
 </html>
 

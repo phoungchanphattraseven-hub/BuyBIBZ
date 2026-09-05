@@ -132,6 +132,35 @@ async def update_current_user_profile(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.get("/api/stats", tags=["Public Stats"])
+async def get_public_stats():
+    """Get real-time store statistics from database."""
+    try:
+        supabase = get_supabase()
+        prods = supabase.table("products").select("id", count="exact").execute()
+        cats = supabase.table("categories").select("id", count="exact").execute()
+        orders = supabase.table("orders").select("id", count="exact").execute()
+        profiles = supabase.table("profiles").select("id", count="exact").execute()
+        
+        return {
+            "products": prods.count or 0,
+            "categories": cats.count or 0,
+            "orders": orders.count or 0,
+            "customers": profiles.count or 0,
+            "provinces": 25,
+            "support": "24/7"
+        }
+    except Exception as e:
+        return {
+            "products": 0,
+            "categories": 0,
+            "orders": 0,
+            "customers": 0,
+            "provinces": 25,
+            "support": "24/7"
+        }
+
+
 @app.get("/", tags=["Root"])
 async def root():
     return {

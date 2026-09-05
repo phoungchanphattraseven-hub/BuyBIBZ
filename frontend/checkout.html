@@ -1497,6 +1497,13 @@
             `;
             window.scrollTo(0, 0);
         }
+
+        // Re-render order summary when currency changes (e.g. from profile settings)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'buybibz-prefs') {
+                loadCheckoutSummary();
+            }
+        });
     </script>
 </body>
 </html>

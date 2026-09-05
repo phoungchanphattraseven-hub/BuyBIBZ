@@ -8442,3 +8442,19 @@ body { letter-spacing: -0.01em; }
     width: 100%;
 }
 
+
+/* ── KHR Currency Font Scaling ───────────────────────────── */
+body.currency-khr .price-current,
+body.currency-khr .product-card-price .price-current {
+    font-size: var(--font-sm) !important;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+body.currency-khr .product-detail-price .price-current {
+    font-size: var(--font-lg) !important;
+}
+
+body.currency-khr .price-compare {
+    font-size: var(--font-xs) !important;
+}

@@ -175,6 +175,29 @@ function toEnglishProductText(value, fallback = '') {
 }
 
 // ── Format Price ────────────────────────────────────────────
+const USD_TO_KHR = 4100; // Exchange rate: 1 USD = 4100 KHR
+
+function applyCurrencyBodyClass() {
+    let prefs = {};
+    try {
+        const prefsVal = localStorage.getItem('buybibz-prefs');
+        if (prefsVal) prefs = JSON.parse(prefsVal);
+    } catch (e) {}
+    if ((prefs.currency || 'USD') === 'KHR') {
+        document.body.classList.add('currency-khr');
+    } else {
+        document.body.classList.remove('currency-khr');
+    }
+}
+
+// Apply on load
+applyCurrencyBodyClass();
+
+// Re-apply when prefs change (e.g. from profile settings in another tab)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'buybibz-prefs') applyCurrencyBodyClass();
+});
+
 function formatPrice(price) {
     let prefs = {};
     try {
@@ -184,10 +207,17 @@ function formatPrice(price) {
         console.error("Failed to parse buybibz-prefs:", e);
     }
     const currency = prefs.currency || 'USD';
+
+    if (currency === 'KHR') {
+        const khr = Math.round(price * USD_TO_KHR);
+        return '៛' + khr.toLocaleString();
+    }
+
     const locale = (typeof i18n !== 'undefined' && i18n.getLang() === 'km') ? 'km-KH' : 'en-US';
     return new Intl.NumberFormat(locale, {
         style: 'currency',
-        currency: currency,
+        currency: 'USD',
+        maximumFractionDigits: 2,
     }).format(price);
 }
 
@@ -312,7 +342,7 @@ function renderNavbar() {
     nav.innerHTML = `
         <div class="container">
             <a href="${prefix}index.html" class="nav-brand">
-                <img src="${prefix}../logo/logo.jpg" alt="BuyBIBZ">
+                <img src="${prefix}../logo/logo-square.png" alt="BuyBIBZ">
                 <span class="brand-wordmark">BuyBIBZ</span>
             </a>
 
@@ -517,7 +547,7 @@ function renderFooter() {
             <div class="footer-grid">
                 <div>
                     <div class="footer-brand">
-                        <img src="${prefix}../logo/logo.jpg" alt="BuyBIBZ">
+                        <img src="${prefix}../logo/logo-square.png" alt="BuyBIBZ">
                         <span class="brand-wordmark">BuyBIBZ</span>
                     </div>
                     <p class="footer-desc" data-i18n="footer.desc">${_t('footer.desc')}</p>

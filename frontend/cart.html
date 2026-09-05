@@ -1213,6 +1213,13 @@
             saveSelection();
             window.location.href = 'checkout.html';
         }
+
+        // Re-render cart prices when currency changes
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'buybibz-prefs') {
+                loadCart();
+            }
+        });
     </script>
 </body>
 </html>

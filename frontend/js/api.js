@@ -401,6 +401,10 @@ class ApiClient {
     async cjBulkImport(pids, categoryId = null) {
         return this.post('/api/products/cj/import-bulk', { pids, category_id: categoryId });
     }
+
+    async getStats() {
+        return this.get('/api/stats');
+    }
 }
 
 // Global instance
