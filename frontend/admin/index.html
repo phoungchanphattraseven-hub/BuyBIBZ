@@ -830,6 +830,11 @@
                     order.shipping_name,
                     order.profiles?.full_name,
                     order.shipping_phone,
+                    order.shipping_address,
+                    order.shipping_village,
+                    order.shipping_commune,
+                    order.shipping_district,
+                    order.shipping_province || order.shipping_city,
                     order.status,
                     order.total,
                 ].filter(Boolean).join(' ').toLowerCase();
@@ -888,6 +893,16 @@
             const orderUid = order.order_uid || `#${order.id}`;
             const items = order.order_items || [];
             const customerName = order.profiles?.full_name || order.shipping_name || 'Customer';
+            const addressParts = [
+                order.shipping_address,
+                order.shipping_village,
+                order.shipping_commune,
+                order.shipping_district,
+                order.shipping_province || order.shipping_city,
+                order.shipping_postal
+            ].filter(Boolean);
+            const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : '—';
+            
             const content = document.getElementById('order-details-content');
             content.innerHTML = `
                 <div class="order-detail-reference">
@@ -925,7 +940,7 @@
                             <div><dt>Customer</dt><dd>${customerName}</dd></div>
                             <div><dt>Recipient</dt><dd>${order.shipping_name || '—'}</dd></div>
                             <div><dt>Phone</dt><dd>${order.shipping_phone || '—'}</dd></div>
-                            <div><dt>Address</dt><dd>${order.shipping_address || '—'}${order.shipping_city ? `, ${order.shipping_city}` : ''}${order.shipping_postal ? ` ${order.shipping_postal}` : ''}</dd></div>
+                            <div><dt>Address</dt><dd>${fullAddress}</dd></div>
                             <div><dt>Ordered</dt><dd>${formatDate(order.created_at)}</dd></div>
                         </dl>
                         ${order.notes ? `<div class="order-detail-notes"><span>Customer note</span><p>${order.notes}</p></div>` : ''}

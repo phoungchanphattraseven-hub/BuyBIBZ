@@ -12,10 +12,6 @@
             } catch (e) {}
         })();
     </script>
-    <style>
-        html, body { background-color: #fcfdfb; }
-        html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
-    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Checkout — BuyBIBZ</title>
     <meta name="description" content="Secure checkout for your BuyBIBZ order.">
@@ -24,6 +20,591 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo.jpg">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        html, body {
+            background-color: var(--bg-primary, #fcfdfb);
+            color: var(--text-primary, #111827);
+        }
+        html[data-theme="dark"], html[data-theme="dark"] body {
+            background-color: var(--bg-primary, #06060a);
+        }
+        
+        .checkout-page {
+            padding-top: calc(var(--nav-height, 70px) + 1.5rem);
+            padding-bottom: 3rem;
+            min-height: 100vh;
+        }
+        
+        .page-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary, #6b7280);
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .page-back:hover {
+            color: var(--text-primary, #111827);
+        }
+        
+        /* Checkout Header & Steps */
+        .checkout-progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 1rem 0 2rem 0;
+            padding: 1rem;
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+            border-radius: 12px;
+        }
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-tertiary, #f3f4f6);
+            border: 1px solid var(--border-default, #e5e7eb);
+            color: var(--text-tertiary, #9ca3af);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            transition: all 0.25s ease;
+        }
+        .progress-step-active .step-number {
+            background: var(--brand-primary, #1b8c3d);
+            border-color: var(--brand-primary, #1b8c3d);
+            color: #ffffff;
+        }
+        .step-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-tertiary, #9ca3af);
+        }
+        .progress-step-active .step-label {
+            color: var(--text-primary, #111827);
+            font-weight: 600;
+        }
+        .progress-line {
+            width: 40px;
+            height: 2px;
+            background: var(--border-subtle, #e5e7eb);
+            border-radius: 1px;
+        }
+        
+        /* Checkout Main Layout */
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        /* Main Form Card */
+        .checkout-card {
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-subtle, #f3f4f6);
+        }
+        .section-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(27, 140, 61, 0.1);
+            color: var(--brand-primary, #1b8c3d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .section-title-group h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary, #111827);
+            margin: 0;
+            line-height: 1.3;
+        }
+        .section-subtitle {
+            font-size: 0.8125rem;
+            color: var(--text-tertiary, #9ca3af);
+            margin: 0.125rem 0 0 0;
+        }
+        .country-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background: var(--bg-tertiary, #f3f4f6);
+            border: 1px solid var(--border-subtle, #e5e7eb);
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary, #4b5563);
+        }
+        
+        /* Saved Address Cards */
+        .saved-address-card {
+            background: var(--bg-elevated, #f9fafb);
+            border: 2px solid var(--border-default, #e5e7eb);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .saved-address-card:hover {
+            border-color: var(--brand-primary, #1b8c3d);
+        }
+        .saved-address-card.selected {
+            border-color: var(--brand-primary, #1b8c3d);
+            background: rgba(27, 140, 61, 0.03);
+        }
+        .address-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .address-user-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary, #111827);
+        }
+        .address-user-phone {
+            font-size: 0.875rem;
+            color: var(--text-secondary, #4b5563);
+            font-weight: 500;
+        }
+        .address-location-text {
+            font-size: 0.875rem;
+            color: var(--text-tertiary, #6b7280);
+            line-height: 1.5;
+            margin-top: 0.375rem;
+        }
+        .badge-selected-address {
+            display: inline-block;
+            background: var(--brand-primary, #1b8c3d);
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.125rem 0.625rem;
+            border-radius: 12px;
+        }
+        .saved-address-card:not(.selected) .badge-selected-address {
+            display: none;
+        }
+        
+        .btn-add-address {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.875rem;
+            background: transparent;
+            border: 2px dashed var(--border-default, #d1d5db);
+            border-radius: 12px;
+            color: var(--brand-primary, #1b8c3d);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1.5rem;
+        }
+        .btn-add-address:hover {
+            background: rgba(27, 140, 61, 0.05);
+            border-color: var(--brand-primary, #1b8c3d);
+        }
+        
+        .btn-back-saved {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            background: var(--bg-tertiary, #f3f4f6);
+            border: 1px solid var(--border-default, #e5e7eb);
+            border-radius: 8px;
+            color: var(--brand-primary, #1b8c3d);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
+        .btn-back-saved:hover {
+            background: rgba(27, 140, 61, 0.08);
+            border-color: var(--brand-primary, #1b8c3d);
+        }
+        
+        /* Payment Option Cards */
+        .payment-options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.875rem;
+            margin-top: 0.75rem;
+        }
+        .payment-option-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.125rem;
+            background: var(--bg-elevated, #f9fafb);
+            border: 2px solid var(--border-default, #e5e7eb);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .payment-option-card:hover {
+            border-color: var(--brand-primary, #1b8c3d);
+        }
+        .payment-option-card.selected {
+            border-color: var(--brand-primary, #1b8c3d);
+            background: rgba(27, 140, 61, 0.03);
+        }
+        .payment-left-group {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+        .payment-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--bg-tertiary, #e5e7eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-primary, #1b8c3d);
+            flex-shrink: 0;
+        }
+        .payment-title-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .payment-name {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary, #111827);
+        }
+        .payment-badge {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .badge-success {
+            background: rgba(34, 197, 94, 0.12);
+            color: #16a34a;
+        }
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.12);
+            color: #d97706;
+        }
+        .payment-desc {
+            font-size: 0.8125rem;
+            color: var(--text-tertiary, #6b7280);
+            margin: 0;
+        }
+        
+        .radio-circle {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-default, #d1d5db);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .payment-option-card.selected .radio-circle {
+            border-color: var(--brand-primary, #1b8c3d);
+            background: var(--brand-primary, #1b8c3d);
+        }
+        .radio-circle::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffffff;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .payment-option-card.selected .radio-circle::after {
+            opacity: 1;
+        }
+
+        /* Form Inputs */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 1.125rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary, #111827);
+            margin-bottom: 0.375rem;
+        }
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary, #ffffff);
+            border: 1px solid var(--border-default, #d1d5db);
+            border-radius: 8px;
+            color: var(--text-primary, #111827);
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--brand-primary, #1b8c3d);
+            box-shadow: 0 0 0 3px rgba(27, 140, 61, 0.15);
+        }
+        .form-input:disabled {
+            background: var(--bg-tertiary, #f3f4f6);
+            color: var(--text-tertiary, #9ca3af);
+            cursor: not-allowed;
+        }
+        
+        /* Order Summary Sticky Sidebar */
+        .summary-card {
+            position: sticky;
+            top: calc(var(--nav-height, 70px) + 1.5rem);
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+        }
+        .summary-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary, #111827);
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-subtle, #f3f4f6);
+        }
+        
+        .checkout-items-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1.25rem;
+            padding-top: 8px;
+            padding-right: 4px;
+        }
+        .checkout-items-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .checkout-items-list::-webkit-scrollbar-thumb {
+            background: var(--border-default, #e5e7eb);
+            border-radius: 2px;
+        }
+        
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            margin-bottom: 0.875rem;
+            padding-top: 4px;
+            padding-bottom: 0.875rem;
+            border-bottom: 1px solid var(--border-subtle, #f9fafb);
+        }
+        .item-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .item-thumb-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            margin-top: 4px;
+            margin-right: 4px;
+        }
+        .item-thumb {
+            width: 52px;
+            height: 52px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border-subtle, #e5e7eb);
+            display: block;
+        }
+        .item-qty-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--brand-primary, #1b8c3d);
+            color: #ffffff;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            z-index: 2;
+        }
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .item-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary, #111827);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-meta {
+            font-size: 0.75rem;
+            color: var(--text-tertiary, #9ca3af);
+            margin-top: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-price {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary, #111827);
+            flex-shrink: 0;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary, #4b5563);
+            margin-bottom: 0.625rem;
+        }
+        .summary-divider {
+            height: 1px;
+            background: var(--border-subtle, #e5e7eb);
+            margin: 1rem 0;
+        }
+        .summary-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary, #111827);
+            margin-bottom: 1.25rem;
+        }
+        .total-price {
+            color: var(--brand-primary, #1b8c3d);
+        }
+        
+        .btn-submit-order {
+            width: 100%;
+            padding: 0.9375rem;
+            background: var(--brand-primary, #1b8c3d);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(27, 140, 61, 0.25);
+        }
+        .btn-submit-order:hover {
+            background: var(--brand-hover, #157332);
+            transform: translateY(-1px);
+        }
+        .btn-submit-order:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Order Success & KHQR Screens */
+        .confirmation-card {
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            max-width: 520px;
+            margin: 2rem auto;
+            box-shadow: var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.08));
+        }
+        .success-icon-wrapper {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.12);
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @media (max-width: 992px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+            .summary-card {
+                position: static;
+                order: -1;
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
@@ -31,236 +612,212 @@
 
     <main class="checkout-page" id="checkout-main">
         <div class="container">
-        <a class="page-back" href="cart.html">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            <span data-i18n="common.back">Back</span>
-        </a>
-            <div class="page-header">
-                <h1 data-i18n="checkout.title">Checkout</h1>
-                <p data-i18n="checkout.subtitle">Complete your order securely</p>
+            <a class="page-back" href="cart.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                <span data-i18n="common.back">Back to Cart</span>
+            </a>
+
+            <!-- Progress Indicator Steps -->
+            <div class="checkout-progress">
+                <div class="progress-step progress-step-active" id="step-1-indicator">
+                    <div class="step-number">1</div>
+                    <div class="step-label" data-i18n="checkout.progress_shipping">Delivery</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step progress-step-active" id="step-2-indicator">
+                    <div class="step-number">2</div>
+                    <div class="step-label" data-i18n="checkout.progress_payment">Payment</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" id="step-3-indicator">
+                    <div class="step-number">3</div>
+                    <div class="step-label" data-i18n="checkout.progress_confirm">Confirmation</div>
+                </div>
             </div>
 
             <div class="checkout-layout">
-                <!-- Shipping Form -->
-                <div class="checkout-form-card">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-xl);">
-                        <h2 style="margin: 0;" data-i18n="checkout.shipping_details">Shipping Details</h2>
-                        <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                            <span style="font-size: var(--font-sm); color: var(--text-secondary);">🇰🇭 Cambodia</span>
-                        </div>
-                    </div>
+                <!-- Left Column: Delivery & Payment Details -->
+                <div class="checkout-main-content">
                     
-                    <!-- Address from profile (if available) -->
-                    <div id="saved-address-display" style="display: none;">
-                        <div class="address-card">
-                            <div class="address-card-header">
-                                <div class="address-card-title">
-                                    <div class="address-card-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    </div>
-                                    <h3 data-i18n="checkout.delivery_address">Delivery Address</h3>
+                    <!-- Section 1: Delivery Address -->
+                    <div class="checkout-card">
+                        <div class="section-header-row">
+                            <div class="section-title-group">
+                                <div class="section-icon-box">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                                 </div>
-                                <button type="button" class="btn-edit-address" id="btn-edit-address" data-i18n="checkout.edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                                    <span data-i18n="checkout.edit">Edit</span>
-                                </button>
+                                <div>
+                                    <h2 data-i18n="checkout.shipping_details">Delivery Address</h2>
+                                    <p class="section-subtitle" data-i18n="checkout.shipping_subtitle">Where should we deliver your order?</p>
+                                </div>
                             </div>
-                            <div id="saved-address-content" class="address-card-content">
-                                <!-- Filled by JS -->
+                            <div class="country-badge">
+                                <span>🇰🇭</span>
+                                <span>Cambodia</span>
                             </div>
                         </div>
-                        
-                        <!-- Order Notes when using saved address -->
-                        <div class="form-group" style="margin-top: var(--space-lg);">
-                            <label class="form-label" for="notes-saved" data-i18n="checkout.order_notes">Order Notes (Optional)</label>
-                            <textarea id="notes-saved" class="form-textarea" rows="3" data-i18n-placeholder="checkout.notes_placeholder" placeholder="Special instructions for delivery..."></textarea>
-                        </div>
-                        
-                        <div class="payment-section">
-                            <h3 class="payment-section-title" data-i18n="checkout.payment_method">Payment Method</h3>
+
+                        <!-- Saved Address List View (when available) -->
+                        <div id="saved-addresses-container" style="display: none;">
+                            <div id="saved-addresses-list"></div>
                             
-                            <!-- Cash on Delivery -->
-                            <label class="payment-option payment-option-selected" onclick="selectPayment('cod', this)">
-                                <div class="payment-option-content">
-                                    <div class="payment-option-radio">
-                                        <input type="radio" name="payment" value="cod" checked>
-                                        <span class="radio-indicator"></span>
-                                    </div>
-                                    <div class="payment-option-details">
-                                        <div class="payment-option-header">
-                                            <span class="payment-option-name" data-i18n="checkout.cod">Cash on Delivery</span>
-                                            <span class="payment-option-badge payment-option-badge-success" data-i18n="checkout.cod_available">Available</span>
-                                        </div>
-                                        <p class="payment-option-desc" data-i18n="checkout.cod_desc">Pay with cash when your order is delivered</p>
-                                    </div>
-                                </div>
-                            </label>
-                            
-                            <!-- KHQR Payment -->
-                            <label class="payment-option" onclick="selectPayment('khqr', this)">
-                                <div class="payment-option-content">
-                                    <div class="payment-option-radio">
-                                        <input type="radio" name="payment" value="khqr">
-                                        <span class="radio-indicator"></span>
-                                    </div>
-                                    <div class="payment-option-details">
-                                        <div class="payment-option-header">
-                                            <span class="payment-option-name" data-i18n="checkout.khqr">KHQR (Bakong)</span>
-                                            <span class="payment-option-badge payment-option-badge-warning" data-i18n="checkout.khqr_instant">Instant</span>
-                                        </div>
-                                        <p class="payment-option-desc" data-i18n="checkout.khqr_desc">Scan QR code with any Cambodian banking app</p>
-                                    </div>
-                                </div>
-                            </label>
+                            <button type="button" class="btn-add-address" id="btn-add-new-address">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span data-i18n="checkout.add_new_address">Use Different Address</span>
+                            </button>
                         </div>
-                        
-                        <button type="button" class="btn btn-primary btn-lg btn-full" id="submit-saved-btn" data-i18n="checkout.place_order">
-                            Place Order
-                        </button>
+
+                        <!-- Address Input Form (for new address or editing) -->
+                        <form id="checkout-form" style="display: none;">
+                            <button type="button" class="btn-back-saved" id="btn-back-to-saved" style="display: none;" onclick="showSavedAddressesView()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                                <span data-i18n="checkout.use_saved_address">Back to Saved Address</span>
+                            </button>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label" for="shipping_name" data-i18n="checkout.full_name">Full Name *</label>
+                                    <input type="text" id="shipping_name" class="form-input" required placeholder="Enter full name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="shipping_phone" data-i18n="checkout.phone">Phone Number *</label>
+                                    <input type="tel" id="shipping_phone" class="form-input" required placeholder="e.g. 012 345 678">
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group kh-combo-group">
+                                    <label class="form-label" for="shipping_province" data-i18n="checkout.province">Province / City *</label>
+                                    <input type="text" id="shipping_province" class="form-input" required placeholder="Select or type province" autocomplete="off">
+                                    <input type="hidden" id="shipping_province_code">
+                                </div>
+                                <div class="form-group kh-combo-group">
+                                    <label class="form-label" for="shipping_district" data-i18n="checkout.district">District / Khan / Srok *</label>
+                                    <input type="text" id="shipping_district" class="form-input" disabled placeholder="Select district" autocomplete="off">
+                                    <input type="hidden" id="shipping_district_code">
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group kh-combo-group">
+                                    <label class="form-label" for="shipping_commune" data-i18n="checkout.commune">Commune / Sangkat *</label>
+                                    <input type="text" id="shipping_commune" class="form-input" disabled placeholder="Select commune" autocomplete="off">
+                                    <input type="hidden" id="shipping_commune_code">
+                                </div>
+                                <div class="form-group kh-combo-group">
+                                    <label class="form-label" for="shipping_village" data-i18n="checkout.village">Village / Phum (Optional)</label>
+                                    <input type="text" id="shipping_village" class="form-input" disabled placeholder="Select village" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="shipping_address" data-i18n="checkout.street">Street Address / House No. *</label>
+                                <input type="text" id="shipping_address" class="form-input" required placeholder="e.g., House 12, Street 310">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="shipping_postal" data-i18n="checkout.postal">Postal Code (Optional)</label>
+                                <input type="text" id="shipping_postal" class="form-input" placeholder="e.g., 12000">
+                            </div>
+                        </form>
                     </div>
 
-                    <form id="checkout-form">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-xl);">
-                            <h2 style="margin: 0;" data-i18n="checkout.shipping_details">Shipping Details</h2>
-                            <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                <span style="font-size: var(--font-sm); color: var(--text-secondary);">🇰🇭 Cambodia</span>
-                            </div>
+                    <!-- Section 2: Order Notes -->
+                    <div class="checkout-card">
+                        <div class="section-title-group" style="margin-bottom: 0.75rem;">
+                            <h2 style="font-size: 1rem;" data-i18n="checkout.order_notes">Order Notes (Optional)</h2>
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="shipping_name" data-i18n="checkout.full_name">Full Name</label>
-                            <input type="text" id="shipping_name" class="form-input" required>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <textarea id="checkout-notes" class="form-textarea" rows="2" placeholder="Special delivery instructions, gate codes, etc."></textarea>
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="shipping_phone" data-i18n="checkout.phone">Phone Number</label>
-                            <input type="tel" id="shipping_phone" class="form-input" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="shipping_country" data-i18n="checkout.country">Country</label>
-                            <div class="country-locked">
-                                <span class="country-flag">🇰🇭</span>
-                                <span>Cambodia</span>
-                                <span class="country-note" data-i18n="checkout.country_locked">Cambodia only</span>
+                    </div>
+
+                    <!-- Section 3: Payment Method -->
+                    <div class="checkout-card">
+                        <div class="section-header-row">
+                            <div class="section-title-group">
+                                <div class="section-icon-box">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                                </div>
+                                <div>
+                                    <h2 data-i18n="checkout.payment_method">Payment Method</h2>
+                                    <p class="section-subtitle" data-i18n="checkout.payment_subtitle">Select how you want to pay</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-2 gap-md">
-                            <div class="form-group kh-combo-group">
-                                <label class="form-label" for="shipping_province" data-i18n="checkout.province">Province / City</label>
-                                <input type="text" id="shipping_province" class="form-input"
-                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
-                                <input type="hidden" id="shipping_province_code">
-                            </div>
-                            <div class="form-group kh-combo-group">
-                                <label class="form-label" for="shipping_district" data-i18n="checkout.district">District / Khan / Srok</label>
-                                <input type="text" id="shipping_district" class="form-input" disabled
-                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
-                                <input type="hidden" id="shipping_district_code">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-2 gap-md">
-                            <div class="form-group kh-combo-group">
-                                <label class="form-label" for="shipping_commune" data-i18n="checkout.commune">Commune / Sangkat</label>
-                                <input type="text" id="shipping_commune" class="form-input" disabled
-                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
-                                <input type="hidden" id="shipping_commune_code">
-                            </div>
-                            <div class="form-group kh-combo-group">
-                                <label class="form-label" for="shipping_village" data-i18n="checkout.village">Village / Phum (Optional)</label>
-                                <input type="text" id="shipping_village" class="form-input" disabled
-                                       placeholder="Select or type to search" data-i18n-placeholder="checkout.combo_placeholder" autocomplete="off">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="shipping_address" data-i18n="checkout.street">Street Address / House No.</label>
-                            <input type="text" id="shipping_address" class="form-input">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="shipping_postal" data-i18n="checkout.postal">Postal Code (Optional)</label>
-                            <input type="text" id="shipping_postal" class="form-input">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="notes" data-i18n="checkout.order_notes">Order Notes (Optional)</label>
-                            <textarea id="notes" class="form-textarea" rows="3" data-i18n-placeholder="checkout.notes_placeholder" placeholder="Special instructions for delivery..."></textarea>
-                        </div>
-                        
-                        <div class="payment-section">
-                            <h3 class="payment-section-title" data-i18n="checkout.payment_method">Payment Method</h3>
-                            
+                        <div class="payment-options-grid">
                             <!-- Cash on Delivery -->
-                            <label class="payment-option payment-option-selected" onclick="selectPayment('cod', this)">
-                                <div class="payment-option-content">
-                                    <div class="payment-option-radio">
-                                        <input type="radio" name="payment" value="cod" checked>
-                                        <span class="radio-indicator"></span>
+                            <div class="payment-option-card selected" id="payment-option-cod" onclick="selectPayment('cod')">
+                                <div class="payment-left-group">
+                                    <div class="payment-icon-box">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
                                     </div>
-                                    <div class="payment-option-details">
-                                        <div class="payment-option-header">
-                                            <span class="payment-option-name" data-i18n="checkout.cod">Cash on Delivery</span>
-                                            <span class="payment-option-badge payment-option-badge-success" data-i18n="checkout.cod_available">Available</span>
+                                    <div>
+                                        <div class="payment-title-box">
+                                            <span class="payment-name" data-i18n="checkout.cod">Cash on Delivery (COD)</span>
+                                            <span class="payment-badge badge-success" data-i18n="checkout.cod_available">Popular</span>
                                         </div>
-                                        <p class="payment-option-desc" data-i18n="checkout.cod_desc">Pay with cash when your order is delivered</p>
+                                        <p class="payment-desc" data-i18n="checkout.cod_desc">Pay in cash when your package arrives</p>
                                     </div>
                                 </div>
-                            </label>
-                            
-                            <!-- KHQR Payment -->
-                            <label class="payment-option" onclick="selectPayment('khqr', this)">
-                                <div class="payment-option-content">
-                                    <div class="payment-option-radio">
-                                        <input type="radio" name="payment" value="khqr">
-                                        <span class="radio-indicator"></span>
-                                    </div>
-                                    <div class="payment-option-details">
-                                        <div class="payment-option-header">
-                                            <span class="payment-option-name" data-i18n="checkout.khqr">KHQR (Bakong)</span>
-                                            <span class="payment-option-badge payment-option-badge-warning" data-i18n="checkout.khqr_instant">Instant</span>
-                                        </div>
-                                        <p class="payment-option-desc" data-i18n="checkout.khqr_desc">Scan QR code with any Cambodian banking app</p>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
+                                <div class="radio-circle"></div>
+                            </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg btn-full" style="margin-top: var(--space-2xl);" id="submit-btn" data-i18n="checkout.place_order">
-                            Place Order
-                        </button>
-                    </form>
+                            <!-- KHQR Payment -->
+                            <div class="payment-option-card" id="payment-option-khqr" onclick="selectPayment('khqr')">
+                                <div class="payment-left-group">
+                                    <div class="payment-icon-box">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                                    </div>
+                                    <div>
+                                        <div class="payment-title-box">
+                                            <span class="payment-name" data-i18n="checkout.khqr">KHQR (Bakong)</span>
+                                            <span class="payment-badge badge-warning" data-i18n="checkout.khqr_instant">Instant QR</span>
+                                        </div>
+                                        <p class="payment-desc" data-i18n="checkout.khqr_desc">Scan QR code using ABA, Acleda, Sathapana or any KHQR app</p>
+                                    </div>
+                                </div>
+                                <div class="radio-circle"></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Order Summary -->
-                <div class="order-summary-card">
-                    <div class="cart-summary" style="position: static; padding: var(--space-xl);">
-                        <h3 data-i18n="cart.order_summary">Order Summary</h3>
-                        
-                        <div id="checkout-items" style="margin-bottom: var(--space-lg); max-height: 300px; overflow-y: auto; padding-right: 10px;">
-                            <!-- Items loaded dynamically -->
+                <!-- Right Column: Order Summary Sticky Card -->
+                <div class="checkout-sidebar">
+                    <div class="summary-card">
+                        <h3 class="summary-title" data-i18n="cart.order_summary">Order Summary</h3>
+
+                        <div class="checkout-items-list" id="checkout-items">
+                            <!-- Items dynamically loaded -->
                         </div>
-                        
-                        <div class="cart-summary-row" style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-md);">
+
+                        <div class="summary-row">
                             <span><span data-i18n="cart.subtotal">Subtotal</span> (<span id="summary-count">0</span> <span data-i18n="cart.items">items</span>)</span>
-                            <span id="summary-subtotal">$0.00</span>
+                            <span id="summary-subtotal" style="font-weight: 600;">$0.00</span>
                         </div>
-                        <div class="cart-summary-row">
-                            <span data-i18n="checkout.intl_shipping">International Shipping</span>
-                            <span id="summary-shipping" style="color: var(--status-success);" data-i18n="cart.free">Free</span>
+                        <div class="summary-row">
+                            <span data-i18n="checkout.intl_shipping">Shipping</span>
+                            <span id="summary-shipping" style="color: #16a34a; font-weight: 600;" data-i18n="cart.free">Free</span>
                         </div>
-                        <div class="cart-summary-row">
+                        <div class="summary-row">
                             <span data-i18n="cart.transaction_fee">Transaction Fee (3%)</span>
-                            <span id="summary-fee">$0.00</span>
+                            <span id="summary-fee" style="font-weight: 600;">$0.00</span>
                         </div>
-                        <div class="cart-summary-total">
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-total-row">
                             <span data-i18n="cart.total">Total</span>
-                            <span id="summary-total" style="color: var(--text-brand);">$0.00</span>
+                            <span class="total-price" id="summary-total">$0.00</span>
                         </div>
+
+                        <button type="button" class="btn-submit-order" id="btn-place-order" onclick="handlePlaceOrderClick()">
+                            <span data-i18n="checkout.place_order">Place Order</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -277,422 +834,257 @@
     <script src="js/kh-address-data.js"></script>
     <script src="js/kh-address.js"></script>
     <script src="js/pwa-install.js"></script>
+
     <script>
         let selectedPaymentMethod = 'cod';
-        
-        function selectPayment(method, element) {
+        let savedAddresses = [];
+        let selectedAddressIndex = 0;
+        let isUsingSavedAddress = false;
+        let addressPickers = null;
+
+        function selectPayment(method) {
             selectedPaymentMethod = method;
-            
-            // Update styles using CSS classes
-            document.querySelectorAll('.payment-option').forEach(label => {
-                label.classList.remove('payment-option-selected');
-            });
-            
-            element.classList.add('payment-option-selected');
+            document.querySelectorAll('.payment-option-card').forEach(card => card.classList.remove('selected'));
+            const selectedCard = document.getElementById(`payment-option-${method}`);
+            if (selectedCard) selectedCard.classList.add('selected');
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!requireAuth()) return;
 
-            let savedAddress = null;
-
-            // Cascading Cambodia address pickers (province → district → commune → village)
-            const addressPickers = window.KHAddressUI ? KHAddressUI.initCheckoutPickers() : null;
+            // Initialize Cambodia cascading address pickers
+            if (window.KHAddressUI) {
+                addressPickers = KHAddressUI.initCheckoutPickers();
+            }
 
             // Load profile to check for saved address
             try {
-                console.log('Loading profile for checkout...');
-                
-                // First try to get cached data from localStorage for instant display
-                const cachedUser = localStorage.getItem('buybibz_user');
-                if (cachedUser) {
-                    try {
-                        const user = JSON.parse(cachedUser);
-                        console.log('Cached user data:', user);
-                        
-                        if (user.phone) {
-                            savedAddress = user;
-                            
-                            // Show the saved address display from cache
-                            document.getElementById('saved-address-display').style.display = 'block';
-                            
-                            // Build address display with Cambodia-specific fields if available
-                            let addressLines = [
-                                `<strong>${user.full_name || ''}</strong>`,
-                                user.phone
-                            ];
-                            
-                            // Build location parts
-                            let locationParts = [];
-                            if (user.address) locationParts.push(user.address);
-                            if (user.province || user.city) locationParts.push(user.province || user.city);
-                            if (user.district) locationParts.push(user.district);
-                            if (user.commune) locationParts.push(user.commune);
-                            if (user.village) locationParts.push(user.village);
-                            if (user.postal_code) locationParts.push(user.postal_code);
-                            
-                            if (locationParts.length > 0) {
-                                addressLines.push(locationParts.join(', '));
-                            }
-                            
-                            document.getElementById('saved-address-content').innerHTML = addressLines.join('<br>');
-                            console.log('Address display updated from cache:', addressLines);
-
-                            // Hide the form initially
-                            document.getElementById('checkout-form').style.display = 'none';
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse cached user:', e);
-                    }
-                }
-                
-                // Then load fresh data from API
                 const profileResult = await api.getProfile();
-                console.log('Profile result:', profileResult);
-                
-                if (profileResult && profileResult.user) {
-                    const p = profileResult.user;
-                    console.log('User profile data from API:', p);
-
-                    // Check if user has complete address (now only requires phone)
-                    if (p.phone) {
-                        savedAddress = p;
-
-                        // Show the saved address display
-                        document.getElementById('saved-address-display').style.display = 'block';
-                        
-                        // Build address display with Cambodia-specific fields if available
-                        let addressLines = [
-                            `<strong>${p.full_name || api.getUser()?.full_name || ''}</strong>`,
-                            p.phone
-                        ];
-                        
-                        // Build location parts
-                        let locationParts = [];
-                        if (p.address) locationParts.push(p.address);
-                        if (p.province || p.city) locationParts.push(p.province || p.city);
-                        if (p.district) locationParts.push(p.district);
-                        if (p.commune) locationParts.push(p.commune);
-                        if (p.village) locationParts.push(p.village);
-                        if (p.postal_code) locationParts.push(p.postal_code);
-                        
-                        if (locationParts.length > 0) {
-                            addressLines.push(locationParts.join(', '));
-                        }
-                        
-                        document.getElementById('saved-address-content').innerHTML = addressLines.join('<br>');
-                        console.log('Address display updated from API:', addressLines);
-
-                        // Hide the form initially
-                        document.getElementById('checkout-form').style.display = 'none';
-
-                        // Only add edit button listener if not already added
-                        if (!document.getElementById('btn-edit-address').hasAttribute('data-listener-added')) {
-                            document.getElementById('btn-edit-address').setAttribute('data-listener-added', 'true');
-                            
-                            // Edit button shows the form
-                            document.getElementById('btn-edit-address').addEventListener('click', () => {
-                                document.getElementById('saved-address-display').style.display = 'none';
-                                document.getElementById('checkout-form').style.display = 'block';
-
-                                // Pre-fill the form
-                                document.getElementById('shipping_name').value = p.full_name || api.getUser()?.full_name || '';
-                                document.getElementById('shipping_phone').value = p.phone || '';
-                                document.getElementById('shipping_address').value = p.address || '';
-                                document.getElementById('shipping_postal').value = p.postal_code || '';
-                                
-                                // Pre-fill Cambodia address fields if available
-                                if (addressPickers) {
-                                    if (p.province_code) {
-                                        document.getElementById('shipping_province_code').value = p.province_code;
-                                        document.getElementById('shipping_province').value = p.province || p.city || '';
-                                        document.getElementById('shipping_district').disabled = false;
-                                        
-                                        if (p.district_code) {
-                                            document.getElementById('shipping_district_code').value = p.district_code;
-                                            document.getElementById('shipping_district').value = p.district || '';
-                                            document.getElementById('shipping_commune').disabled = false;
-                                            
-                                            if (p.commune_code) {
-                                                document.getElementById('shipping_commune_code').value = p.commune_code;
-                                                document.getElementById('shipping_commune').value = p.commune || '';
-                                                document.getElementById('shipping_village').disabled = false;
-                                                
-                                                if (p.village) {
-                                                    document.getElementById('shipping_village').value = p.village;
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        // Fallback to legacy city field
-                                        addressPickers.preselect(p.city);
-                                    }
-                                }
-                            });
+                if (profileResult && profileResult.user && profileResult.user.phone) {
+                    const user = profileResult.user;
+                    savedAddresses = [user];
+                    displaySavedAddresses(savedAddresses);
+                } else {
+                    const cachedUser = localStorage.getItem('buybibz_user');
+                    if (cachedUser) {
+                        const parsed = JSON.parse(cachedUser);
+                        if (parsed.phone) {
+                            savedAddresses = [parsed];
+                            displaySavedAddresses(savedAddresses);
+                        } else {
+                            showAddressForm(parsed);
                         }
                     } else {
-                        console.log('User does not have phone number, showing form');
-                        // No complete address, show form with warning
-                        const user = api.getUser();
-                        if (user) {
-                            document.getElementById('shipping_name').value = user.full_name || '';
-                            if (user.phone) document.getElementById('shipping_phone').value = user.phone;
-                        }
-
-                        if (p.address) document.getElementById('shipping_address').value = p.address;
-                        if (p.postal_code) document.getElementById('shipping_postal').value = p.postal_code;
-                        if (p.phone) document.getElementById('shipping_phone').value = p.phone;
-                        
-                        // Pre-fill Cambodia address fields if available
-                        if (addressPickers) {
-                            if (p.province_code) {
-                                document.getElementById('shipping_province_code').value = p.province_code;
-                                document.getElementById('shipping_province').value = p.province || p.city || '';
-                                document.getElementById('shipping_district').disabled = false;
-                                
-                                if (p.district_code) {
-                                    document.getElementById('shipping_district_code').value = p.district_code;
-                                    document.getElementById('shipping_district').value = p.district || '';
-                                    document.getElementById('shipping_commune').disabled = false;
-                                    
-                                    if (p.commune_code) {
-                                        document.getElementById('shipping_commune_code').value = p.commune_code;
-                                        document.getElementById('shipping_commune').value = p.commune || '';
-                                        document.getElementById('shipping_village').disabled = false;
-                                        
-                                        if (p.village) {
-                                            document.getElementById('shipping_village').value = p.village;
-                                        }
-                                    }
-                                }
-                            } else {
-                                // Fallback to legacy city field
-                                addressPickers.preselect(p.city);
-                            }
-                        }
+                        showAddressForm();
                     }
                 }
             } catch (err) {
-                console.error('Failed to load profile address:', err);
-                // Show form on error
-                document.getElementById('checkout-form').style.display = 'block';
-                document.getElementById('saved-address-display').style.display = 'none';
+                console.error('Error fetching user profile address:', err);
+                showAddressForm();
             }
 
             loadCheckoutSummary();
-            initCheckoutForm(savedAddress);
-            
-            // Handle Place Order button for saved address
-            if (savedAddress) {
-                document.getElementById('submit-saved-btn')?.addEventListener('click', async () => {
-                    await processOrder(savedAddress, true);
-                });
-            }
         });
-        
-        async function processOrder(savedAddress = null, isSavedAddress = false) {
-            const btn = isSavedAddress ? document.getElementById('submit-saved-btn') : document.getElementById('submit-btn');
+
+        function displaySavedAddresses(addresses) {
+            const container = document.getElementById('saved-addresses-container');
+            const listEl = document.getElementById('saved-addresses-list');
+            const formEl = document.getElementById('checkout-form');
             
+            if (!addresses || addresses.length === 0) {
+                showAddressForm();
+                return;
+            }
+
+            isUsingSavedAddress = true;
+            listEl.innerHTML = addresses.map((addr, index) => {
+                const locationParts = [];
+                if (addr.address) locationParts.push(addr.address);
+                if (addr.province || addr.city) locationParts.push(addr.province || addr.city);
+                if (addr.district) locationParts.push(addr.district);
+                if (addr.commune) locationParts.push(addr.commune);
+                if (addr.village) locationParts.push(addr.village);
+                if (addr.postal_code) locationParts.push(addr.postal_code);
+
+                return `
+                    <div class="saved-address-card ${index === selectedAddressIndex ? 'selected' : ''}" data-index="${index}">
+                        <div class="address-card-header">
+                            <div>
+                                <span class="address-user-name">${addr.full_name || api.getUser()?.full_name || 'Delivery Address'}</span>
+                                <span class="address-user-phone"> • 📞 ${addr.phone}</span>
+                            </div>
+                            <span class="badge-selected-address">Selected</span>
+                        </div>
+                        <div class="address-location-text">
+                            ${locationParts.join(', ')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Click listener for selecting address card
+            document.querySelectorAll('.saved-address-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    selectedAddressIndex = parseInt(this.dataset.index, 10);
+                    document.querySelectorAll('.saved-address-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            container.style.display = 'block';
+            formEl.style.display = 'none';
+            
+            // Also pre-fill form fields in case user switches to edit
+            fillFormFields(addresses[selectedAddressIndex]);
+        }
+
+        function showSavedAddressesView() {
+            if (savedAddresses && savedAddresses.length > 0) {
+                displaySavedAddresses(savedAddresses);
+            }
+        }
+
+        function showAddressForm(userData = null) {
+            isUsingSavedAddress = false;
+            document.getElementById('saved-addresses-container').style.display = 'none';
+            document.getElementById('checkout-form').style.display = 'block';
+
+            const backBtn = document.getElementById('btn-back-to-saved');
+            if (backBtn) {
+                backBtn.style.display = (savedAddresses && savedAddresses.length > 0) ? 'inline-flex' : 'none';
+            }
+
+            if (userData) {
+                fillFormFields(userData);
+            }
+        }
+
+        function fillFormFields(addr) {
+            if (!addr) return;
+            document.getElementById('shipping_name').value = addr.full_name || api.getUser()?.full_name || '';
+            document.getElementById('shipping_phone').value = addr.phone || '';
+            document.getElementById('shipping_address').value = addr.address || '';
+            document.getElementById('shipping_postal').value = addr.postal_code || '';
+            
+            if (addr.province || addr.city) document.getElementById('shipping_province').value = addr.province || addr.city;
+            if (addr.province_code) document.getElementById('shipping_province_code').value = addr.province_code;
+            if (addr.district) {
+                document.getElementById('shipping_district').value = addr.district;
+                document.getElementById('shipping_district').disabled = false;
+            }
+            if (addr.district_code) document.getElementById('shipping_district_code').value = addr.district_code;
+            if (addr.commune) {
+                document.getElementById('shipping_commune').value = addr.commune;
+                document.getElementById('shipping_commune').disabled = false;
+            }
+            if (addr.commune_code) document.getElementById('shipping_commune_code').value = addr.commune_code;
+            if (addr.village) {
+                document.getElementById('shipping_village').value = addr.village;
+                document.getElementById('shipping_village').disabled = false;
+            }
+        }
+
+        document.getElementById('btn-add-new-address')?.addEventListener('click', () => {
+            showAddressForm();
+        });
+
+        async function handlePlaceOrderClick() {
+            const btn = document.getElementById('btn-place-order');
             let orderData;
-            if (isSavedAddress && savedAddress) {
+
+            if (isUsingSavedAddress && savedAddresses.length > 0) {
+                const addr = savedAddresses[selectedAddressIndex];
                 orderData = {
-                    shipping_name: savedAddress.full_name || api.getUser()?.full_name || '',
-                    shipping_phone: savedAddress.phone,
-                    shipping_address: savedAddress.address,
-                    shipping_city: savedAddress.city,
-                    shipping_postal: savedAddress.postal_code || '',
-                    notes: document.getElementById('notes-saved')?.value || null,
+                    shipping_name: addr.full_name || api.getUser()?.full_name || 'Customer',
+                    shipping_phone: addr.phone || '',
+                    shipping_address: addr.address || 'Standard Delivery',
+                    shipping_city: addr.province || addr.city || 'Phnom Penh',
+                    shipping_postal: addr.postal_code || '12000',
+                    notes: document.getElementById('checkout-notes').value || null,
                     payment_method: selectedPaymentMethod,
                 };
-                
-                // Add Cambodia-specific address fields if available
-                if (savedAddress.province) {
-                    orderData.shipping_province = savedAddress.province;
-                    orderData.shipping_province_code = savedAddress.province_code;
-                }
-                if (savedAddress.district) {
-                    orderData.shipping_district = savedAddress.district;
-                    orderData.shipping_district_code = savedAddress.district_code;
-                }
-                if (savedAddress.commune) {
-                    orderData.shipping_commune = savedAddress.commune;
-                    orderData.shipping_commune_code = savedAddress.commune_code;
-                }
-                if (savedAddress.village) {
-                    orderData.shipping_village = savedAddress.village;
-                }
+                if (addr.province) orderData.shipping_province = addr.province;
+                if (addr.province_code) orderData.shipping_province_code = addr.province_code;
+                if (addr.district) orderData.shipping_district = addr.district;
+                if (addr.district_code) orderData.shipping_district_code = addr.district_code;
+                if (addr.commune) orderData.shipping_commune = addr.commune;
+                if (addr.commune_code) orderData.shipping_commune_code = addr.commune_code;
+                if (addr.village) orderData.shipping_village = addr.village;
             } else {
-                // Validate required fields (name and phone)
-                if (!document.getElementById('shipping_name').value.trim()) {
-                    showToast(typeof i18n !== 'undefined' ? i18n.t('checkout.name_required') : 'Name is required', 'warning');
+                const name = document.getElementById('shipping_name').value.trim();
+                const phone = document.getElementById('shipping_phone').value.trim();
+                const address = document.getElementById('shipping_address').value.trim();
+                const province = document.getElementById('shipping_province').value.trim();
+                const district = document.getElementById('shipping_district').value.trim();
+                const commune = document.getElementById('shipping_commune').value.trim();
+
+                if (!name) {
+                    showToast('Please enter your full name', 'warning');
                     document.getElementById('shipping_name').focus();
                     return;
                 }
-                if (!document.getElementById('shipping_phone').value.trim()) {
-                    showToast(typeof i18n !== 'undefined' ? i18n.t('checkout.phone_required') : 'Phone number is required', 'warning');
+                if (!phone) {
+                    showToast('Please enter your phone number', 'warning');
                     document.getElementById('shipping_phone').focus();
                     return;
                 }
-
-                const provinceName = document.getElementById('shipping_province').value.trim();
-                const districtName = document.getElementById('shipping_district').value.trim();
-                const communeName = document.getElementById('shipping_commune').value.trim();
-                const villageName = document.getElementById('shipping_village')?.value.trim() || '';
-                
-                const provinceCode = document.getElementById('shipping_province_code').value;
-                const districtCode = document.getElementById('shipping_district_code').value;
-                const communeCode = document.getElementById('shipping_commune_code').value;
+                if (!province) {
+                    showToast('Please select your province or city', 'warning');
+                    document.getElementById('shipping_province').focus();
+                    return;
+                }
+                if (!address) {
+                    showToast('Please enter your street address or house number', 'warning');
+                    document.getElementById('shipping_address').focus();
+                    return;
+                }
 
                 orderData = {
-                    shipping_name: document.getElementById('shipping_name').value,
-                    shipping_phone: document.getElementById('shipping_phone').value,
-                    shipping_address: document.getElementById('shipping_address').value,
-                    shipping_city: provinceName,
-                    shipping_province: provinceName,
-                    shipping_province_code: provinceCode,
-                    shipping_district: districtName,
-                    shipping_district_code: districtCode,
-                    shipping_commune: communeName,
-                    shipping_commune_code: communeCode,
-                    shipping_village: villageName || null,
-                    shipping_postal: document.getElementById('shipping_postal').value,
-                    notes: document.getElementById('notes').value || null,
+                    shipping_name: name,
+                    shipping_phone: phone,
+                    shipping_address: address,
+                    shipping_city: province,
+                    shipping_province: province,
+                    shipping_province_code: document.getElementById('shipping_province_code').value || null,
+                    shipping_district: district || null,
+                    shipping_district_code: document.getElementById('shipping_district_code').value || null,
+                    shipping_commune: commune || null,
+                    shipping_commune_code: document.getElementById('shipping_commune_code').value || null,
+                    shipping_village: document.getElementById('shipping_village').value.trim() || null,
+                    shipping_postal: document.getElementById('shipping_postal').value.trim() || null,
+                    notes: document.getElementById('checkout-notes').value || null,
                     payment_method: selectedPaymentMethod,
                 };
             }
 
             btn.disabled = true;
-            btn.innerHTML = `${typeof i18n !== 'undefined' ? i18n.t('checkout.processing_btn') : 'Processing...'} <svg style="animation: spin 1s linear infinite; margin-left: 8px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+            btn.innerHTML = `Processing... <svg style="animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
 
             try {
                 const res = await api.createOrder(orderData);
-                
-                // If KHQR payment, show QR code
                 if (selectedPaymentMethod === 'khqr') {
-                    showKHQRPayment(res, orderData);
+                    showKHQRModal(res, orderData);
                 } else {
-                    showOrderSuccess(res);
+                    showOrderSuccessScreen(res);
                 }
-                
-                updateCartBadge();
+                if (window.updateCartBadge) updateCartBadge();
             } catch (err) {
-                showToast(err.message, 'error');
+                showToast(err.message || 'Failed to place order', 'error');
                 btn.disabled = false;
-                btn.innerHTML = typeof i18n !== 'undefined' ? i18n.t('checkout.place_order') : 'Place Order';
+                btn.innerHTML = `<span>Place Order</span> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
             }
-        }
-        
-        function showKHQRPayment(orderRes, orderData) {
-            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
-            const total = document.getElementById('summary-total').textContent;
-            
-            document.getElementById('checkout-main').innerHTML = `
-                <div class="container" style="max-width: 500px; text-align: center; padding: var(--space-2xl) var(--space-lg);">
-                    <div style="margin-bottom: var(--space-xl);">
-                        <div style="width: 64px; height: 64px; background: rgba(27, 140, 61, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-primary);"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01M7 12h.01M7 17h.01M12 7h.01M12 12h.01M12 17h.01M17 7h.01M17 12h.01M17 17h.01"/></svg>
-                        </div>
-                        <h1 style="font-size: var(--font-2xl); margin-bottom: var(--space-sm);">${_t('checkout.scan_to_pay')}</h1>
-                        <p style="color: var(--text-secondary);">${_t('orders.order_uid')}: ${orderRes.order_uid || orderRes.order_id}</p>
-                    </div>
-                    
-                    <div style="background: white; padding: var(--space-xl); border-radius: var(--radius-xl); margin-bottom: var(--space-xl); box-shadow: var(--shadow-lg);">
-                        <div id="khqr-code" style="display: flex; justify-content: center; margin-bottom: var(--space-md);"></div>
-                        <div style="font-size: var(--font-3xl); font-weight: 800; color: var(--text-inverse); margin-bottom: var(--space-xs);">${total}</div>
-                        <div style="font-size: var(--font-sm); color: #666;">${_t('checkout.scan_desc')}</div>
-                    </div>
-                    
-                    <div class="address-card">
-                        <div class="address-card-header">
-                            <div class="address-card-title">
-                                <div class="address-card-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                </div>
-                                <h3>${_t('checkout.delivery_to')}</h3>
-                            </div>
-                        </div>
-                        <div class="address-card-content">
-                            <strong>${orderData.shipping_name}</strong><br>
-                            ${orderData.shipping_phone}<br>
-                            ${(() => {
-                                const addressParts = [orderData.shipping_address, orderData.shipping_city];
-                                if (orderData.shipping_district) addressParts.push(orderData.shipping_district);
-                                if (orderData.shipping_commune) addressParts.push(orderData.shipping_commune);
-                                if (orderData.shipping_village) addressParts.push(orderData.shipping_village);
-                                if (orderData.shipping_postal) addressParts.push(orderData.shipping_postal);
-                                return addressParts.filter(Boolean).join(', ');
-                            })()}
-                        </div>
-                    </div>
-                    
-                    <p style="font-size: var(--font-sm); color: var(--text-tertiary); margin-bottom: var(--space-lg);">
-                        ${_t('checkout.after_payment')}
-                    </p>
-                    
-                    <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
-                        <a href="orders.html" class="btn btn-primary">${_t('checkout.view_orders')}</a>
-                        <a href="products.html" class="btn btn-secondary">${_t('checkout.continue_shopping')}</a>
-                    </div>
-                </div>
-            `;
-            
-            // Generate QR code (using a placeholder - integrate with real KHQR API)
-            generateKHQR(orderRes.order_uid || orderRes.order_id, total);
-        }
-        
-        function generateKHQR(orderUid, amount) {
-            // Placeholder QR code generation
-            // In production, integrate with Cambodia's KHQR API
-            const qrContainer = document.getElementById('khqr-code');
-            const qrData = `KHQR:order_${orderUid}:${amount}`;
-            
-            // Using a simple QR placeholder
-            qrContainer.innerHTML = `
-                <svg viewBox="0 0 200 200" width="200" height="200" style="background: white;">
-                    <rect width="200" height="200" fill="white"/>
-                    <rect x="20" y="20" width="40" height="40" fill="black"/>
-                    <rect x="140" y="20" width="40" height="40" fill="black"/>
-                    <rect x="20" y="140" width="40" height="40" fill="black"/>
-                    <rect x="80" y="80" width="40" height="40" fill="black"/>
-                    <text x="100" y="105" text-anchor="middle" font-size="10" fill="black">KHQR</text>
-                </svg>
-                <p style="font-size: var(--font-xs); color: #666; margin-top: var(--space-sm);">
-                    <strong>Note:</strong> QR code integration with KHQR/Bakong API required for production
-                </p>
-            `;
-        }
-        
-        function showOrderSuccess(res) {
-            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
-            document.getElementById('checkout-main').innerHTML = `
-                <div class="container order-success">
-                    <div class="success-checkmark">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                    <h1 style="font-size: var(--font-3xl); margin-bottom: var(--space-md);">${_t('checkout.order_confirmed')}</h1>
-                    <p style="color: var(--text-secondary); font-size: var(--font-lg); margin-bottom: var(--space-xl);">
-                        ${_t('checkout.thank_you')}<br>
-                        ${_t('orders.order_uid')} ${res.order_uid || res.order_id} ${_t('checkout.order_placed')}
-                    </p>
-                    <div style="display: flex; gap: var(--space-md); justify-content: center;">
-                        <a href="orders.html" class="btn btn-primary btn-lg">${_t('checkout.view_orders')}</a>
-                        <a href="products.html" class="btn btn-secondary btn-lg">${_t('checkout.continue_shopping')}</a>
-                    </div>
-                </div>
-            `;
         }
 
         async function loadCheckoutSummary() {
             try {
                 const data = await api.getCart();
-                
                 if (!data.items || data.items.length === 0) {
-                    showToast(typeof i18n !== 'undefined' ? i18n.t('checkout.empty_cart_warning') : 'Your cart is empty', 'warning');
+                    showToast('Your cart is empty', 'warning');
                     window.location.href = 'cart.html';
                     return;
                 }
 
-                document.getElementById('summary-count').textContent = data.count;
+                document.getElementById('summary-count').textContent = data.count || 0;
                 document.getElementById('summary-subtotal').textContent = formatPrice(data.subtotal ?? data.total);
                 document.getElementById('summary-fee').textContent = formatPrice(data.transaction_fee ?? 0);
                 document.getElementById('summary-total').textContent = formatPrice(data.total);
@@ -701,56 +1093,109 @@
                 const shippingFee = data.shipping ?? 0;
                 if (shippingFee > 0) {
                     shippingEl.textContent = formatPrice(shippingFee);
-                    shippingEl.style.color = '';
+                    shippingEl.style.color = 'var(--text-primary)';
                 } else {
                     shippingEl.textContent = typeof i18n !== 'undefined' ? i18n.t('cart.free') : 'Free';
-                    shippingEl.style.color = 'var(--status-success)';
+                    shippingEl.style.color = '#16a34a';
                 }
-                
+
                 const itemsContainer = document.getElementById('checkout-items');
                 itemsContainer.innerHTML = data.items.map(item => {
-                    const product = item.products;
+                    const product = item.products || {};
                     const selectedOptions = item.selected_options || {};
-                    const selectedImage = selectedOptions._selected_image || product.image_url || 'https://via.placeholder.com/50x50?text=Img';
+                    const selectedImage = selectedOptions._selected_image || product.image_url || 'https://via.placeholder.com/60x60?text=Item';
+                    
                     const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions', variant: 'Variant' };
                     const optionsText = Object.entries(selectedOptions)
                         .filter(([key]) => key !== '_selected_image')
-                        .map(([key, value]) => `${toEnglishProductText(optionLabels[key] || key.replace(/_/g, ' '))}: ${toEnglishProductText(value, 'Standard')}`)
+                        .map(([key, value]) => `${optionLabels[key] || key}: ${value}`)
                         .join(' · ');
+
                     return `
-                        <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-sm); align-items: center;">
-                            <div style="position: relative; flex-shrink: 0;">
-                                <img src="${selectedImage}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-sm);">
-                                <span style="position: absolute; top: -5px; right: -5px; background: var(--bg-elevated); color: var(--text-primary); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid var(--border-default); font-weight: 700;">${item.quantity}</span>
+                        <div class="item-row">
+                            <div class="item-thumb-wrapper">
+                                <img src="${selectedImage}" alt="${product.name || 'Product'}" class="item-thumb">
+                                <span class="item-qty-badge">${item.quantity}</span>
                             </div>
-                            <div style="flex: 1; font-size: var(--font-sm); min-width: 0;">
-                                <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${product.name}</div>
-                                ${optionsText ? `<div style="color: var(--text-tertiary); font-size: var(--font-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${optionsText}</div>` : ''}
-                                <div style="color: var(--text-tertiary);">${formatPrice(product.price)}</div>
+                            <div class="item-info">
+                                <div class="item-name">${product.name || 'Product'}</div>
+                                ${optionsText ? `<div class="item-meta">${optionsText}</div>` : ''}
+                                <div class="item-meta">${formatPrice(product.price || 0)} each</div>
                             </div>
-                            <div style="font-weight: 700; font-size: var(--font-sm); flex-shrink: 0;">
-                                ${formatPrice(product.price * item.quantity)}
+                            <div class="item-price">
+                                ${formatPrice((product.price || 0) * item.quantity)}
                             </div>
                         </div>
                     `;
                 }).join('');
-                
+
             } catch (err) {
-                showToast('Failed to load order summary', 'error');
+                console.error('Failed to load cart summary:', err);
+                showToast('Failed to load cart summary', 'error');
             }
         }
 
-        function initCheckoutForm(savedAddress) {
-            document.getElementById('checkout-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await processOrder(savedAddress, false);
-            });
+        function showKHQRModal(res, orderData) {
+            const total = document.getElementById('summary-total').textContent;
+            document.getElementById('step-2-indicator').classList.remove('progress-step-active');
+            document.getElementById('step-3-indicator').classList.add('progress-step-active');
+
+            document.getElementById('checkout-main').innerHTML = `
+                <div class="container">
+                    <div class="confirmation-card">
+                        <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(27, 140, 61, 0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                        </div>
+                        <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Scan to Pay with KHQR</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem;">Order UID: <strong>${res.order_uid || res.order_id}</strong></p>
+                        
+                        <div style="background: #ffffff; padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border-default); margin-bottom: 1.5rem; display: inline-block; box-shadow: var(--shadow-sm);">
+                            <div id="khqr-code-box" style="margin-bottom: 1rem;">
+                                <svg viewBox="0 0 200 200" width="180" height="180" style="background: white;">
+                                    <rect width="200" height="200" fill="white"/>
+                                    <rect x="20" y="20" width="45" height="45" fill="black"/>
+                                    <rect x="135" y="20" width="45" height="45" fill="black"/>
+                                    <rect x="20" y="135" width="45" height="45" fill="black"/>
+                                    <rect x="80" y="80" width="40" height="40" fill="black"/>
+                                    <text x="100" y="104" text-anchor="middle" font-size="9" fill="white" font-weight="800">KHQR</text>
+                                </svg>
+                            </div>
+                            <div style="font-size: 1.75rem; font-weight: 800; color: var(--brand-primary);">${total}</div>
+                            <div style="font-size: 0.8125rem; color: #6b7280; margin-top: 0.25rem;">Scan using Bakong or any Cambodian Banking App</div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+                            <a href="orders.html" class="btn btn-primary btn-lg" style="flex: 1; min-width: 160px; text-decoration: none;">View My Orders</a>
+                            <a href="products.html" class="btn btn-secondary btn-lg" style="flex: 1; min-width: 160px; text-decoration: none;">Continue Shopping</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showOrderSuccessScreen(res) {
+            document.getElementById('step-2-indicator').classList.remove('progress-step-active');
+            document.getElementById('step-3-indicator').classList.add('progress-step-active');
+
+            document.getElementById('checkout-main').innerHTML = `
+                <div class="container">
+                    <div class="confirmation-card">
+                        <div class="success-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary);">Order Confirmed!</h1>
+                        <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 2rem; line-height: 1.5;">
+                            Thank you for shopping with BuyBIBZ.<br>
+                            Your order <strong>#${res.order_uid || res.order_id}</strong> has been successfully placed.
+                        </p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="orders.html" class="btn btn-primary btn-lg" style="flex: 1; min-width: 160px; text-decoration: none;">View Orders</a>
+                            <a href="products.html" class="btn btn-secondary btn-lg" style="flex: 1; min-width: 160px; text-decoration: none;">Continue Shopping</a>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
     </script>
-    <style>
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-    </style>
 </body>
 </html>
-
-

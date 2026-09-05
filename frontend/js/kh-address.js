@@ -143,14 +143,32 @@
                 nodes[activeIndex].scrollIntoView({ block: 'nearest' });
             }
         });
-        // pointerdown fires before the input's blur, so clicks register
+        let startY = 0;
+        let startX = 0;
+        let isInteracting = false;
+
         list.addEventListener('pointerdown', (e) => {
+            isInteracting = true;
+            startY = e.clientY;
+            startX = e.clientX;
+        });
+
+        list.addEventListener('pointerup', (e) => {
+            setTimeout(() => { isInteracting = false; }, 200);
             const item = e.target.closest('.kh-combo-item');
             if (!item) return;
+            const diffY = Math.abs(e.clientY - startY);
+            const diffX = Math.abs(e.clientX - startX);
+            // If moved more than 8px, user was scrolling the list on mobile
+            if (diffY > 8 || diffX > 8) return;
             e.preventDefault();
             choose(parseInt(item.dataset.i, 10));
         });
-        input.addEventListener('blur', () => setTimeout(hide, 120));
+
+        input.addEventListener('blur', () => {
+            if (isInteracting) return;
+            setTimeout(hide, 180);
+        });
     }
 
     /**

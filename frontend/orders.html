@@ -220,9 +220,14 @@
                         +       '<div class="shipping-address">'
                         +         '<div class="shipping-name">' + order.shipping_name + '</div>'
                         +         '<div class="shipping-line">' + order.shipping_address + '</div>'
-                        +         '<div class="shipping-line">' + order.shipping_city + (order.shipping_postal ? ', ' + order.shipping_postal : '') + '</div>'
+                        +         (order.shipping_village ? '<div class="shipping-line">' + order.shipping_village + '</div>' : '')
+                        +         (order.shipping_commune ? '<div class="shipping-line">' + order.shipping_commune + '</div>' : '')
+                        +         (order.shipping_district ? '<div class="shipping-line">' + order.shipping_district + '</div>' : '')
+                        +         ((order.shipping_province || order.shipping_city || order.shipping_postal)
+                                      ? '<div class="shipping-line">' + [order.shipping_province || order.shipping_city, order.shipping_postal].filter(Boolean).join(', ') + '</div>'
+                                      : '')
                         +         (order.shipping_phone
-                                      ? '<div class="shipping-phone"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>' + order.shipping_phone + '</span></div>'
+                                      ? '<div class="shipping-phone"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 80 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>' + order.shipping_phone + '</span></div>'
                                       : '')
                         +       '</div>'
                         +       notesHtml
@@ -425,9 +430,12 @@
                 + '<table style="margin-bottom:40px"><tr>'
                 + '<td style="width:50%;vertical-align:top">'
                 + '<div class="section-title">' + _t('checkout.shipping_details') + '</div>'
-                + '<div class="info-text"><strong>' + order.shipping_name + '</strong><br>'
-                + order.shipping_address + '<br>'
-                + order.shipping_city + (order.shipping_postal ? ', ' + order.shipping_postal : '') + '<br>'
+                + '<div class="info-text"><strong>' + (order.shipping_name || '') + '</strong><br>'
+                + (order.shipping_address ? order.shipping_address + '<br>' : '')
+                + (order.shipping_village ? order.shipping_village + '<br>' : '')
+                + (order.shipping_commune ? order.shipping_commune + '<br>' : '')
+                + (order.shipping_district ? order.shipping_district + '<br>' : '')
+                + ((order.shipping_province || order.shipping_city) ? (order.shipping_province || order.shipping_city) + (order.shipping_postal ? ', ' + order.shipping_postal : '') + '<br>' : (order.shipping_postal ? order.shipping_postal + '<br>' : ''))
                 + (order.shipping_phone ? '&#128222; ' + order.shipping_phone : '')
                 + (order.notes ? '<br><br><em>' + _t('orders.notes') + ': ' + order.notes + '</em>' : '')
                 + '</div></td>'

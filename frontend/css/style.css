@@ -7905,7 +7905,9 @@ body { letter-spacing: -0.01em; }
     border-radius: var(--radius-md);
     max-height: 264px;
     overflow-y: auto;
-    z-index: 60;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    z-index: 1000;
     box-shadow: var(--shadow-lg);
     display: none;
 }
@@ -8058,6 +8060,191 @@ body { letter-spacing: -0.01em; }
 .address-card-content strong {
     color: var(--text-primary);
     font-weight: 600;
+}
+
+/* ── Checkout Progress Indicator ─────────────────────────── */
+.checkout-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+    padding: var(--space-lg);
+    background: var(--bg-elevated);
+    border-radius: var(--radius-lg);
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+    transition: all var(--transition-base);
+}
+
+.progress-step-active .step-number {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: white;
+}
+
+.step-label {
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.progress-step-active .step-label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.progress-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border-subtle);
+    max-width: 60px;
+}
+
+/* ── Section Header ─────────────────────────────────────── */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-title-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: rgba(27, 140, 61, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+}
+
+.section-header h2 {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.section-subtitle {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+    margin: 4px 0 0 0;
+}
+
+.section-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+
+.country-flag {
+    font-size: 1.25rem;
+}
+
+.country-name {
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* ── Form Sections ───────────────────────────────────────── */
+.form-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.form-section-title {
+    font-size: var(--font-base);
+    font-weight: 600;
+    margin: 0 0 var(--space-md) 0;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.form-section-title::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: var(--brand-primary);
+    border-radius: 2px;
+}
+
+/* ── Compact Address Card ───────────────────────────────── */
+#saved-address-display.address-card-compact {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.address-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.address-name {
+    font-size: var(--font-base);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.address-phone {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.address-location {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-top: 4px;
+}
+
+.address-location > div {
+    margin-bottom: 2px;
+}
+
+.address-location > div:last-child {
+    margin-bottom: 0;
 }
 
 /* ── Payment Section ───────────────────────────────────────── */
