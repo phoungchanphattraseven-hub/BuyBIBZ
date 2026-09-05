@@ -24,6 +24,8 @@
         html, body {
             background-color: var(--bg-primary, #fcfdfb);
             color: var(--text-primary, #111827);
+            overflow-x: hidden;
+            width: 100%;
         }
         html[data-theme="dark"], html[data-theme="dark"] body {
             background-color: var(--bg-primary, #06060a);
@@ -33,6 +35,9 @@
             padding-top: calc(var(--nav-height, 70px) + 1.5rem);
             padding-bottom: 3rem;
             min-height: 100vh;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
         
         .page-back {
@@ -108,6 +113,19 @@
             grid-template-columns: 1fr 380px;
             gap: 2rem;
             align-items: start;
+            width: 100%;
+            max-width: 100%;
+        }
+        .checkout-main-content {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+        @media (max-width: 1200px) {
+            .checkout-layout {
+                grid-template-columns: 1fr 320px;
+                gap: 1.5rem;
+            }
         }
         
         /* Main Form Card */
@@ -118,6 +136,9 @@
             padding: 1.75rem;
             box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
             margin-bottom: 1.5rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         
         .section-header-row {
@@ -179,6 +200,9 @@
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .saved-address-card:hover {
             border-color: var(--brand-primary, #1b8c3d);
@@ -270,6 +294,8 @@
             flex-direction: column;
             gap: 0.875rem;
             margin-top: 0.75rem;
+            width: 100%;
+            max-width: 100%;
         }
         .payment-option-card {
             display: flex;
@@ -281,6 +307,9 @@
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .payment-option-card:hover {
             border-color: var(--brand-primary, #1b8c3d);
@@ -371,6 +400,8 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+            width: 100%;
+            max-width: 100%;
         }
         @media (max-width: 640px) {
             .form-grid-2 {
@@ -380,6 +411,8 @@
         
         .form-group {
             margin-bottom: 1.125rem;
+            width: 100%;
+            max-width: 100%;
         }
         .form-label {
             display: block;
@@ -398,6 +431,7 @@
             font-size: 0.875rem;
             transition: border-color 0.2s, box-shadow 0.2s;
             box-sizing: border-box;
+            max-width: 100%;
         }
         .form-input:focus, .form-textarea:focus {
             outline: none;
@@ -419,6 +453,9 @@
             border-radius: 16px;
             padding: 1.5rem;
             box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .summary-title {
             font-size: 1.125rem;
