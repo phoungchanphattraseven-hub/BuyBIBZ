@@ -311,8 +311,9 @@ class ApiClient {
         });
     }
 
-    async updateCartItem(itemId, quantity) {
-        return this.put(`/api/cart/${itemId}`, { quantity });
+    async updateCartItem(itemId, data) {
+        const payload = typeof data === 'number' ? { quantity: data } : data;
+        return this.put(`/api/cart/${itemId}`, payload);
     }
 
     async removeCartItem(itemId) {

@@ -163,15 +163,81 @@ async def add_to_cart(item: CartItemCreate, current_user=Depends(get_current_use
 
 @router.put("/{item_id}")
 async def update_cart_item(item_id: int, item: CartItemUpdate, current_user=Depends(get_current_user)):
-    """Update cart item quantity."""
+    """Update cart item quantity, selected_options, or unit_price. Merges items if switching to an already carted variant."""
     try:
         from core.config import get_authenticated_client
         supabase = get_authenticated_client(current_user["token"])
         user_id = str(current_user["user"].id)
 
+        # Retrieve current cart item
+        current = (
+            supabase.table("cart_items")
+            .select("id, product_id, quantity, selected_options, unit_price")
+            .eq("id", item_id)
+            .eq("user_id", user_id)
+            .maybe_single()
+            .execute()
+        )
+        if not current or not current.data:
+            raise HTTPException(status_code=404, detail="Cart item not found")
+
+        current_item = current.data
+        update_data = {}
+        if item.quantity is not None:
+            update_data["quantity"] = item.quantity
+        if item.unit_price is not None:
+            update_data["unit_price"] = round(float(item.unit_price), 2)
+
+        # If options are being updated (variant changed)
+        if item.selected_options is not None:
+            target_opts = dict(item.selected_options)
+            update_data["selected_options"] = target_opts
+
+            def options_match(cart_opts: dict, incoming_opts: dict) -> bool:
+                a = {k: v for k, v in (cart_opts or {}).items() if k != "_selected_image"}
+                b = {k: v for k, v in (incoming_opts or {}).items() if k != "_selected_image"}
+                return a == b
+
+            # Check if another cart item for same product already has target variant
+            existing_items = (
+                supabase.table("cart_items")
+                .select("id, quantity, selected_options, unit_price")
+                .eq("user_id", user_id)
+                .eq("product_id", current_item["product_id"])
+                .neq("id", item_id)
+                .execute()
+            )
+            matching_other = next(
+                (
+                    ci for ci in (existing_items.data if existing_items and existing_items.data else [])
+                    if options_match(ci.get("selected_options") or {}, target_opts)
+                ),
+                None
+            )
+
+            if matching_other:
+                # Merge quantities into the existing item and remove this item
+                qty_to_add = item.quantity if item.quantity is not None else current_item.get("quantity", 1)
+                merged_qty = matching_other["quantity"] + qty_to_add
+                merged_update = {"quantity": merged_qty, "selected_options": target_opts}
+                if item.unit_price is not None:
+                    merged_update["unit_price"] = round(float(item.unit_price), 2)
+                
+                merged_res = (
+                    supabase.table("cart_items")
+                    .update(merged_update)
+                    .eq("id", matching_other["id"])
+                    .execute()
+                )
+                supabase.table("cart_items").delete().eq("id", item_id).execute()
+                return {"message": "Cart item merged", "item": merged_res.data[0] if merged_res.data else None}
+
+        if not update_data:
+            return {"message": "No changes made", "item": current_item}
+
         response = (
             supabase.table("cart_items")
-            .update({"quantity": item.quantity})
+            .update(update_data)
             .eq("id", item_id)
             .eq("user_id", user_id)
             .execute()

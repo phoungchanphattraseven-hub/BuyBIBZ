@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
@@ -122,7 +122,9 @@ class CartItemCreate(BaseModel):
 
 
 class CartItemUpdate(BaseModel):
-    quantity: int = Field(ge=1)
+    quantity: Optional[int] = Field(default=None, ge=1)
+    selected_options: Optional[Dict[str, Any]] = None
+    unit_price: Optional[float] = Field(default=None, ge=0)
 
 
 class CartItemResponse(BaseModel):

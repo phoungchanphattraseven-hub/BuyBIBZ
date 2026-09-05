@@ -15,6 +15,278 @@
     <style>
         html, body { background-color: #fcfdfb; }
         html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
+
+        /* ── Variant Interactive Pill ── */
+        .cart-item-variant.interactive {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .cart-item-variant.interactive:hover {
+            border-color: var(--brand-primary, #1b8c3d);
+            background: rgba(27, 140, 61, 0.12);
+            color: var(--text-primary, #ffffff);
+            transform: translateY(-1px);
+        }
+        .cart-item-variant-arrow {
+            display: inline-flex;
+            align-items: center;
+            opacity: 0.7;
+            transition: transform 0.2s ease;
+        }
+        .cart-item-variant.interactive:hover .cart-item-variant-arrow {
+            transform: translateY(1px);
+            opacity: 1;
+        }
+
+        /* ── Variant Bottom Offcanvas Sheet ── */
+        .variant-offcanvas-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+        }
+        .variant-offcanvas-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .variant-offcanvas-sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            max-width: 540px;
+            margin: 0 auto;
+            background: var(--bg-secondary, #0d0d14);
+            border: 1px solid var(--border-default, rgba(255, 255, 255, 0.12));
+            border-bottom: none;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.65);
+            z-index: 10001;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(105%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        html[data-theme="dark"] .variant-offcanvas-sheet {
+            background: #111118;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .variant-offcanvas-sheet.active {
+            transform: translateY(0);
+        }
+
+        .variant-offcanvas-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 2px;
+            margin: 10px auto 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .variant-offcanvas-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px 16px;
+            border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+            flex-shrink: 0;
+        }
+        .variant-offcanvas-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border-default, rgba(255, 255, 255, 0.12));
+            background: var(--bg-tertiary, #13131d);
+            flex-shrink: 0;
+        }
+        .variant-offcanvas-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .variant-offcanvas-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary, #f0f0f5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+        }
+        .variant-offcanvas-price {
+            font-size: 1.1875rem;
+            font-weight: 700;
+            color: var(--brand-primary, #1b8c3d);
+            margin-top: 4px;
+        }
+        .variant-offcanvas-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-tertiary, #1a1a28);
+            border: 1px solid var(--border-default, rgba(255, 255, 255, 0.1));
+            color: var(--text-secondary, #a0a0b5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .variant-offcanvas-close:hover {
+            color: var(--text-primary, #f0f0f5);
+            background: var(--bg-elevated, #222235);
+        }
+
+        .variant-offcanvas-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .variant-offcanvas-subtitle {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-secondary, #a0a0b5);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 2px;
+        }
+        .variant-options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .variant-option-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--bg-tertiary, #13131d);
+            border: 1.5px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            box-sizing: border-box;
+        }
+        .variant-option-row:hover:not(.oos) {
+            border-color: var(--brand-primary, #1b8c3d);
+            background: rgba(27, 140, 61, 0.06);
+            transform: translateX(2px);
+        }
+        .variant-option-row.selected {
+            border-color: var(--brand-primary, #1b8c3d);
+            background: rgba(27, 140, 61, 0.12);
+        }
+        .variant-option-row.oos {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .variant-option-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--border-default, rgba(255, 255, 255, 0.1));
+            background: var(--bg-secondary, #06060a);
+            flex-shrink: 0;
+        }
+        .variant-option-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .variant-option-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary, #f0f0f5);
+            word-break: break-word;
+            line-height: 1.35;
+        }
+        .variant-option-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 3px;
+        }
+        .variant-option-price {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--brand-primary, #1b8c3d);
+        }
+        .variant-option-stock {
+            font-size: 0.75rem;
+            color: var(--text-tertiary, #6b6b80);
+        }
+        .variant-option-check {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--border-default, rgba(255, 255, 255, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            color: transparent;
+        }
+        .variant-option-row.selected .variant-option-check {
+            background: var(--brand-primary, #1b8c3d);
+            border-color: var(--brand-primary, #1b8c3d);
+            color: #ffffff;
+        }
+
+        .variant-offcanvas-footer {
+            padding: 14px 20px 20px;
+            border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+            background: var(--bg-secondary, #0d0d14);
+            flex-shrink: 0;
+        }
+        .variant-confirm-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 14px;
+            background: var(--brand-primary, #1b8c3d);
+            color: #ffffff;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .variant-confirm-btn:hover:not(:disabled) {
+            background: var(--brand-primary-light, #22c55e);
+            box-shadow: 0 4px 18px rgba(27, 140, 61, 0.4);
+            transform: translateY(-1px);
+        }
+        .variant-confirm-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Your Cart — BuyBIBZ</title>
@@ -23,7 +295,7 @@
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo.jpg">
-    <link rel="stylesheet" href="css/style.css?v=4.0">
+    <link rel="stylesheet" href="css/style.css?v=4.4">
 </head>
 <body>
 
@@ -102,6 +374,33 @@
                 <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
                 <button class="btn btn-danger" id="confirm-ok">Remove</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Variant Bottom Offcanvas Drawer -->
+    <div class="variant-offcanvas-backdrop" id="variant-offcanvas-backdrop" onclick="closeVariantDrawer()"></div>
+    <div class="variant-offcanvas-sheet" id="variant-offcanvas-sheet" role="dialog" aria-modal="true" aria-labelledby="variant-drawer-title">
+        <div class="variant-offcanvas-handle" onclick="closeVariantDrawer()"></div>
+        <div class="variant-offcanvas-header">
+            <img class="variant-offcanvas-thumb" id="variant-drawer-thumb" src="" alt="Variant Preview">
+            <div class="variant-offcanvas-header-info">
+                <div class="variant-offcanvas-title" id="variant-drawer-title">Product Name</div>
+                <div class="variant-offcanvas-price" id="variant-drawer-price">$0.00</div>
+            </div>
+            <button class="variant-offcanvas-close" onclick="closeVariantDrawer()" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="variant-offcanvas-body">
+            <div class="variant-offcanvas-subtitle" id="variant-drawer-subtitle">Available Variants</div>
+            <div class="variant-options-list" id="variant-drawer-options">
+                <!-- Variant options dynamically populated -->
+            </div>
+        </div>
+        <div class="variant-offcanvas-footer">
+            <button class="variant-confirm-btn" id="variant-drawer-confirm-btn" onclick="confirmVariantChange()">
+                <span>Confirm Change</span>
+            </button>
         </div>
     </div>
 
@@ -184,6 +483,7 @@
                     return;
                 }
 
+                currentCartItems = data.items || [];
                 summary.style.display = 'block';
                 document.getElementById('summary-count').textContent = data.count;
                 document.getElementById('summary-subtotal').textContent = formatPrice(data.subtotal ?? data.total);
@@ -225,6 +525,8 @@
                     const selectedImage = selectedOptions._selected_image || product.image_url || 'https://via.placeholder.com/200x200?text=No+Image';
 
                     const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions', variant: 'Variant' };
+                    const hasMultipleVariants = Array.isArray(product.attributes?.variants) && product.attributes.variants.length > 1;
+
                     const selectedOptionsHtml = Object.entries(selectedOptions)
                         .filter(([key]) => key !== '_selected_image')
                         .map(([key, value]) => {
@@ -232,7 +534,13 @@
                             // If value is very long (full product name), take last 3 words only
                             const words = cleanValue.split(' ');
                             if (words.length > 4) cleanValue = words.slice(-3).join(' ');
-                            return `<span class="cart-item-variant"><b>${toEnglishProductText(optionLabels[key] || key.replace(/_/g, ' '))}</b> ${cleanValue}</span>`;
+
+                            const isClickable = hasMultipleVariants || key === 'variant';
+                            const chevron = isClickable
+                                ? `<svg class="cart-item-variant-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>`
+                                : '';
+
+                            return `<span class="cart-item-variant${isClickable ? ' interactive' : ''}" ${isClickable ? `onclick="openVariantDrawer(${item.id})"` : ''} title="${isClickable ? 'Click to change variant' : ''}"><b>${toEnglishProductText(optionLabels[key] || key.replace(/_/g, ' '))}</b> ${cleanValue}${chevron}</span>`;
                         }).join('');
 
                     const freeShippingBadge = product.attributes?.free_shipping === true
@@ -464,6 +772,195 @@
                 }
             );
         }
+
+        // ── Variant Offcanvas Drawer Handlers ───────────────────────
+        let currentCartItems = [];
+        let drawerCartItemId = null;
+        let drawerVariants = [];
+        let drawerSelectedIndex = -1;
+        let drawerProduct = null;
+
+        function getProductVariants(product) {
+            const rawVariants = product.attributes?.variants;
+            if (Array.isArray(rawVariants) && rawVariants.length > 0) {
+                const cleaned = rawVariants
+                    .filter(v => v && v.variant_name && v.variant_name !== 'Default')
+                    .map((v, idx) => ({
+                        ...v,
+                        index: idx,
+                        label: typeof toEnglishProductText === 'function' ? toEnglishProductText(v.variant_name, 'Standard') : v.variant_name,
+                    }));
+
+                const shortenLabel = (label) => {
+                    const words = label.split(' ');
+                    if (words.length > 4) return words.slice(-3).join(' ');
+                    return label;
+                };
+
+                const labelCount = cleaned.reduce((counts, variant) => {
+                    const short = shortenLabel(variant.label);
+                    counts[short] = (counts[short] || 0) + 1;
+                    return counts;
+                }, {});
+
+                return cleaned.map((v, idx) => {
+                    const short = shortenLabel(v.label);
+                    const displayLabel = labelCount[short] > 1 ? `${short} · ${v.sku_id || idx + 1}` : short;
+                    return {
+                        ...v,
+                        index: idx,
+                        displayLabel: displayLabel,
+                        shortLabel: displayLabel,
+                        price: v.retail_price_usd ? parseFloat(v.retail_price_usd) : parseFloat(product.price),
+                        image: v.image_url || product.image_url,
+                        stock: v.stock != null ? v.stock : 999,
+                        outOfStock: (v.stock || 0) <= 0 && v.stock != null,
+                    };
+                });
+            }
+            return [];
+        }
+
+        function openVariantDrawer(cartItemId) {
+            const item = (currentCartItems || []).find(i => i.id === cartItemId);
+            if (!item || !item.products) return;
+
+            drawerCartItemId = cartItemId;
+            drawerProduct = item.products;
+            drawerVariants = getProductVariants(drawerProduct);
+
+            if (!drawerVariants || drawerVariants.length === 0) {
+                showToast('No other variants available for this product', 'info');
+                return;
+            }
+
+            const currentSelectedVariant = item.selected_options?.variant || '';
+            const currentImg = item.selected_options?._selected_image || drawerProduct.image_url;
+
+            drawerSelectedIndex = drawerVariants.findIndex(v =>
+                v.shortLabel.toLowerCase() === currentSelectedVariant.toLowerCase() ||
+                v.displayLabel.toLowerCase() === currentSelectedVariant.toLowerCase() ||
+                (currentImg && v.image === currentImg)
+            );
+            if (drawerSelectedIndex === -1) drawerSelectedIndex = 0;
+
+            renderVariantDrawer();
+
+            const backdrop = document.getElementById('variant-offcanvas-backdrop');
+            const sheet = document.getElementById('variant-offcanvas-sheet');
+            if (backdrop) backdrop.classList.add('active');
+            if (sheet) sheet.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderVariantDrawer() {
+            const selectedVar = drawerVariants[drawerSelectedIndex] || drawerVariants[0];
+
+            const thumbEl = document.getElementById('variant-drawer-thumb');
+            const titleEl = document.getElementById('variant-drawer-title');
+            const priceEl = document.getElementById('variant-drawer-price');
+            const subtitleEl = document.getElementById('variant-drawer-subtitle');
+            const confirmBtn = document.getElementById('variant-drawer-confirm-btn');
+
+            if (thumbEl) thumbEl.src = selectedVar?.image || drawerProduct.image_url || 'https://via.placeholder.com/200x200?text=No+Image';
+            if (titleEl) titleEl.textContent = drawerProduct.name;
+            if (priceEl) priceEl.textContent = formatPrice(selectedVar ? selectedVar.price : drawerProduct.price);
+            if (subtitleEl) subtitleEl.textContent = `Select Option (${drawerVariants.length} variants available)`;
+
+            if (confirmBtn) {
+                if (selectedVar && selectedVar.outOfStock) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerHTML = '<span>Out of Stock</span>';
+                } else {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<span>Confirm Change</span>';
+                }
+            }
+
+            const listEl = document.getElementById('variant-drawer-options');
+            if (listEl) {
+                listEl.innerHTML = drawerVariants.map((v, idx) => {
+                    const isSelected = idx === drawerSelectedIndex;
+                    const oos = v.outOfStock;
+                    return `
+                        <div class="variant-option-row${isSelected ? ' selected' : ''}${oos ? ' oos' : ''}" onclick="${oos ? '' : `selectDrawerVariant(${idx})`}">
+                            <img class="variant-option-img" src="${v.image || drawerProduct.image_url || 'https://via.placeholder.com/100x100?text=No+Image'}" alt="${v.displayLabel}">
+                            <div class="variant-option-info">
+                                <div class="variant-option-name">${v.displayLabel}</div>
+                                <div class="variant-option-meta">
+                                    <span class="variant-option-price">${formatPrice(v.price)}</span>
+                                    ${oos ? '<span class="variant-option-stock" style="color:var(--status-danger);">Out of stock</span>' : '<span class="variant-option-stock">In stock</span>'}
+                                </div>
+                            </div>
+                            <div class="variant-option-check">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function selectDrawerVariant(index) {
+            if (drawerVariants[index]?.outOfStock) return;
+            drawerSelectedIndex = index;
+            renderVariantDrawer();
+        }
+
+        function closeVariantDrawer() {
+            const backdrop = document.getElementById('variant-offcanvas-backdrop');
+            const sheet = document.getElementById('variant-offcanvas-sheet');
+            if (backdrop) backdrop.classList.remove('active');
+            if (sheet) sheet.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        async function confirmVariantChange() {
+            if (drawerSelectedIndex === -1 || !drawerVariants[drawerSelectedIndex]) return;
+            const selectedVar = drawerVariants[drawerSelectedIndex];
+            if (selectedVar.outOfStock) return;
+
+            const cartItem = (currentCartItems || []).find(i => i.id === drawerCartItemId);
+            if (!cartItem) return;
+
+            const confirmBtn = document.getElementById('variant-drawer-confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = `
+                    <span class="spinner" style="display:inline-block; width:16px; height:16px; border:2px solid #ffffff; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite;"></span>
+                    <span>Updating...</span>
+                `;
+            }
+
+            try {
+                const newOptions = { ...(cartItem.selected_options || {}) };
+                newOptions.variant = selectedVar.shortLabel;
+                if (selectedVar.image) {
+                    newOptions._selected_image = selectedVar.image;
+                }
+                const newPrice = selectedVar.price;
+
+                await api.updateCartItem(drawerCartItemId, {
+                    selected_options: newOptions,
+                    unit_price: newPrice
+                });
+
+                closeVariantDrawer();
+                showToast(`Variant updated to ${selectedVar.displayLabel}`, 'success');
+                await loadCart();
+                updateCartBadge();
+            } catch (err) {
+                showToast(err.message || 'Failed to update variant', 'error');
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<span>Confirm Change</span>';
+                }
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeVariantDrawer();
+        });
     </script>
 </body>
 </html>
