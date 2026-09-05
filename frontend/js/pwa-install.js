@@ -46,6 +46,12 @@ checkUninstallStatus();
  *  - This is the user's first ever visit
  */
 function shouldShowPrompt() {
+    // Don't show PWA prompt overlay on checkout, cart, or admin pages
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('checkout') || path.includes('cart') || path.includes('admin')) {
+        return false;
+    }
+
     // Already installed
     if (isPWAInstalled()) return false;
 
