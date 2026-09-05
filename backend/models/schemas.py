@@ -144,6 +144,8 @@ class OrderCreate(BaseModel):
     shipping_phone: Optional[str] = None
     notes: Optional[str] = None
     payment_method: Optional[str] = None
+    # Filter specific cart items to order
+    cart_item_ids: Optional[List[int]] = None
     # Cambodia-specific address fields
     shipping_province: Optional[str] = None
     shipping_province_code: Optional[str] = None

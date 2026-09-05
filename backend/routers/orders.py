@@ -16,12 +16,15 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
         user_id = str(current_user["user"].id)
 
         # 1. Get cart items with product details
-        cart = (
+        query = (
             supabase.table("cart_items")
             .select("*, products(id, name, price, image_url, stock, attributes)")
             .eq("user_id", user_id)
-            .execute()
         )
+        if order.cart_item_ids and len(order.cart_item_ids) > 0:
+            query = query.in_("id", order.cart_item_ids)
+
+        cart = query.execute()
 
         if not cart or not cart.data:
             raise HTTPException(status_code=400, detail="Cart is empty")
@@ -154,8 +157,11 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
                     {"stock": new_stock}
                 ).eq("id", item["product_id"]).execute()
 
-        # 6. Clear the cart
-        supabase.table("cart_items").delete().eq("user_id", user_id).execute()
+        # 6. Clear ordered cart items
+        del_query = supabase.table("cart_items").delete().eq("user_id", user_id)
+        if order.cart_item_ids and len(order.cart_item_ids) > 0:
+            del_query = del_query.in_("id", order.cart_item_ids)
+        del_query.execute()
 
         return {
             "message": "Order placed successfully",
