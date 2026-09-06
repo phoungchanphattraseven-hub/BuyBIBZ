@@ -394,12 +394,15 @@ input, textarea, select {
     top: 2px;
     right: 2px;
     min-width: 18px;
-    height: 18px;
+    min-height: 18px;
+    height: auto;
+    aspect-ratio: 1 / 1;
     border-radius: var(--radius-full);
     background: var(--brand-primary);
     color: white;
     font-size: 10px;
     font-weight: 700;
+    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5603,12 +5606,15 @@ a.order-item-name:hover {
         top: 2px;
         right: 8px;
         min-width: 16px;
-        height: 16px;
+        min-height: 16px;
+        height: auto;
+        aspect-ratio: 1 / 1;
         border-radius: var(--radius-full);
         background: var(--status-error);
         color: white;
         font-size: 9px;
         font-weight: 700;
+        line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -5688,7 +5694,7 @@ a.order-item-name:hover {
         top: 0px;
         right: 0px;
         min-width: 16px;
-        height: 16px;
+        min-height: 16px;
         font-size: 9px;
         padding: 0 3px;
     }
