@@ -112,6 +112,10 @@
 html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    /* Opt out of Android Chrome "font boosting" (text autosizing), which
+       inflates small UI text like badges and variant chips on phones */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     -moz-osx-font-smoothing: grayscale;
     /* Support for notched devices (iPhone X, etc.) */
     padding-left: env(safe-area-inset-left);
@@ -5978,16 +5982,21 @@ a.order-item-name:hover {
 
     .cart-item-variant {
         font-size: 11px !important;
+        line-height: 1.5 !important;
         padding: 2px 8px !important;
         border-radius: 6px !important;
         background: var(--bg-tertiary) !important;
         border: 1px solid var(--border-subtle) !important;
         color: var(--text-secondary) !important;
-        line-height: 1.5 !important;
-        white-space: nowrap !important;
+        /* Wrap long variant names to max 2 lines instead of clipping */
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        white-space: normal !important;
         overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        max-width: 200px !important;
+        max-width: 100% !important;
+        max-height: 34px !important;
+        word-break: break-word !important;
     }
 
     /* Bottom row: price left, qty right — inline */
