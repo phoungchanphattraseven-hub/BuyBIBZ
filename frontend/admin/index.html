@@ -226,6 +226,7 @@
                         <div class="form-group">
                             <label class="form-label" for="p_stock">Stock *</label>
                             <input type="number" id="p_stock" class="form-input" min="0" placeholder="0" required>
+                            <p class="image-manager-hint" id="stock-hint" style="display:none;">Auto-calculated: total of variant stock. Set stock per variant below, or use "Set all".</p>
                         </div>
                     </div>
 
@@ -264,7 +265,14 @@
 
                 <!-- RIGHT COLUMN -->
                 <div class="product-editor-right">
-                    <p class="editor-section-label">Attributes <span>Optional</span></p>
+                    <p class="editor-section-label">Variants <span>Optional</span></p>
+
+                    <div class="variant-builder" id="variant-builder">
+                        <div id="variant-groups"></div>
+                        <div id="variant-combos"></div>
+                    </div>
+
+                    <p class="editor-section-label" style="margin-top: 24px;">Attributes <span>Optional</span></p>
 
                     <div class="editor-grid-2">
                         <div class="form-group">
@@ -587,6 +595,20 @@
                     is_active: document.getElementById('p_active').checked,
                     attributes: buildAttributes()
                 };
+
+                // Merge variant builder output into attributes
+                const variantData = collectVariants();
+                if (variantData) {
+                    data.attributes.variants = variantData.variants;
+                    // Product stock = sum of per-variant stock
+                    data.stock = variantData.variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+                } else if (_editingAttributes?.variants) {
+                    // Builder untouched — keep existing variants (e.g. CJ/Taobao imports)
+                    data.attributes.variants = _editingAttributes.variants;
+                    if (_editingAttributes.variant_groups) {
+                        data.attributes.variant_groups = _editingAttributes.variant_groups;
+                    }
+                }
 
                 btn.disabled = true;
                 btn.textContent = 'Saving...';
@@ -1016,6 +1038,8 @@
             document.getElementById('p_submit').textContent = 'Save Product';
             document.getElementById('p_submit').disabled = false;
             populateAttributes({});
+            populateVariants({});
+            _editingAttributes = null;
             loadImageSlots([]);
             
             document.getElementById('product-modal').classList.add('active');
@@ -1043,6 +1067,8 @@
             document.getElementById('p_featured').checked = product.is_featured;
             document.getElementById('p_active').checked = product.is_active;
             populateAttributes(product.attributes || {});
+            populateVariants(product.attributes || {});
+            _editingAttributes = product.attributes || {};
 
             // Start with what we know for images
             const basicImages = product.image_url ? [{ url: product.image_url, alt: '' }] : [];
@@ -1057,6 +1083,13 @@
             // Fetch full product detail to get product_images
             try {
                 const full = await api.getProduct(product.id);
+                if (full.attributes) {
+                    _editingAttributes = { ...(_editingAttributes || {}), ...full.attributes };
+                    // Re-populate variants if the detail fetch has richer data than the list
+                    if (full.attributes.variants && !Object.keys(variantRows).length) {
+                        populateVariants(full.attributes);
+                    }
+                }
                 if (full.product_images && full.product_images.length > 0) {
                     const imgs = full.product_images
                         .sort((a, b) => a.display_order - b.display_order)
@@ -1191,6 +1224,264 @@
             if (freeShipping) attrs.free_shipping = true;
 
             return attrs;
+        }
+
+        // ── Variant Builder ──────────────────────────────────────
+        // Variants live in product.attributes as a flat list:
+        //   variants: [{ variant_name:"Blue", stock, retail_price_usd, image_url }]
+        let variantGroups = [ { name: '', values: [] } ]; // single unnamed list
+        let variantRows = {};     // comboKey -> { price, stock, image_url }
+        let variantRowLabels = {};// comboKey -> "Blue"
+        let _editingAttributes = null; // original attributes of the product being edited
+
+        function escHtml(s) {
+            return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function variantComboKey(names, values) {
+            return names.map((n, i) => `${n}:${values[i]}`).join('|');
+        }
+
+        function variantKeyValues(key) {
+            return key.split('|').map(part => part.slice(part.indexOf(':') + 1));
+        }
+
+        function validVariantGroups() {
+            return variantGroups.filter(g => g.values.length > 0);
+        }
+
+        function syncVariantGroupsFromDom() {
+            const input = document.querySelector('#variant-groups .vg-values');
+            if (!input) return;
+            variantGroups = [{ name: '', values: input.value.split(',').map(s => s.trim()).filter(Boolean) }];
+        }
+
+        function onVariantGroupsChanged() {
+            syncVariantGroupsFromDom();
+            regenerateVariantRows();
+        }
+
+        function renderVariantGroups() {
+            const wrap = document.getElementById('variant-groups');
+            const values = variantGroups[0]?.values || [];
+            wrap.innerHTML = `
+                <input type="text" class="form-input vg-values" placeholder="Variant names (e.g. Blue, Black, Orange)" value="${escHtml(values.join(', '))}">
+                <p class="variant-builder-hint" style="margin-top:6px;">Separate names with commas. Each variant gets its own price, stock and image below.</p>`;
+            wrap.querySelector('.vg-values').addEventListener('input', onVariantGroupsChanged);
+        }
+
+        function regenerateVariantRows() {
+            const groups = validVariantGroups();
+
+            // No usable groups (e.g. name + values cleared) → clear the table
+            if (!groups.length) {
+                variantRows = {};
+                variantRowLabels = {};
+                renderVariantCombos();
+                return;
+            }
+
+            const names = groups.map(g => g.name);
+
+            let combos = [[]];
+            groups.forEach(g => {
+                combos = g.values.flatMap(v => combos.map(c => [...c, v]));
+            });
+
+            const nextRows = {};
+            const nextLabels = {};
+            combos.forEach(values => {
+                const key = variantComboKey(names, values);
+                nextRows[key] = variantRows[key] || {
+                    price: document.getElementById('p_price').value || '',
+                    stock: parseInt(document.getElementById('p_stock').value) || 0,
+                    image_url: ''
+                };
+                nextLabels[key] = values.join(' / ');
+            });
+            variantRows = nextRows;
+            variantRowLabels = nextLabels;
+            renderVariantCombos();
+        }
+
+        function variantImageOptions() {
+            const slots = getImageSlots().map(s => s.url);
+            return [...new Set(slots)];
+        }
+
+        function renderVariantCombos() {
+            const wrap = document.getElementById('variant-combos');
+            const entries = Object.entries(variantRows);
+            if (!entries.length) {
+                wrap.innerHTML = '';
+                updateStockFieldMode();
+                return;
+            }
+
+            const imgOptions = variantImageOptions();
+            const totalStock = entries.reduce((sum, [, row]) => sum + (parseInt(row.stock) || 0), 0);
+
+            wrap.innerHTML = `
+                <table class="variant-combos-table">
+                    <thead>
+                        <tr>
+                            <th>Variant</th>
+                            <th style="width:90px;">Price ($)</th>
+                            <th style="width:70px;">Stock</th>
+                            <th>Image</th>
+                            <th style="width:34px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${entries.map(([key, row]) => {
+                            const isCustomImg = row.image_url && !imgOptions.includes(row.image_url);
+                            const customValue = isCustomImg ? row.image_url : '';
+                            return `
+                            <tr data-key="${escHtml(key)}">
+                                <td><span class="variant-combo-label">${escHtml(variantRowLabels[key] || key)}</span></td>
+                                <td><input type="number" class="form-input vr-price" step="0.01" min="0" placeholder="Base" value="${escHtml(row.price)}"></td>
+                                <td><input type="number" class="form-input vr-stock" min="0" placeholder="0" value="${escHtml(row.stock)}"></td>
+                                <td>
+                                    <div class="variant-combo-img-col">
+                                        <img class="variant-combo-img vr-img-preview" src="${escHtml(row.image_url)}" alt="" style="${row.image_url ? '' : 'display:none;'}" onerror="this.style.display='none'">
+                                        <select class="form-select vr-img-select">
+                                            <option value="">Default</option>
+                                            ${imgOptions.map((url, i) => `<option value="${escHtml(url)}" ${row.image_url === url ? 'selected' : ''}>Image ${i + 1}</option>`).join('')}
+                                            <option value="__custom__" ${isCustomImg ? 'selected' : ''}>Custom URL…</option>
+                                        </select>
+                                        <input type="url" class="form-input vr-img-custom" placeholder="Paste image URL..." value="${escHtml(customValue)}" style="${isCustomImg ? '' : 'display:none;'}">
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="variant-combo-remove" title="Remove combination" aria-label="Remove combination">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                    </button>
+                                </td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div class="variant-total-row" style="margin-top:8px;">
+                    <span>Total variant stock (syncs the Stock field)</span>
+                    <span style="display:flex;gap:6px;align-items:center;">
+                        <input type="number" class="form-input vr-bulk-stock" min="0" placeholder="Stock" style="width:74px;" title="Apply this stock to every variant">
+                        <button type="button" class="btn btn-secondary btn-sm vr-bulk-apply" title="Apply this stock to every variant">Set all</button>
+                        <b>${totalStock}</b>
+                    </span>
+                </div>
+            `;
+
+            wrap.querySelectorAll('tbody tr').forEach(tr => {
+                const key = tr.dataset.key;
+
+                tr.querySelector('.vr-price').addEventListener('input', e => {
+                    variantRows[key].price = e.target.value;
+                });
+                tr.querySelector('.vr-stock').addEventListener('input', e => {
+                    variantRows[key].stock = e.target.value;
+                    updateVariantTotalStock();
+                });
+
+                const imgSelect = tr.querySelector('.vr-img-select');
+                const imgCustom = tr.querySelector('.vr-img-custom');
+                const imgPreview = tr.querySelector('.vr-img-preview');
+                const applyImage = url => {
+                    variantRows[key].image_url = url || '';
+                    if (url) {
+                        imgPreview.src = url;
+                        imgPreview.style.display = '';
+                    } else {
+                        imgPreview.style.display = 'none';
+                    }
+                };
+                imgSelect.addEventListener('change', () => {
+                    if (imgSelect.value === '__custom__') {
+                        imgCustom.style.display = '';
+                        applyImage(imgCustom.value.trim());
+                        imgCustom.focus();
+                    } else {
+                        imgCustom.style.display = 'none';
+                        applyImage(imgSelect.value);
+                    }
+                });
+                imgCustom.addEventListener('input', () => applyImage(imgCustom.value.trim()));
+
+                tr.querySelector('.variant-combo-remove').addEventListener('click', () => {
+                    delete variantRows[key];
+                    renderVariantCombos();
+                });
+            });
+
+            // Bulk stock: apply one value to every variant
+            const bulkInput = wrap.querySelector('.vr-bulk-stock');
+            const bulkApply = wrap.querySelector('.vr-bulk-apply');
+            if (bulkApply) bulkApply.addEventListener('click', () => {
+                const val = parseInt(bulkInput.value);
+                if (isNaN(val) || val < 0) return;
+                Object.keys(variantRows).forEach(k => { variantRows[k].stock = val; });
+                renderVariantCombos();
+                updateVariantTotalStock();
+            });
+
+            updateStockFieldMode();
+        }
+
+        function updateStockFieldMode() {
+            // With variants the product stock is derived, so lock the manual field
+            const stockField = document.getElementById('p_stock');
+            const hint = document.getElementById('stock-hint');
+            const hasVariants = Object.keys(variantRows).length > 0;
+            if (stockField) stockField.readOnly = hasVariants;
+            if (hint) hint.style.display = hasVariants ? '' : 'none';
+        }
+
+        function updateVariantTotalStock() {
+            const total = Object.values(variantRows).reduce((sum, row) => sum + (parseInt(row.stock) || 0), 0);
+            const totalEl = document.querySelector('#variant-combos .variant-total-row b');
+            if (totalEl) totalEl.textContent = total;
+            const stockField = document.getElementById('p_stock');
+            if (stockField && Object.keys(variantRows).length) stockField.value = total;
+        }
+
+        function collectVariants() {
+            syncVariantGroupsFromDom();
+            const groups = validVariantGroups();
+            if (!groups.length) return null;
+            const variants = Object.entries(variantRows).map(([key, row]) => {
+                const value = variantKeyValues(key)[0];
+                const price = row.price === '' || row.price == null ? null : parseFloat(row.price);
+                return {
+                    variant_name: variantRowLabels[key] || value,
+                    stock: parseInt(row.stock) || 0,
+                    retail_price_usd: price != null && !isNaN(price) ? price : null,
+                    image_url: row.image_url || null
+                };
+            });
+            return { variants };
+        }
+
+        function populateVariants(attrs) {
+            variantGroups = [{ name: '', values: [] }];
+            variantRows = {};
+            variantRowLabels = {};
+
+            const allSaved = Array.isArray(attrs?.variants) ? attrs.variants : [];
+            const flat = allSaved.filter(v => v && v.variant_name && v.variant_name !== 'Default');
+            if (flat.length) {
+                variantGroups[0].values = flat.map(v => v.variant_name);
+                flat.forEach(v => {
+                    const key = variantComboKey([''], [v.variant_name]);
+                    variantRows[key] = {
+                        price: v.retail_price_usd != null ? v.retail_price_usd : '',
+                        stock: v.stock != null ? v.stock : 0,
+                        image_url: v.image_url || ''
+                    };
+                    variantRowLabels[key] = v.variant_name;
+                });
+            }
+
+            renderVariantGroups();
+            renderVariantCombos();
         }
 
         async function deleteProduct(id) {

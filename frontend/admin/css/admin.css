@@ -1563,3 +1563,130 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ── Variant Builder ───────────────────────────────────────── */
+.variant-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.variant-builder-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.variant-group-row {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.variant-group-row .form-input {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+}
+
+.variant-builder-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.variant-combos-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.variant-combos-table th {
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.variant-combos-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.variant-combos-table .form-input,
+.variant-combos-table .form-select {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.variant-combo-label {
+    font-weight: 600;
+    color: var(--text-main);
+    word-break: break-word;
+}
+
+.variant-combo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    display: block;
+}
+
+.variant-combo-img-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.variant-combo-img-col .form-input {
+    font-size: 0.7rem;
+}
+
+.variant-combo-remove {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.variant-combo-remove:hover {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.4);
+    color: #ef4444;
+}
+
+.variant-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.variant-total-row b {
+    color: var(--text-main);
+    font-size: 0.85rem;
+}

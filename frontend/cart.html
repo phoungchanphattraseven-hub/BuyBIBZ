@@ -662,10 +662,7 @@
                     const selectedOptionsHtml = Object.entries(selectedOptions)
                         .filter(([key]) => key !== '_selected_image')
                         .map(([key, value]) => {
-                            let cleanValue = toEnglishProductText(value, value);
-                            // If value is very long (full product name), take last 3 words only
-                            const words = cleanValue.split(' ');
-                            if (words.length > 4) cleanValue = words.slice(-3).join(' ');
+                            const cleanValue = toEnglishProductText(value, value);
 
                             const isClickable = hasMultipleVariants;
                             const chevron = isClickable
@@ -795,20 +792,26 @@
         async function saveQuantityToServer(itemId, quantity) {
             try {
                 await api.updateCartItem(itemId, quantity);
-                
-                // Remove from pending updates
-                pendingUpdates.delete(itemId);
+
+                // Only clear the pending marker if no newer click superseded it
+                if (pendingUpdates.get(itemId) === quantity) {
+                    pendingUpdates.delete(itemId);
+                }
                 updateTimeouts.delete(itemId);
-                
-                // Sync with server to get accurate totals
-                const cartData = await api.getCart();
-                
-                // Update summary with server data
-                document.getElementById('summary-count').textContent = cartData.count;
-                document.getElementById('summary-subtotal').textContent = formatPrice(cartData.total);
-                document.getElementById('summary-total').textContent = formatPrice(cartData.total);
-                
                 updateCartBadge();
+
+                // Reconcile with the server only when no clicks are pending (before
+                // or after the fetch) — otherwise a stale snapshot would overwrite
+                // newer optimistic totals.
+                if (pendingUpdates.size === 0) {
+                    const cartData = await api.getCart();
+                    // Refresh shipping (depends on all items), then recompute the
+                    // summary from the UI so checkbox selection stays honored.
+                    currentShippingFee = cartData.shipping ?? currentShippingFee;
+                    if (pendingUpdates.size === 0) {
+                        updateTotalsUI();
+                    }
+                }
             } catch (err) {
                 // On error, reload cart to sync with server
                 showToast(err.message, 'error');
@@ -947,21 +950,14 @@
                         label: typeof toEnglishProductText === 'function' ? toEnglishProductText(v.variant_name, 'Standard') : v.variant_name,
                     }));
 
-                const shortenLabel = (label) => {
-                    const words = label.split(' ');
-                    if (words.length > 4) return words.slice(-3).join(' ');
-                    return label;
-                };
-
+                // Full variant names (identical names get an index)
                 const labelCount = cleaned.reduce((counts, variant) => {
-                    const short = shortenLabel(variant.label);
-                    counts[short] = (counts[short] || 0) + 1;
+                    counts[variant.label] = (counts[variant.label] || 0) + 1;
                     return counts;
                 }, {});
 
                 return cleaned.map((v, idx) => {
-                    const short = shortenLabel(v.label);
-                    const displayLabel = labelCount[short] > 1 ? `${short} · ${v.sku_id || idx + 1}` : short;
+                    const displayLabel = labelCount[v.label] > 1 ? `${v.label} · ${v.sku_id || idx + 1}` : v.label;
                     return {
                         ...v,
                         index: idx,
@@ -990,14 +986,22 @@
                 return;
             }
 
+            // Grouped admin variants: match by the full options map first
+            const optionsMatchIndex = drawerVariants.findIndex(v => {
+                if (!v.options || !item.selected_options) return false;
+                return Object.entries(v.options).every(([key, val]) => item.selected_options[key] === val);
+            });
+
             const currentSelectedVariant = item.selected_options?.variant || '';
             const currentImg = item.selected_options?._selected_image || drawerProduct.image_url;
 
-            drawerSelectedIndex = drawerVariants.findIndex(v =>
-                v.shortLabel.toLowerCase() === currentSelectedVariant.toLowerCase() ||
-                v.displayLabel.toLowerCase() === currentSelectedVariant.toLowerCase() ||
-                (currentImg && v.image === currentImg)
-            );
+            drawerSelectedIndex = optionsMatchIndex !== -1
+                ? optionsMatchIndex
+                : drawerVariants.findIndex(v =>
+                    v.shortLabel.toLowerCase() === currentSelectedVariant.toLowerCase() ||
+                    v.displayLabel.toLowerCase() === currentSelectedVariant.toLowerCase() ||
+                    (currentImg && v.image === currentImg)
+                );
             if (drawerSelectedIndex === -1) drawerSelectedIndex = 0;
 
             renderVariantDrawer();
@@ -1090,7 +1094,13 @@
 
             try {
                 const newOptions = { ...(cartItem.selected_options || {}) };
-                newOptions.variant = selectedVar.shortLabel;
+                if (selectedVar.options && Object.keys(selectedVar.options).length) {
+                    // Grouped admin variants: store the full options map (Color, Size, ...)
+                    delete newOptions.variant;
+                    Object.assign(newOptions, selectedVar.options);
+                } else {
+                    newOptions.variant = selectedVar.shortLabel;
+                }
                 if (selectedVar.image) {
                     newOptions._selected_image = selectedVar.image;
                 }

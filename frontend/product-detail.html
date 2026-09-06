@@ -340,13 +340,24 @@
                 // Render text description
                 if (textContent && textContent !== '<br>' && textContent.length > 5) {
                     descEl.innerHTML = textContent;
-                    requestAnimationFrame(() => {
+                    // Clamp + fade + "Show more" only when the text actually overflows.
+                    // Re-check after layout settles — scrollHeight is 0 while hidden.
+                    const updateDescClamp = () => {
+                        const el = document.getElementById('pd-description');
+                        if (!el) return;
+                        const overflows = el.scrollHeight > 140;
+                        el.classList.toggle('pd-description--clamped', overflows);
                         const toggleBtn = document.getElementById('pd-desc-toggle');
-                        if (toggleBtn && descEl.scrollHeight > descEl.clientHeight + 10) {
-                            toggleBtn.style.display = 'flex';
-                            toggleBtn.innerHTML = `Show more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+                        if (toggleBtn) {
+                            toggleBtn.style.display = overflows ? 'flex' : 'none';
+                            if (overflows && !el.classList.contains('pd-description--expanded')) {
+                                toggleBtn.innerHTML = `Show more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+                            }
                         }
-                    });
+                    };
+                    updateDescClamp();
+                    requestAnimationFrame(updateDescClamp);
+                    setTimeout(updateDescClamp, 300);
                 } else {
                     descEl.closest('.pd-description-wrap').style.display = 'none';
                 }
@@ -512,6 +523,18 @@
             let optionSections = '';
             let detailSections = '';
 
+            // ── Admin-built grouped variants (variants with options maps) ──
+            const groupedEntries = Array.isArray(attrs.variants)
+                ? attrs.variants.filter(v => v && v.options && Object.keys(v.options).length > 0)
+                : [];
+            const groupedGroupNames = groupedEntries.length
+                ? (Array.isArray(attrs.variant_groups) && attrs.variant_groups.length
+                    ? attrs.variant_groups.filter(n => groupedEntries.some(v => v.options[n]))
+                    : Object.keys(groupedEntries[0].options).filter(n => groupedEntries.every(v => n in v.options)))
+                : [];
+            const normAttrKey = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '').replace(/s$/, '');
+            const groupedNormKeys = new Set(groupedGroupNames.map(n => normAttrKey(n)));
+
             for (const [key, rawValue] of Object.entries(attrs)) {
                 if (rawValue === null || rawValue === undefined || rawValue === '') continue;
                 // It is featured above the price as a purchase benefit badge.
@@ -530,6 +553,9 @@
                 if (/url|link|_id$|pid$|item_id/i.test(key) && !(ATTR_CONFIG[key]?.type === 'chips' || ATTR_CONFIG[key]?.type === 'color-swatches')) continue;
 
                 const isSelectableType = config.type === 'chips' || config.type === 'color-swatches';
+
+                // Skip selectable attrs already covered by grouped variant option groups
+                if (isSelectableType && groupedNormKeys.has(normAttrKey(key))) continue;
 
                 // Guard: never render plain objects or arrays as text — skip unknown complex values
                 if (typeof rawValue === 'object' && !isSelectableType) continue;
@@ -594,10 +620,57 @@
                 }
             }
 
-            // ── CJ / Taobao SKU variant selector ─────────────────────────────
+            // ── Variant selectors ─────────────────────────────────────────────
             // Build BEFORE the early-return so products that only have variants
             // (and no other attributes) still render the selector.
             let variantSection = '';
+
+            const escV = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const escJs = s => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+            if (groupedEntries.length > 0) {
+                // ── Admin-built grouped variants: one selector per option group ──
+                const groupSlug = n => {
+                    const s = String(n).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                    return s || 'option';
+                };
+                const groupValueHasStock = (name, val, extraSel = {}) => groupedEntries.some(v =>
+                    v.options[name] === val
+                    && (v.stock || 0) > 0
+                    && Object.entries(extraSel).every(([k, s]) => v.options[k] === s));
+
+                window._groupedVariantData = {
+                    entries: groupedEntries,
+                    groups: groupedGroupNames.map(n => ({ name: n, slug: groupSlug(n) }))
+                };
+
+                variantSection = window._groupedVariantData.groups.map(g => {
+                    const values = [...new Set(groupedEntries.map(v => v.options[g.name]).filter(Boolean))];
+                    const isColorGroup = ['color', 'colour'].includes(normAttrKey(g.name));
+                    const chips = values.map(val => {
+                        const escAttr = escV(val);
+                        const escOnClick = escJs(val);
+                        const inStock = groupValueHasStock(g.name, val);
+                        const oosAttrs = inStock ? '' : 'disabled title="Out of stock"';
+                        const oosClass = inStock ? '' : ' oos';
+                        if (isColorGroup) {
+                            const bg = COLOR_MAP[String(val).toLowerCase()] || val;
+                            const isLight = ['white', 'beige', 'yellow', 'silver'].includes(String(val).toLowerCase());
+                            return `<button type="button" class="variant-color-option${oosClass}" style="--swatch-color:${bg}; --swatch-border:${isLight ? '#aab0ac' : bg};" data-value="${escAttr}" onclick="selectGroupOption('${g.slug}', '${escOnClick}')" ${oosAttrs}><span></span><b>${escV(val)}</b></button>`;
+                        }
+                        return `<button type="button" class="variant-size-option${oosClass}" data-value="${escAttr}" onclick="selectGroupOption('${g.slug}', '${escOnClick}')" ${oosAttrs}>${escV(val)}</button>`;
+                    }).join('');
+
+                    return `
+                        <fieldset class="variant-selector" id="variant-${g.slug}" data-option-label="${escV(String(g.name).toLowerCase())}" data-group-name="${escV(g.name)}">
+                            <legend><span class="variant-icon">${ATTRIBUTE_ICONS.default}</span><span>${escV(g.name)}: <strong class="variant-selection-note" id="${g.slug}-selection-note">Select ${escV(String(g.name).toLowerCase())}</strong></span></legend>
+                            <div class="${isColorGroup ? 'variant-color-options' : 'variant-size-options'}" role="radiogroup" aria-label="Choose ${escV(String(g.name).toLowerCase())}">
+                                ${chips}
+                            </div>
+                        </fieldset>`;
+                }).join('');
+            } else {
+
             const taobaoVariants = attrs.variants;
             if (Array.isArray(taobaoVariants) && taobaoVariants.length > 0) {
                 const cleanedVariants = taobaoVariants
@@ -608,54 +681,17 @@
                         label: toEnglishProductText(v.variant_name, 'Standard'),
                     }));
 
-                // Find the common prefix shared by all variant labels and strip it
-                // so "Vacuum Cleaner Black" and "Vacuum Cleaner White" → "Black" / "White"
-                const allLabels = cleanedVariants.map(v => v.label);
-                let commonWords = allLabels.length > 1
-                    ? allLabels[0].split(' ').filter(word =>
-                        word.length > 1 && allLabels.every(l => l.startsWith(word) || l.includes(' ' + word + ' ') || l.endsWith(' ' + word))
-                        && allLabels.filter(l => !l.includes(word)).length === 0
-                    )
-                    : [];
-                // Simple prefix strip: find how many leading words all labels share
-                const firstWords = allLabels[0].split(' ');
-                let prefixLen = 0;
-                for (let i = 0; i < firstWords.length; i++) {
-                    if (allLabels.every(l => l.split(' ')[i] === firstWords[i])) {
-                        prefixLen = i + 1;
-                    } else break;
-                }
-                const stripPrefix = prefixLen > 0 && prefixLen < firstWords.length
-                    ? firstWords.slice(0, prefixLen).join(' ')
-                    : '';
-
-                const shortenLabel = (label) => {
-                    // First try prefix stripping
-                    if (stripPrefix && label.startsWith(stripPrefix)) {
-                        const stripped = label.slice(stripPrefix.length).trim();
-                        if (stripped) return stripped;
-                    }
-                    // Fallback: if label is long (> 4 words), take the last 3 words
-                    // This handles CJ names like "Vacuum Cleaner ... A White Wireless" → "A White Wireless"
-                    const words = label.split(' ');
-                    if (words.length > 4) {
-                        return words.slice(-3).join(' ');
-                    }
-                    return label;
-                };
-
+                // Show the full variant name on each chip (identical names get an index)
                 const labelCount = cleanedVariants.reduce((counts, variant) => {
-                    const short = shortenLabel(variant.label);
-                    counts[short] = (counts[short] || 0) + 1;
+                    counts[variant.label] = (counts[variant.label] || 0) + 1;
                     return counts;
                 }, {});
 
                 const variantChips = cleanedVariants
                     .map((v, i) => {
-                        const shortLabel = shortenLabel(v.label);
-                        const displayLabel = labelCount[shortLabel] > 1
-                            ? `${shortLabel} · ${v.sku_id || i + 1}`
-                            : shortLabel;
+                        const displayLabel = labelCount[v.label] > 1
+                            ? `${v.label} · ${v.sku_id || i + 1}`
+                            : v.label;
                         const outOfStock = (v.stock || 0) === 0;
                         // Store short label as value so cart shows "White Wireless" not full product name
                         const safeLabel = displayLabel.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -682,6 +718,7 @@
                             </div>
                         </fieldset>`;
                 }
+            }
             }
 
             if (!variantSection && !optionSections && !detailSections) return '';
@@ -747,6 +784,108 @@
             if (note) note.textContent = typeof toEnglishProductText === 'function'
                 ? toEnglishProductText(value, value)
                 : value;
+        }
+
+        // ── Admin-built grouped variant selection ────────────────────────
+        function currentGroupSelection(excludeSlug = null) {
+            const sel = {};
+            (window._groupedVariantData?.groups || []).forEach(g => {
+                if (g.slug === excludeSlug) return;
+                if (selectedVariants[g.slug]) sel[g.name] = selectedVariants[g.slug];
+            });
+            return sel;
+        }
+
+        function selectGroupOption(slug, value) {
+            const selector = document.getElementById(`variant-${slug}`);
+            if (!selector) return;
+
+            const btn = Array.from(selector.querySelectorAll('button')).find(b => b.dataset.value === value);
+            if (!btn || btn.disabled) return;
+
+            // Toggle: clicking an already-selected value deselects it
+            if (selectedVariants[slug] === value) {
+                delete selectedVariants[slug];
+                selector.querySelectorAll('button').forEach(b => {
+                    b.classList.remove('selected');
+                    b.setAttribute('aria-checked', 'false');
+                });
+                const note = document.getElementById(`${slug}-selection-note`);
+                if (note) note.textContent = `Select ${selector.dataset.optionLabel || slug}`;
+                updateGroupedState();
+                return;
+            }
+
+            selectedVariants[slug] = value;
+            selector.classList.remove('variant-missing');
+            selector.querySelectorAll('button').forEach(b => {
+                const isSelected = b.dataset.value === value;
+                b.classList.toggle('selected', isSelected);
+                b.setAttribute('aria-checked', String(isSelected));
+            });
+            const note = document.getElementById(`${slug}-selection-note`);
+            if (note) note.textContent = value;
+            updateGroupedState();
+        }
+
+        function updateGroupedState() {
+            const data = window._groupedVariantData;
+            if (!data) return;
+
+            const priceEl = document.querySelector('.price-current');
+            if (priceEl && window._productBasePrice == null) {
+                window._productBasePrice = priceEl.textContent;
+            }
+
+            // Availability: a value is selectable only if some in-stock variant
+            // matches it and every other currently selected group
+            data.groups.forEach(g => {
+                const selector = document.getElementById(`variant-${g.slug}`);
+                if (!selector) return;
+                const others = currentGroupSelection(g.slug);
+                selector.querySelectorAll('button').forEach(btn => {
+                    const val = btn.dataset.value;
+                    const matchesOthers = v => Object.entries(others).every(([n, s]) => v.options[n] === s);
+                    const hasAny = data.entries.some(v => v.options[g.name] === val && matchesOthers(v));
+                    const hasStock = data.entries.some(v => v.options[g.name] === val && (v.stock || 0) > 0 && matchesOthers(v));
+                    if (!hasAny || !hasStock) {
+                        btn.classList.add('oos');
+                        btn.disabled = true;
+                        btn.title = !hasAny ? 'Unavailable' : 'Out of stock';
+                    } else {
+                        btn.classList.remove('oos');
+                        btn.disabled = false;
+                        btn.title = '';
+                    }
+                });
+            });
+
+            // Complete combination → swap price and image from the matched variant
+            const sel = currentGroupSelection();
+            const complete = data.groups.length > 0 && data.groups.every(g => sel[g.name]);
+            if (complete) {
+                const variant = data.entries.find(v => Object.entries(sel).every(([n, s]) => v.options[n] === s));
+                if (variant && (variant.stock || 0) > 0) {
+                    window._selectedGroupVariant = variant;
+                    const price = variant.retail_price_usd != null ? parseFloat(variant.retail_price_usd) : null;
+                    if (priceEl && price != null && !isNaN(price) && price > 0) {
+                        priceEl.textContent = `$${price.toFixed(2)}`;
+                    }
+                    if (variant.image_url) {
+                        const mainImg = document.getElementById('main-product-image');
+                        if (mainImg) mainImg.src = variant.image_url;
+                        selectedImageUrl = variant.image_url;
+                        originalMainImageSrc = variant.image_url;
+                    }
+                    return;
+                }
+            }
+
+            // Incomplete or unavailable combo → fall back to base price
+            window._selectedGroupVariant = null;
+            if (priceEl && window._productBasePrice != null) {
+                priceEl.textContent = window._productBasePrice;
+            }
         }
 
         let _variantPopupTimer = null;
@@ -934,7 +1073,12 @@
             }
 
             // Build options with image
-            const optionsWithImage = { ...selectedVariants };
+            let optionsWithImage = { ...selectedVariants };
+            // Grouped admin variants: key options by group name (e.g. Color) not slug
+            if (window._groupedVariantData) {
+                window._groupedVariantData.groups.forEach(g => delete optionsWithImage[g.slug]);
+                Object.assign(optionsWithImage, currentGroupSelection());
+            }
             if (selectedImageUrl) optionsWithImage._selected_image = selectedImageUrl;
 
             // Find selected variant price from the active chip's data-price
@@ -943,6 +1087,12 @@
                 const p = parseFloat(btn.dataset.price);
                 if (!isNaN(p) && p > 0) variantPrice = p;
             });
+
+            // Grouped variants: price comes from the fully matched variant
+            if (variantPrice == null && window._selectedGroupVariant) {
+                const p = parseFloat(window._selectedGroupVariant.retail_price_usd);
+                if (!isNaN(p) && p > 0) variantPrice = p;
+            }
 
             await addToCartWithPrice(id, selectedQty, optionsWithImage, variantPrice);
         }
