@@ -760,6 +760,22 @@ svg:not([class*="width"]):not([class*="size"]) {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Stack of left-corner badges (sale / free shipping / out of stock) */
+.product-card-badges {
+    position: absolute;
+    top: var(--space-sm);
+    left: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    z-index: 2;
+}
+
+.product-card-badges .product-card-badge {
+    position: static;
+}
+
 .badge-sale {
     background: var(--status-error);
     color: white;
@@ -4903,7 +4919,8 @@ a.order-item-name:hover {
 
 .page-header-search input {
     width: 100%;
-    padding: 11px 46px 11px 44px;
+    height: 42px;
+    padding: 0 46px 0 44px;
     font-size: var(--font-sm);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-xl);
@@ -4932,9 +4949,12 @@ a.order-item-name:hover {
     justify-content: center;
     width: 36px;
     height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
     padding: 0;
     border: none;
-    border-radius: var(--radius-full);
+    border-radius: 50%;
     background: var(--brand-primary);
     color: white;
     cursor: pointer;
@@ -4967,9 +4987,12 @@ a.order-item-name:hover {
     justify-content: center;
     width: 24px;
     height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    flex-shrink: 0;
     padding: 0;
     border: none;
-    border-radius: var(--radius-full);
+    border-radius: 50%;
     background: var(--bg-tertiary);
     color: var(--text-secondary);
     cursor: pointer;
@@ -5780,6 +5803,12 @@ a.order-item-name:hover {
         padding: 2px 8px;
         top: var(--space-xs);
         left: var(--space-xs);
+    }
+
+    .product-card-badges {
+        top: var(--space-xs);
+        left: var(--space-xs);
+        gap: 3px;
     }
     
     .badge-featured {
