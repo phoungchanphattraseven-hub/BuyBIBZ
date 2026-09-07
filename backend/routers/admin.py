@@ -1,7 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime, timedelta, timezone
-from core.config import get_authenticated_client
+from typing import Optional
+from pydantic import BaseModel
+from core.config import get_authenticated_client, get_supabase
 from core.auth import get_admin_user
+
+
+class UserRoleUpdate(BaseModel):
+    role: str  # "customer" or "admin"
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -162,5 +168,95 @@ async def get_all_products(admin=Depends(get_admin_user)):
             .execute()
         )
         return {"products": response.data if response and response.data else []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users")
+async def get_all_users(admin=Depends(get_admin_user)):
+    """Get all user profiles (admin view).
+
+    Emails are read from the profiles.email column (synced via DB trigger from
+    auth.users). Run the 20260907_profiles_email_column.sql migration first.
+    """
+    try:
+        supabase = get_authenticated_client(admin["token"])
+        response = (
+            supabase.table("profiles")
+            .select("id, full_name, email, phone, role, created_at, city, province, avatar_url")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        profiles = response.data if response and response.data else []
+
+        # If the email column is missing (migration not yet run), attempt a
+        # one-time fetch via the service-role client as a graceful fallback.
+        if profiles and profiles[0].get("email") is None:
+            try:
+                from core.config import get_service_client
+                service = get_service_client()
+                auth_users = service.auth.admin.list_users()
+                email_map = {str(u.id): u.email for u in (auth_users or [])}
+                for p in profiles:
+                    p["email"] = email_map.get(p["id"], "")
+            except Exception:
+                # Service key not configured — emails stay empty until migration runs
+                for p in profiles:
+                    p.setdefault("email", "")
+        else:
+            for p in profiles:
+                p.setdefault("email", "")
+
+        return {"users": profiles}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/users/{user_id}/role")
+async def update_user_role(
+    user_id: str,
+    body: UserRoleUpdate,
+    admin=Depends(get_admin_user),
+):
+    """Update a user's role (admin / customer)."""
+    if body.role not in ("admin", "customer"):
+        raise HTTPException(status_code=400, detail="Role must be 'admin' or 'customer'")
+    try:
+        supabase = get_authenticated_client(admin["token"])
+        response = (
+            supabase.table("profiles")
+            .update({"role": body.role, "updated_at": "now()"})
+            .eq("id", user_id)
+            .execute()
+        )
+        if not response or not response.data:
+            raise HTTPException(status_code=404, detail="User not found")
+        return {"message": "Role updated", "user": response.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: str, admin=Depends(get_admin_user)):
+    """Delete a user account and their profile."""
+    # Prevent self-deletion
+    if str(admin["user"].id) == user_id:
+        raise HTTPException(status_code=400, detail="You cannot delete your own account")
+    try:
+        from core.config import get_service_client
+        service = get_service_client()
+        # Delete from auth (cascades to profiles via DB trigger if set up)
+        service.auth.admin.delete_user(user_id)
+        # Also explicitly remove profile row
+        try:
+            supabase = get_authenticated_client(admin["token"])
+            supabase.table("profiles").delete().eq("id", user_id).execute()
+        except Exception:
+            pass
+        return {"message": "User deleted successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

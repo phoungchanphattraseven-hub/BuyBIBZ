@@ -43,6 +43,7 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file_
 
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")
 ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
 
@@ -64,3 +65,15 @@ def get_authenticated_client(access_token: str) -> Client:
     client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
     client.postgrest.auth(access_token)
     return client
+
+
+def get_service_client() -> Client:
+    """Return a Supabase client using the service role key (bypasses RLS).
+    Required for admin operations like listing/deleting auth users.
+    SUPABASE_SERVICE_ROLE_KEY must be set in .env — never expose it to the frontend."""
+    if not SUPABASE_SERVICE_ROLE_KEY:
+        raise ValueError(
+            "SUPABASE_SERVICE_ROLE_KEY is not set in .env. "
+            "Add it to enable admin user management features."
+        )
+    return create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)

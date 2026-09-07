@@ -19,6 +19,7 @@ Docs: https://developers.cjdropshipping.com/en/api/api2/api/product.html
 
 import os
 import math
+import time
 import asyncio
 import httpx
 from typing import Optional
@@ -32,6 +33,21 @@ MARKUP = 2.0  # 100% markup
 # ─── Token cache (in-memory, survives backend restarts via re-auth) ───────────
 _cj_token: Optional[str] = None
 _cj_refresh_token: Optional[str] = None
+
+# ─── Rate limiting (CJ allows 1 request/second) ───────────────────────────────
+_CJ_MIN_INTERVAL = 1.1  # seconds between CJ API requests
+_cj_request_lock = asyncio.Lock()
+_cj_last_request_at = 0.0
+
+
+async def _cj_throttle() -> None:
+    """Serialize CJ requests and keep at least _CJ_MIN_INTERVAL between them."""
+    global _cj_last_request_at
+    async with _cj_request_lock:
+        wait = _cj_last_request_at + _CJ_MIN_INTERVAL - time.monotonic()
+        if wait > 0:
+            await asyncio.sleep(wait)
+        _cj_last_request_at = time.monotonic()
 
 
 def _get_api_key() -> str:
@@ -82,10 +98,12 @@ async def _get_access_token() -> str:
         return _cj_token
 
 
-async def _cj_get(endpoint: str, params: dict = None, retry: bool = True) -> dict:
-    """Make authenticated GET request to CJ API, auto-refresh token on 401."""
+async def _cj_get(endpoint: str, params: dict = None, retry: bool = True, _rate_retries: int = 0) -> dict:
+    """Make authenticated GET request to CJ API, auto-refresh token on 401,
+    and auto-retry when CJ's QPS rate limit (1 req/second) is hit."""
     global _cj_token
 
+    await _cj_throttle()
     token = _cj_token or await _get_access_token()
 
     async with httpx.AsyncClient(timeout=20.0, verify=False) as client:
@@ -96,12 +114,18 @@ async def _cj_get(endpoint: str, params: dict = None, retry: bool = True) -> dic
         )
         data = resp.json()
 
+        # Rate limited ("Too Many Requests, QPS limit is 1time/1second") — wait and retry
+        message = str(data.get("message", ""))
+        if (resp.status_code == 429 or "too many requests" in message.lower()) and _rate_retries < 3:
+            await asyncio.sleep(1.2)
+            return await _cj_get(endpoint, params, retry=retry, _rate_retries=_rate_retries + 1)
+
         # Token expired — refresh and retry once
         if data.get("code") in (1600001, 1600002, 1600003) and retry:
             _cj_token = None
             _cj_refresh_token = None
             await _get_access_token()
-            return await _cj_get(endpoint, params, retry=False)
+            return await _cj_get(endpoint, params, retry=False, _rate_retries=_rate_retries)
 
         return data
 

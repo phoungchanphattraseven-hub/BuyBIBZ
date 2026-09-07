@@ -47,6 +47,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                     <span>Products</span>
                 </button>
+                <button class="sidebar-item" onclick="switchSection('users')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Users</span>
+                </button>
                 <div class="sidebar-spacer"></div>
                 <a href="../index.html" class="sidebar-item exit-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -166,6 +170,99 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- 4. Users Management Section -->
+                <section id="section-users" class="content-section">
+                    <div class="admin-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">User Accounts</h3>
+                            <label class="admin-table-search" for="user-search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                                <input id="user-search" type="search" placeholder="Search name, email, role…" autocomplete="off" oninput="filterUsers()">
+                            </label>
+                        </div>
+                        <!-- Stats bar -->
+                        <div id="user-stats-bar" style="display:flex;gap:16px;padding:12px 0 4px;flex-wrap:wrap;">
+                            <span id="user-stat-total" style="font-size:0.8rem;color:var(--text-muted);">Loading…</span>
+                        </div>
+                        <div class="admin-table-wrapper">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Location</th>
+                                        <th>Role</th>
+                                        <th>Joined</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-table">
+                                    <tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted);">Loading users…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Role Modal -->
+    <div class="modal-backdrop" id="user-role-backdrop" onclick="closeUserRoleModal()"></div>
+    <div class="modal" id="user-role-modal" style="max-width:420px;" role="dialog" aria-modal="true" aria-labelledby="user-role-title">
+        <div class="modal-header">
+            <div>
+                <span class="modal-eyebrow">Edit Role</span>
+                <h2 id="user-role-title">Change User Role</h2>
+            </div>
+            <button class="modal-close" type="button" onclick="closeUserRoleModal()" aria-label="Close">✕</button>
+        </div>
+        <div style="padding:20px 24px 24px;">
+            <p id="user-role-desc" style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:20px;"></p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:var(--transition);" id="role-opt-customer">
+                    <input type="radio" name="user-role-pick" value="customer" style="accent-color:var(--accent);">
+                    <div>
+                        <div style="font-weight:600;font-size:0.875rem;">Customer</div>
+                        <div style="font-size:0.78rem;color:var(--text-muted);">Regular shopper — can browse, buy, and review products</div>
+                    </div>
+                </label>
+                <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:var(--transition);" id="role-opt-admin">
+                    <input type="radio" name="user-role-pick" value="admin" style="accent-color:var(--accent);">
+                    <div>
+                        <div style="font-weight:600;font-size:0.875rem;">Admin</div>
+                        <div style="font-size:0.78rem;color:var(--text-muted);">Full access — can manage products, orders, and users</div>
+                    </div>
+                </label>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="closeUserRoleModal()">Cancel</button>
+                <button class="btn btn-primary" id="save-role-btn" onclick="saveUserRole()">Save Role</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Confirm Modal -->
+    <div class="modal-backdrop" id="delete-user-backdrop" onclick="closeDeleteUserModal()"></div>
+    <div class="modal" id="delete-user-modal" style="max-width:400px;" role="dialog" aria-modal="true" aria-labelledby="delete-user-title">
+        <div class="modal-header">
+            <div>
+                <span class="modal-eyebrow" style="color:var(--danger);">Danger Zone</span>
+                <h2 id="delete-user-title">Delete Account</h2>
+            </div>
+            <button class="modal-close" type="button" onclick="closeDeleteUserModal()" aria-label="Close">✕</button>
+        </div>
+        <div style="padding:20px 24px 24px;">
+            <p id="delete-user-desc" style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:20px;"></p>
+            <div style="background:var(--danger-bg);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm);padding:12px 14px;font-size:0.8rem;color:var(--danger);margin-bottom:20px;">
+                ⚠️ This action is permanent. The user's account, profile, and all associated data will be deleted.
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="closeDeleteUserModal()">Cancel</button>
+                <button class="btn" id="confirm-delete-user-btn" onclick="confirmDeleteUser()"
+                    style="background:var(--danger);color:#fff;border-color:var(--danger);">Delete Account</button>
             </div>
         </div>
     </div>
@@ -485,7 +582,7 @@
                                 <button class="btn btn-secondary btn-sm" id="cj-next-btn" onclick="cjChangePage(1)" style="padding:4px 10px;font-size:0.78rem;">Next →</button>
                             </div>
                         </div>
-                        <div id="cj-product-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:340px;overflow-y:auto;"></div>
+                        <div id="cj-product-grid" style="display:grid;grid-template-columns:1fr;gap:8px;max-height:340px;overflow-y:auto;"></div>
                     </div>
                     <div id="cj-search-loading" style="display:none;text-align:center;padding:30px;">
                         <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:#10b981;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
@@ -690,10 +787,17 @@
             const titles = {
                 dashboard: 'Overview',
                 orders: 'Orders',
-                products: 'Products'
+                products: 'Products',
+                users: 'Users'
             };
             document.getElementById('page-title').textContent = titles[sectionId] || 'Overview';
             
+            // Lazy-load users on first visit
+            if (sectionId === 'users' && !window._usersLoaded) {
+                loadAdminUsers();
+                window._usersLoaded = true;
+            }
+
             // Close mobile sidebar if open
             document.querySelector('.admin-sidebar').classList.remove('active');
         }
@@ -1824,7 +1928,7 @@
                     <div id="cjcard-${p.cj_pid}" onclick="toggleCjProduct('${p.cj_pid}', this)"
                         style="display:flex;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s ease;background:var(--bg-card);">
                         <img src="${p.image_url || ''}" referrerpolicy="no-referrer"
-                            style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;"
+                            style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0;"
                             onerror="this.src='https://via.placeholder.com/56?text=No+Img'">
                         <div style="flex:1;min-width:0;">
                             <div style="font-size:0.78rem;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${p.name}</div>
@@ -1900,6 +2004,216 @@
                 showToast('CJ import error: ' + err.message, 'error');
                 btn.disabled = false;
                 btn.textContent = '↓ Import Selected';
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  USERS MANAGEMENT
+        // ─────────────────────────────────────────────────────────
+
+        let allUsers = [];         // full fetched list
+        let filteredUsers = [];    // after search filter
+        let pendingRoleUserId = null;
+        let pendingDeleteUserId = null;
+
+        async function loadAdminUsers() {
+            const tbody = document.getElementById('admin-users-table');
+            tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted);">Loading users…</td></tr>`;
+            try {
+                const token = api.getToken();
+                const res = await fetch(`${API_BASE}/api/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                allUsers = data.users || [];
+                filteredUsers = [...allUsers];
+                renderUsersTable(filteredUsers);
+                updateUserStats(allUsers);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--danger);">Failed to load users: ${err.message}</td></tr>`;
+            }
+        }
+
+        function updateUserStats(users) {
+            const total = users.length;
+            const admins = users.filter(u => u.role === 'admin').length;
+            const customers = users.filter(u => u.role === 'customer').length;
+            document.getElementById('user-stat-total').innerHTML =
+                `<strong>${total}</strong> total &nbsp;·&nbsp; <strong>${admins}</strong> admin${admins !== 1 ? 's' : ''} &nbsp;·&nbsp; <strong>${customers}</strong> customer${customers !== 1 ? 's' : ''}`;
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('admin-users-table');
+            if (!users.length) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-muted);">No users found</td></tr>`;
+                return;
+            }
+            const currentUserId = api.getUser()?.id;
+            tbody.innerHTML = users.map(u => {
+                const name = u.full_name || '—';
+                const email = u.email || '—';
+                const phone = u.phone || '—';
+                const location = [u.city || u.province].filter(Boolean).join(', ') || '—';
+                const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+                const isCurrentUser = u.id === currentUserId;
+                const roleBadge = u.role === 'admin'
+                    ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.72rem;font-weight:700;background:rgba(99,102,241,0.12);color:var(--accent);">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Admin
+                        </span>`
+                    : `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.72rem;font-weight:600;background:var(--bg-input);color:var(--text-muted);">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                            Customer
+                        </span>`;
+                const youBadge = isCurrentUser ? `<span style="margin-left:6px;font-size:0.68rem;padding:1px 6px;background:var(--success-bg);color:var(--success);border-radius:99px;font-weight:600;">You</span>` : '';
+                const avatarLetter = (u.full_name || u.email || '?')[0].toUpperCase();
+                const avatarUrl = u.avatar_url || '';
+                const avatarHtml = avatarUrl
+                    ? `<img src="${avatarUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="${avatarLetter}">`
+                    : `<div style="width:32px;height:32px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">${avatarLetter}</div>`;
+
+                return `<tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            ${avatarHtml}
+                            <div>
+                                <div style="font-weight:600;font-size:0.875rem;">${escapeHtml(name)}${youBadge}</div>
+                                <div style="font-size:0.75rem;color:var(--text-muted);font-family:monospace;">${u.id.slice(0,8)}…</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:0.85rem;">${escapeHtml(email)}</td>
+                    <td style="font-size:0.85rem;">${escapeHtml(phone)}</td>
+                    <td style="font-size:0.85rem;">${escapeHtml(location)}</td>
+                    <td>${roleBadge}</td>
+                    <td style="font-size:0.82rem;color:var(--text-muted);">${joined}</td>
+                    <td>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn btn-secondary" style="padding:5px 10px;font-size:0.78rem;"
+                                onclick="openUserRoleModal('${u.id}', '${escapeHtml(name)}', '${u.role}')">
+                                Edit Role
+                            </button>
+                            ${!isCurrentUser ? `<button class="btn" style="padding:5px 10px;font-size:0.78rem;background:var(--danger-bg);color:var(--danger);border-color:rgba(239,68,68,0.2);"
+                                onclick="openDeleteUserModal('${u.id}', '${escapeHtml(name)}')">
+                                Delete
+                            </button>` : ''}
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('user-search').value.toLowerCase().trim();
+            if (!q) {
+                filteredUsers = [...allUsers];
+            } else {
+                filteredUsers = allUsers.filter(u =>
+                    (u.full_name || '').toLowerCase().includes(q) ||
+                    (u.email || '').toLowerCase().includes(q) ||
+                    (u.role || '').toLowerCase().includes(q) ||
+                    (u.city || '').toLowerCase().includes(q) ||
+                    (u.phone || '').includes(q)
+                );
+            }
+            renderUsersTable(filteredUsers);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
+        // ── Role Modal ──────────────────────────────────────────
+        function openUserRoleModal(userId, name, currentRole) {
+            pendingRoleUserId = userId;
+            document.getElementById('user-role-title').textContent = 'Change Role — ' + name;
+            document.getElementById('user-role-desc').textContent =
+                `Select the new role for ${name}. Admins have full access to the dashboard.`;
+            document.querySelectorAll('input[name="user-role-pick"]').forEach(r => {
+                r.checked = r.value === currentRole;
+            });
+            document.getElementById('user-role-backdrop').style.display = 'block';
+            document.getElementById('user-role-modal').style.display = 'block';
+        }
+
+        function closeUserRoleModal() {
+            document.getElementById('user-role-backdrop').style.display = 'none';
+            document.getElementById('user-role-modal').style.display = 'none';
+            pendingRoleUserId = null;
+        }
+
+        async function saveUserRole() {
+            if (!pendingRoleUserId) return;
+            const selected = document.querySelector('input[name="user-role-pick"]:checked');
+            if (!selected) { showToast('Select a role first', 'error'); return; }
+            const newRole = selected.value;
+            const btn = document.getElementById('save-role-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+            try {
+                const token = api.getToken();
+                const res = await fetch(`${API_BASE}/api/admin/users/${pendingRoleUserId}/role`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: newRole })
+                });
+                if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Update failed'); }
+                // Update local data
+                const user = allUsers.find(u => u.id === pendingRoleUserId);
+                if (user) user.role = newRole;
+                filterUsers();
+                updateUserStats(allUsers);
+                showToast('Role updated successfully', 'success');
+                closeUserRoleModal();
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Role';
+            }
+        }
+
+        // ── Delete Modal ────────────────────────────────────────
+        function openDeleteUserModal(userId, name) {
+            pendingDeleteUserId = userId;
+            document.getElementById('delete-user-title').textContent = 'Delete — ' + name;
+            document.getElementById('delete-user-desc').textContent =
+                `You are about to permanently delete the account for "${name}". This cannot be undone.`;
+            document.getElementById('delete-user-backdrop').style.display = 'block';
+            document.getElementById('delete-user-modal').style.display = 'block';
+        }
+
+        function closeDeleteUserModal() {
+            document.getElementById('delete-user-backdrop').style.display = 'none';
+            document.getElementById('delete-user-modal').style.display = 'none';
+            pendingDeleteUserId = null;
+        }
+
+        async function confirmDeleteUser() {
+            if (!pendingDeleteUserId) return;
+            const btn = document.getElementById('confirm-delete-user-btn');
+            btn.disabled = true;
+            btn.textContent = 'Deleting…';
+            try {
+                const token = api.getToken();
+                const res = await fetch(`${API_BASE}/api/admin/users/${pendingDeleteUserId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Delete failed'); }
+                allUsers = allUsers.filter(u => u.id !== pendingDeleteUserId);
+                filteredUsers = filteredUsers.filter(u => u.id !== pendingDeleteUserId);
+                renderUsersTable(filteredUsers);
+                updateUserStats(allUsers);
+                showToast('User deleted successfully', 'success');
+                closeDeleteUserModal();
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Delete Account';
             }
         }
     </script>

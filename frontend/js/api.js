@@ -202,11 +202,11 @@ class ApiClient {
     }
 
     // POST
-    async post(endpoint, body) {
+    async post(endpoint, body, timeoutMs = 10000) {
         return this.request(endpoint, {
             method: 'POST',
             body: JSON.stringify(body),
-        });
+        }, timeoutMs);
     }
 
     // PUT
@@ -395,11 +395,13 @@ class ApiClient {
     }
 
     async cjImportProduct(pid, categoryId = null) {
-        return this.post('/api/products/cj/import', { pid, category_id: categoryId });
+        // CJ fetch + rate-limit retries can be slow; give it a full minute
+        return this.post('/api/products/cj/import', { pid, category_id: categoryId }, 60000);
     }
 
     async cjBulkImport(pids, categoryId = null) {
-        return this.post('/api/products/cj/import-bulk', { pids, category_id: categoryId });
+        // Sequential imports at CJ's 1 req/second limit: ~3s per product
+        return this.post('/api/products/cj/import-bulk', { pids, category_id: categoryId }, 180000);
     }
 
     async getStats() {

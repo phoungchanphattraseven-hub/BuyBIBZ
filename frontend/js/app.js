@@ -182,7 +182,7 @@ function applyCurrencyBodyClass() {
     try {
         const prefsVal = localStorage.getItem('buybibz-prefs');
         if (prefsVal) prefs = JSON.parse(prefsVal);
-    } catch (e) {}
+    } catch (e) { }
     if ((prefs.currency || 'USD') === 'KHR') {
         document.body.classList.add('currency-khr');
     } else {
@@ -414,7 +414,7 @@ function toggleMobileNav() {
         const user = api.getUser();
         const isLoggedIn = api.isLoggedIn();
         const isAdmin = api.isAdmin();
-        
+
         const isSubfolder = window.location.pathname.includes('/admin/');
         const prefix = isSubfolder ? '../' : '';
         const currentPage = isSubfolder ? 'admin' : (window.location.pathname.split('/').pop() || 'index.html');
@@ -628,13 +628,13 @@ function renderProductCard(product) {
                         ${product.compare_price ? `<span class="price-compare">${formatPrice(product.compare_price)}</span>` : ''}
                     </div>
                     ${isOutOfStock
-                        ? `<button class="product-card-add-btn product-card-add-btn-oos" disabled title="${_t('product.out_of_stock')}" style="opacity:0.4;cursor:not-allowed;background:var(--text-tertiary);">
+            ? `<button class="product-card-add-btn product-card-add-btn-oos" disabled title="${_t('product.out_of_stock')}" style="opacity:0.4;cursor:not-allowed;background:var(--text-tertiary);">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                            </button>`
-                        : `<button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? _t('product.choose_options') : _t('product.add_to_cart')}">
+            : `<button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? _t('product.choose_options') : _t('product.add_to_cart')}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                            </button>`
-                    }
+        }
                 </div>
             </div>
         </div>
@@ -669,10 +669,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFooter();
     renderMobileBottomNav();
     initScrollAnimations();
-    
+
     // Update cart badge immediately (will show cached count, then update with API)
     updateCartBadge();
-    
+
     // Apply translations to static data-i18n elements after render
     if (typeof i18n !== 'undefined') {
         i18n.applyTranslations();
@@ -683,15 +683,15 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderMobileBottomNav() {
     // Only render on mobile screens
     if (window.innerWidth > 768) return;
-    
+
     // Check if already exists
     if (document.querySelector('.mobile-bottom-nav')) return;
-    
+
     const isSubfolder = window.location.pathname.includes('/admin/');
     const prefix = isSubfolder ? '../' : '';
     const currentPage = isSubfolder ? 'admin' : (window.location.pathname.split('/').pop() || 'index.html');
     const isLoggedIn = api.isLoggedIn();
-    
+
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
     const bottomNav = document.createElement('nav');
     bottomNav.className = 'mobile-bottom-nav';
@@ -751,9 +751,9 @@ function renderMobileBottomNav() {
             </a>
         `}
     `;
-    
+
     document.body.appendChild(bottomNav);
-    
+
     // Update mobile cart badge
     updateMobileCartBadge();
 }
@@ -797,7 +797,7 @@ async function updateMobileCartBadge() {
 
 // Update both cart badges
 const originalUpdateCartBadge = updateCartBadge;
-updateCartBadge = async function() {
+updateCartBadge = async function () {
     await originalUpdateCartBadge();
     await updateMobileCartBadge();
 };

@@ -501,6 +501,18 @@ async def cj_import_product(
         counter += 1
     pc["slug"] = slug
 
+    # Check if product with this cj_pid is already imported
+    try:
+        existing_cj = supabase.table("products").select("id, name").filter("attributes->>cj_pid", "eq", pid).execute()
+        if existing_cj.data:
+            return {
+                "message": f"Product '{existing_cj.data[0].get('name')}' is already imported.",
+                "product": existing_cj.data[0],
+                "already_imported": True,
+            }
+    except Exception:
+        pass
+
     # Insert
     try:
         insert_resp = supabase.table("products").insert(pc).execute()
@@ -589,6 +601,14 @@ async def cj_bulk_import(
                 counter += 1
             pc["slug"] = slug
 
+            # Check if already imported
+            try:
+                existing_cj = supabase.table("products").select("id, name").filter("attributes->>cj_pid", "eq", pid).execute()
+                if existing_cj.data:
+                    return {"pid": pid, "status": "success", "product_id": existing_cj.data[0]["id"], "name": existing_cj.data[0].get("name"), "already_imported": True}
+            except Exception:
+                pass
+
             insert_resp = supabase.table("products").insert(pc).execute()
             if not insert_resp.data:
                 return {"pid": pid, "status": "error", "reason": "DB insert failed"}
@@ -609,14 +629,12 @@ async def cj_bulk_import(
         except Exception as e:
             return {"pid": pid, "status": "error", "reason": str(e)}
 
-    # Process 3 at a time
+    # Process sequentially with spacing — CJ API allows only 1 request/second
     results = []
-    for i in range(0, len(pids), 3):
-        batch = pids[i:i + 3]
-        batch_results = await asyncio.gather(*[_import_one(pid) for pid in batch])
-        results.extend(batch_results)
-        if i + 3 < len(pids):
-            await asyncio.sleep(1)
+    for idx, pid in enumerate(pids):
+        results.append(await _import_one(pid))
+        if idx < len(pids) - 1:
+            await asyncio.sleep(1.1)
 
     success_count = sum(1 for r in results if r["status"] == "success")
     return {

@@ -120,6 +120,15 @@
                         </select>
                         <svg class="sort-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
                     </div>
+                    <!-- Mobile Grid Toggle: 2-col and list only -->
+                    <div class="grid-toggle mobile-grid-toggle" aria-label="Grid layout">
+                        <button class="grid-toggle-btn" data-cols="2" title="2 columns" aria-label="2 columns">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="7" height="7" rx="1"/><rect x="9" y="0" width="7" height="7" rx="1"/><rect x="0" y="9" width="7" height="7" rx="1"/><rect x="9" y="9" width="7" height="7" rx="1"/></svg>
+                        </button>
+                        <button class="grid-toggle-btn" data-cols="list" title="List view" aria-label="List view">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="16" height="4" rx="1"/><rect x="0" y="6" width="16" height="4" rx="1"/><rect x="0" y="12" width="16" height="4" rx="1"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -184,6 +193,21 @@
                 <div class="catalog-main-content">
                     <div class="catalog-header desktop-only-header">
                         <span class="catalog-count" id="results-count">Loading...</span>
+                        <!-- Grid Layout Toggle -->
+                        <div class="grid-toggle" id="grid-toggle" role="group" aria-label="Grid layout">
+                            <button class="grid-toggle-btn" data-cols="2" title="2 columns" aria-label="2 columns">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="7" height="7" rx="1"/><rect x="9" y="0" width="7" height="7" rx="1"/><rect x="0" y="9" width="7" height="7" rx="1"/><rect x="9" y="9" width="7" height="7" rx="1"/></svg>
+                            </button>
+                            <button class="grid-toggle-btn active" data-cols="3" title="3 columns" aria-label="3 columns">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="4" height="7" rx="1"/><rect x="6" y="0" width="4" height="7" rx="1"/><rect x="12" y="0" width="4" height="7" rx="1"/><rect x="0" y="9" width="4" height="7" rx="1"/><rect x="6" y="9" width="4" height="7" rx="1"/><rect x="12" y="9" width="4" height="7" rx="1"/></svg>
+                            </button>
+                            <button class="grid-toggle-btn" data-cols="4" title="4 columns" aria-label="4 columns">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="3" height="7" rx="1"/><rect x="4.3" y="0" width="3" height="7" rx="1"/><rect x="8.7" y="0" width="3" height="7" rx="1"/><rect x="13" y="0" width="3" height="7" rx="1"/><rect x="0" y="9" width="3" height="7" rx="1"/><rect x="4.3" y="9" width="3" height="7" rx="1"/><rect x="8.7" y="9" width="3" height="7" rx="1"/><rect x="13" y="9" width="3" height="7" rx="1"/></svg>
+                            </button>
+                            <button class="grid-toggle-btn" data-cols="list" title="List view" aria-label="List view">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="16" height="4" rx="1"/><rect x="0" y="6" width="16" height="4" rx="1"/><rect x="0" y="12" width="16" height="4" rx="1"/></svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="products-grid" id="products-grid">
@@ -966,6 +990,48 @@
             loadProducts();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        // ── Grid Layout Toggle ─────────────────────────────────
+        const GRID_PREF_KEY = 'buybibz-grid-cols';
+
+        function initGridToggle() {
+            const isMobile = window.innerWidth <= 1024;
+            const defaultCols = isMobile ? '2' : '3';
+            let saved = localStorage.getItem(GRID_PREF_KEY) || defaultCols;
+            // On mobile, 3-col and 4-col are not shown — clamp to 2-col
+            if (isMobile && (saved === '3' || saved === '4')) saved = '2';
+            applyGridLayout(saved, false);
+
+            document.querySelectorAll('.grid-toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    applyGridLayout(btn.dataset.cols, true);
+                });
+            });
+        }
+
+        function applyGridLayout(cols, save) {
+            const grid = document.getElementById('products-grid');
+            if (!grid) return;
+
+            // Remove all layout classes
+            grid.classList.remove('grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-list');
+
+            if (cols === 'list' || cols === '1') {
+                grid.classList.add('grid-list', 'grid-cols-1');
+            } else {
+                grid.classList.add(`grid-cols-${cols}`);
+            }
+
+            // Update active button
+            document.querySelectorAll('.grid-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cols === cols || (cols === '1' && btn.dataset.cols === 'list') || (cols === 'list' && btn.dataset.cols === '1'));
+            });
+
+            if (save) localStorage.setItem(GRID_PREF_KEY, cols);
+        }
+
+        // Init toggle on DOM ready (after DOMContentLoaded listener above already ran)
+        document.addEventListener('DOMContentLoaded', initGridToggle);
     </script>
 </body>
 </html>
