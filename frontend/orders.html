@@ -237,10 +237,6 @@
                         +         '<div class="summary-row"><span class="summary-label">' + _t('cart.transaction_fee') + '</span><span class="summary-value">' + formatPrice(order.transaction_fee || 0) + '</span></div>'
                         +         '<div class="summary-row summary-total"><span>' + _t('orders.total') + '</span><span>' + formatPrice(order.total) + '</span></div>'
                         +       '</div>'
-                        +       '<button class="btn btn-secondary btn-sm order-print-btn" data-print-order="' + order.id + '">'
-                        +         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>'
-                        +         _t('orders.print_receipt')
-                        +       '</button>'
                         +     '</aside>'
                         +   '</div>'
                         + '</div>'
@@ -254,9 +250,6 @@
                     // Toggle order details
                     const header = e.target.closest('[data-toggle-order]');
                     if (header) { toggleOrderDetails(parseInt(header.dataset.toggleOrder)); return; }
-                    // Print receipt
-                    const printBtn = e.target.closest('[data-print-order]');
-                    if (printBtn) { printReceipt(parseInt(printBtn.dataset.printOrder)); return; }
                 }, { once: false });
                 
             } catch (err) {
@@ -365,112 +358,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function printReceipt(orderId) {
-            const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
-            const order = _ordersCache.get(orderId);
-            if (!order) { showToast('Order data not available', 'error'); return; }
-            const items = order.order_items || [];
-            const printWindow = window.open('', '_blank', 'width=800,height=900');
-            
-            const itemsHtml = items.map(item => `
-                <tr>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
-                        <div style="font-weight: 600; color: #111;">${item.product_name}</div>
-                    </td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center; color: #555;">
-                        ${formatPrice(item.price)}
-                    </td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center; color: #555;">
-                        ${item.quantity}
-                    </td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: 600; color: #111;">
-                        ${formatPrice(item.subtotal)}
-                    </td>
-                </tr>
-            `).join('');
-
-            // Build receipt using string concatenation to avoid parser issues
-            const closeTag = (tag) => '</' + tag + '>';
-
-            const receiptHtml = '<!DOCTYPE html>'
-                + '<html><head>'
-                + '<title>' + _t('orders.print_receipt') + ' - ' + (order.order_uid || order.id) + closeTag('title')
-                + '<style>'
-                + 'body{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#333;margin:0;padding:40px;line-height:1.6;background:#fff}'
-                + '.invoice-box{max-width:800px;margin:auto}'
-                + '.logo{font-size:28px;font-weight:800;color:#1B8C3D;letter-spacing:-0.5px}'
-                + '.invoice-title{font-size:24px;font-weight:700;text-align:right;color:#111;text-transform:uppercase}'
-                + '.section-title{font-size:12px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:10px;letter-spacing:0.5px}'
-                + '.info-text{font-size:14px;color:#555}'
-                + '.info-text strong{color:#111}'
-                + 'table{width:100%;border-collapse:collapse}'
-                + '.items-table th{border-bottom:2px solid #1B8C3D;padding-bottom:8px;text-align:left;font-size:12px;color:#888;text-transform:uppercase;font-weight:700}'
-                + '.totals-table{width:320px;margin-left:auto;margin-bottom:40px}'
-                + '.totals-table td{padding:8px 0;font-size:14px}'
-                + '.grand-total td{border-top:2px solid #eee;font-size:18px;font-weight:700;color:#1B8C3D;padding-top:12px}'
-                + '.receipt-footer{border-top:1px solid #eee;padding-top:20px;text-align:center;font-size:12px;color:#888;margin-top:50px}'
-                + '@media print{body{padding:0}.no-print{display:none}}'
-                + closeTag('style')
-                + closeTag('head')
-                + '<body><div class="invoice-box">'
-                // Header
-                + '<table style="margin-bottom:40px"><tr>'
-                + '<td><div class="logo">BuyBIBZ</div><div style="font-size:12px;color:#888;margin-top:4px;">Premium E-Commerce Marketplace</div></td>'
-                + '<td class="invoice-title">' + _t('orders.print_receipt')
-                + '<div style="font-size:13px;font-weight:normal;color:#555;margin-top:6px;text-transform:none;">'
-                + _t('orders.order_uid') + ': <strong>' + (order.order_uid || order.id) + '</strong><br>'
-                + formatDate(order.created_at)
-                + '</div></td>'
-                + '</tr></table>'
-                // Shipping
-                + '<table style="margin-bottom:40px"><tr>'
-                + '<td style="width:50%;vertical-align:top">'
-                + '<div class="section-title">' + _t('checkout.shipping_details') + '</div>'
-                + '<div class="info-text"><strong>' + (order.shipping_name || '') + '</strong><br>'
-                + (order.shipping_address ? order.shipping_address + '<br>' : '')
-                + (order.shipping_village ? order.shipping_village + '<br>' : '')
-                + (order.shipping_commune ? order.shipping_commune + '<br>' : '')
-                + (order.shipping_district ? order.shipping_district + '<br>' : '')
-                + ((order.shipping_province || order.shipping_city) ? (order.shipping_province || order.shipping_city) + (order.shipping_postal ? ', ' + order.shipping_postal : '') + '<br>' : (order.shipping_postal ? order.shipping_postal + '<br>' : ''))
-                + (order.shipping_phone ? '&#128222; ' + order.shipping_phone : '')
-                + (order.notes ? '<br><br><em>' + _t('orders.notes') + ': ' + order.notes + '</em>' : '')
-                + '</div></td>'
-                + '<td style="width:50%;text-align:right;vertical-align:top">'
-                + '<div class="section-title">' + _t('checkout.payment_method') + '</div>'
-                + '<strong style="color:#1B8C3D">' + order.status.toUpperCase() + '</strong>'
-                + '</td></tr></table>'
-                // Items
-                + '<table class="items-table" style="margin-bottom:30px"><thead><tr>'
-                + '<th style="width:55%">' + _t('orders.items_label') + '</th>'
-                + '<th style="width:15%;text-align:center">Price</th>'
-                + '<th style="width:15%;text-align:center">Qty</th>'
-                + '<th style="width:15%;text-align:right">' + _t('orders.total') + '</th>'
-                + '</tr></thead><tbody>'
-                + itemsHtml
-                + '</tbody></table>'
-                // Totals
-                + '<table class="totals-table"><tr>'
-                + '<td style="color:#888">' + _t('orders.subtotal') + '</td>'
-                + '<td style="text-align:right;font-weight:600;color:#111">' + formatPrice((order.total || 0) - (order.shipping_fee || 0) - (order.transaction_fee || 0)) + '</td>'
-                + '</tr><tr>'
-                + '<td style="color:#888">' + _t('orders.intl_shipping') + '</td>'
-                + '<td style="text-align:right;font-weight:600;color:#111">' + (order.shipping_fee > 0 ? formatPrice(order.shipping_fee) : _t('orders.free')) + '</td>'
-                + '</tr><tr>'
-                + '<td style="color:#888">' + _t('cart.transaction_fee') + '</td>'
-                + '<td style="text-align:right;font-weight:600;color:#111">' + formatPrice(order.transaction_fee || 0) + '</td>'
-                + '</tr><tr class="grand-total">'
-                + '<td>' + _t('orders.total') + '</td>'
-                + '<td style="text-align:right">' + formatPrice(order.total) + '</td>'
-                + '</tr></table>'
-                + '<div class="receipt-footer">Thank you for shopping with BuyBIBZ!<br>support@buybibz.com</div>'
-                + '</div>' + closeTag('body') + closeTag('html');
-
-            printWindow.document.write(receiptHtml);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
         }
     </script>
 </body>

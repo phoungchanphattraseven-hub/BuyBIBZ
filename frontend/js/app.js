@@ -727,12 +727,15 @@ function renderMobileBottomNav() {
         
         ${isLoggedIn ? `
             <a href="${prefix}orders.html" class="mobile-bottom-nav-item ${currentPage === 'orders.html' ? 'active' : ''}">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m7.5 4.27 9 5.15"/>
-                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-                    <path d="m3.3 7 8.7 5 8.7-5"/>
-                    <path d="M12 22V12"/>
-                </svg>
+                <div style="position:relative;display:inline-flex;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7.5 4.27 9 5.15"/>
+                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                        <path d="m3.3 7 8.7 5 8.7-5"/>
+                        <path d="M12 22V12"/>
+                    </svg>
+                    <span class="cart-badge" id="order-badge" style="display:none;">0</span>
+                </div>
                 <span data-i18n="mobile_nav.orders">${_t('mobile_nav.orders')}</span>
             </a>
             
@@ -758,6 +761,7 @@ function renderMobileBottomNav() {
 
     // Update mobile cart badge
     updateMobileCartBadge();
+    updateOrderBadge();
 }
 
 // ── Update Mobile Cart Badge ────────────────────────────────
@@ -802,6 +806,7 @@ const originalUpdateCartBadge = updateCartBadge;
 updateCartBadge = async function () {
     await originalUpdateCartBadge();
     await updateMobileCartBadge();
+    updateOrderBadge();
 };
 
 // Re-render bottom nav on window resize
@@ -814,3 +819,42 @@ window.addEventListener('resize', () => {
         renderMobileBottomNav();
     }
 });
+
+// ── Order Badge Update ───────────────────────────────────────
+async function updateOrderBadge() {
+    const badge = document.getElementById('order-badge');
+    if (!badge) return;
+
+    if (!api.isLoggedIn()) {
+        badge.style.display = 'none';
+        return;
+    }
+
+    // Show cached count immediately
+    const cached = localStorage.getItem('order_badge_count');
+    if (cached && parseInt(cached) > 0) {
+        badge.textContent = cached;
+        badge.style.display = 'flex';
+    }
+
+    try {
+        const data = await api.request('/api/orders');
+        const orders = (data && data.orders) ? data.orders : [];
+        // Count orders with pending/processing status
+        const activeCount = orders.filter(o =>
+            o.status === 'pending' || o.status === 'processing'
+        ).length;
+
+        if (activeCount > 0) {
+            badge.textContent = activeCount > 9 ? '9+' : activeCount;
+            badge.style.display = 'flex';
+            localStorage.setItem('order_badge_count', activeCount);
+        } else {
+            badge.style.display = 'none';
+            localStorage.removeItem('order_badge_count');
+        }
+    } catch (e) {
+        // Silently fail — badge is non-critical
+        if (!cached || parseInt(cached) === 0) badge.style.display = 'none';
+    }
+}
