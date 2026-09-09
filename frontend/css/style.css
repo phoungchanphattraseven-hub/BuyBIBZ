@@ -772,12 +772,15 @@ svg:not([class*="width"]):not([class*="size"]) {
     transition: all var(--transition-base);
     cursor: pointer;
     position: relative;
+    /* Equal height rows — body fills remaining space so price always aligns */
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
     border-color: var(--border-hover);
     box-shadow: var(--shadow-glow);
-    transform: translateY(-6px);
+    transform: translateY(-4px);
 }
 
 .product-card-image {
@@ -806,28 +809,30 @@ svg:not([class*="width"]):not([class*="size"]) {
     position: absolute;
     top: var(--space-sm);
     left: var(--space-sm);
-    padding: 3px 10px;
-    border-radius: var(--radius-full);
-    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.6rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     white-space: nowrap;
     z-index: 2;
-    line-height: 1.4;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    line-height: 1.5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 /* Stack of left-corner badges (sale / free shipping / out of stock) */
 .product-card-badges {
     position: absolute;
-    top: var(--space-sm);
-    left: var(--space-sm);
+    top: 8px;
+    left: 8px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
     z-index: 2;
+    /* Prevent badges from overflowing horizontally */
+    max-width: calc(100% - 16px);
 }
 
 .product-card-badges .product-card-badge {
@@ -847,34 +852,30 @@ svg:not([class*="width"]):not([class*="size"]) {
 .badge-featured {
     background: var(--status-warning);
     color: var(--text-inverse);
-    top: var(--space-sm);
+    /* Always pinned to the top-right of .product-card (position:relative,
+       no overflow:hidden at this level) so it is never clipped */
+    position: absolute;
+    top: 8px;
     left: auto;
-    right: var(--space-sm);
+    right: 8px;
+    z-index: 3;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px 4px 8px;
+    gap: 3px;
+    padding: 3px 8px 3px 6px;
+    font-size: 0.6rem;
+    white-space: nowrap;
 }
 
 .badge-featured::before {
     content: '⭐';
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     line-height: 1;
 }
 
 .badge-shipping {
-    top: auto;
-    bottom: var(--space-sm);
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    height: 22px;
-    min-height: 22px;
-    padding: 0 8px;
-    color: #eafff1;
-    background: rgba(13, 107, 46, 0.93);
+    /* legacy — no longer used as an image overlay, kept for safety */
+    display: none;
 }
 
 .badge-oos {
@@ -882,22 +883,22 @@ svg:not([class*="width"]):not([class*="size"]) {
     bottom: var(--space-sm);
     left: auto;
     right: var(--space-sm);
-    background: rgba(239, 68, 68, 0.92);
+    background: rgba(239, 68, 68, 0.9);
     color: white;
     z-index: 3;
     display: inline-flex;
     align-items: center;
-    height: 22px;
-    min-height: 22px;
-    padding: 0 8px;
+    height: 20px;
+    min-height: 20px;
+    padding: 0 7px;
 }
 
 .badge-shipping svg,
 .product-free-shipping-badge svg {
-    width: 12px;
-    height: 12px;
-    max-width: 12px;
-    max-height: 12px;
+    width: 11px;
+    height: 11px;
+    max-width: 11px;
+    max-height: 11px;
     flex-shrink: 0;
     display: block;
     fill: none;
@@ -943,7 +944,12 @@ svg:not([class*="width"]):not([class*="size"]) {
 }
 
 .product-card-body {
-    padding: var(--space-lg);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* Price row always sits at the bottom */
+    justify-content: space-between;
 }
 
 .product-card-category {
@@ -992,8 +998,25 @@ svg:not([class*="width"]):not([class*="size"]) {
 .product-card-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-top: var(--space-sm);
+}
+
+/* Free shipping label in the card body — sits between rating and price */
+.product-card-free-shipping {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--brand-primary-light);
+    margin-bottom: var(--space-xs);
+}
+
+.product-card-free-shipping svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    stroke: var(--brand-primary-light);
 }
 
 .product-card-price {
@@ -1014,31 +1037,7 @@ svg:not([class*="width"]):not([class*="size"]) {
     text-decoration: line-through;
 }
 
-.product-card-add-btn {
-    width: 40px;
-    height: 40px;
-    min-height: 0;
-    border-radius: 50%;
-    background: var(--brand-primary);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-    border: none;
-    cursor: pointer;
-}
-
-.product-card-add-btn:hover {
-    background: var(--brand-primary-light);
-    box-shadow: var(--shadow-glow);
-    transform: scale(1.1);
-}
-
-.product-card-add-btn svg {
-    width: 20px;
-    height: 20px;
-}
+/* product-card-add-btn removed — cards are fully clickable */
 
 /* ── Hero Section ─────────────────────────────────────────── */
 .hero {
@@ -5168,14 +5167,16 @@ html[data-theme="light"] .products-grid.grid-cols-1 .product-card-image img {
 
 .products-grid.grid-list .badge-featured,
 .products-grid.grid-cols-1 .badge-featured {
-    position: absolute !important;
-    top: 6px !important;
-    right: 6px !important;
+    /* badge-featured is a child of .product-card, not .product-card-image,
+       so top/right are relative to the full card — no change needed, just
+       keep consistent sizing for list-view */
+    top: 8px !important;
+    right: 8px !important;
     left: auto !important;
     font-size: 0.62rem !important;
     font-weight: 700 !important;
-    padding: 2px 6px !important;
-    border-radius: 5px !important;
+    padding: 2px 7px 2px 5px !important;
+    border-radius: var(--radius-sm) !important;
     z-index: 3 !important;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) !important;
 }
@@ -6724,26 +6725,24 @@ html[data-theme="light"] .sticky-search-wrapper {
 
     .product-card-badge {
         font-size: 0.6rem;
-        padding: 2px 8px;
-        top: var(--space-xs);
-        left: var(--space-xs);
+        padding: 2px 7px;
     }
 
     .product-card-badges {
-        top: var(--space-xs);
-        left: var(--space-xs);
+        top: 6px;
+        left: 6px;
         gap: 3px;
     }
 
     .badge-featured {
-        top: var(--space-xs);
-        right: var(--space-xs);
-        padding: 3px 8px 3px 6px;
+        top: 6px;
+        right: 6px;
+        padding: 2px 7px 2px 5px;
         font-size: 0.6rem;
     }
 
     .badge-featured::before {
-        font-size: 0.6rem;
+        font-size: 0.58rem;
     }
 
     .product-card-body {
@@ -7487,12 +7486,14 @@ html[data-theme="light"] .sticky-search-wrapper {
 
     .product-card-badge {
         font-size: 0.55rem;
-        padding: 2px 6px;
+        padding: 2px 5px;
     }
 
     .badge-featured {
         font-size: 0.55rem;
-        padding: 2px 6px 2px 4px;
+        padding: 2px 5px 2px 4px;
+        top: 5px;
+        right: 5px;
     }
 
     .badge-featured::before {

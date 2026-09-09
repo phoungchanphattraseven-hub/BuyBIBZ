@@ -602,19 +602,24 @@ function renderProductCard(product) {
     const needsVariantSelection = Object.values(product.attributes || {}).some(v => Array.isArray(v) && v.length > 1);
     const _t = typeof i18n !== 'undefined' ? i18n.t.bind(i18n) : (k) => k;
 
-    // Left-corner badges stack vertically so they never overlap
-    const cardBadges = [
-        (!isOutOfStock && discount > 0) ? `<span class="product-card-badge badge-sale">-${discount}%</span>` : '',
-        hasFreeShipping ? `<span class="product-card-badge badge-shipping"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg> ${_t('product.free_shipping')}</span>` : '',
-        isOutOfStock ? `<span class="product-card-badge badge-oos">${_t('product.out_of_stock')}</span>` : '',
-    ].filter(Boolean);
+    // Image overlay: sale % top-left, featured top-right (out-of-stock top-left).
+    // Free shipping moves to the card body — keeps the image clean.
+    let imageBadge = '';
+    if (isOutOfStock) {
+        imageBadge = `<span class="product-card-badge badge-oos">${_t('product.out_of_stock')}</span>`;
+    } else if (discount > 0) {
+        imageBadge = `<span class="product-card-badge badge-sale">-${discount}%</span>`;
+    }
+
+    // Featured badge top-right — suppress when a sale badge is already shown
+    const showFeatured = product.is_featured && !isOutOfStock && discount === 0;
 
     return `
         <div class="product-card${isOutOfStock ? ' product-card-oos' : ''}" onclick="window.location.href='${prefix}product-detail.html?id=${product.id}'">
+            ${showFeatured ? `<span class="product-card-badge badge-featured">${_t('product.featured')}</span>` : ''}
             <div class="product-card-image">
                 <img src="${product.image_url || 'https://via.placeholder.com/400x400?text=No+Image'}" alt="${product.name}" loading="lazy"${isOutOfStock ? ' style="opacity:0.6;"' : ''}>
-                ${product.is_featured && !isOutOfStock ? `<span class="product-card-badge badge-featured">${_t('product.featured')}</span>` : ''}
-                ${cardBadges.length ? `<div class="product-card-badges">${cardBadges.join('')}</div>` : ''}
+                ${imageBadge ? `<div class="product-card-badges">${imageBadge}</div>` : ''}
             </div>
             <div class="product-card-body">
                 ${categoryName ? `<div class="product-card-category">${categoryName}</div>` : ''}
@@ -622,19 +627,16 @@ function renderProductCard(product) {
                 <div class="product-card-rating">
                     ${renderStars(product.rating_avg || 0, product.rating_count || 0)}
                 </div>
+                ${hasFreeShipping && !isOutOfStock ? `
+                <div class="product-card-free-shipping">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    ${_t('product.free_shipping')}
+                </div>` : ''}
                 <div class="product-card-footer">
                     <div class="product-card-price">
                         <span class="price-current">${formatPrice(product.price)}</span>
                         ${product.compare_price ? `<span class="price-compare">${formatPrice(product.compare_price)}</span>` : ''}
                     </div>
-                    ${isOutOfStock
-            ? `<button class="product-card-add-btn product-card-add-btn-oos" disabled title="${_t('product.out_of_stock')}" style="opacity:0.4;cursor:not-allowed;background:var(--text-tertiary);">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                           </button>`
-            : `<button class="product-card-add-btn" onclick="event.stopPropagation(); ${needsVariantSelection ? `window.location.href='${prefix}product-detail.html?id=${product.id}'` : `addToCart(${product.id})`}" title="${needsVariantSelection ? _t('product.choose_options') : _t('product.add_to_cart')}">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                           </button>`
-        }
                 </div>
             </div>
         </div>
