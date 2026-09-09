@@ -29,26 +29,36 @@
 
     <header class="navbar" id="navbar"></header>
 
-    <!-- Sticky Search Bar -->
+    <!-- Sticky Search & Categories Header Bar -->
     <div class="sticky-search-wrapper" id="sticky-search-wrapper">
         <div class="container">
-            <div class="page-header-search">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.3-4.3"/>
-                </svg>
-                <input type="text" id="sticky-search-input" placeholder="Search..." aria-label="Search products">
-                <button type="button" class="search-submit-btn" id="sticky-search-submit" aria-label="Search">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="sticky-search-inner">
+                <div class="page-header-search">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.3-4.3"/>
                     </svg>
-                </button>
-                <button type="button" class="search-clear-btn" id="sticky-search-clear" aria-label="Clear search" style="display: none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 6 6 18M6 6l12 12"/>
-                    </svg>
-                </button>
+                    <input type="text" id="sticky-search-input" placeholder="Search..." aria-label="Search products">
+                    <button type="button" class="search-submit-btn" id="sticky-search-submit" aria-label="Search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="search-clear-btn" id="sticky-search-clear" aria-label="Clear search" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="sticky-category-pills-container">
+                    <div class="category-pills-track" id="sticky-category-pills">
+                        <button type="button" class="category-pill active" data-category="">
+                            <span class="pill-icon">✨</span>
+                            <span class="pill-label">All Categories</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -434,6 +444,34 @@
                     });
                 }
 
+                // Render Sticky Category Pills
+                const stickyTrack = document.getElementById('sticky-category-pills');
+                if (stickyTrack) {
+                    stickyTrack.innerHTML = `
+                        <button type="button" class="category-pill ${!currentFilters.category ? 'active' : ''}" data-category="">
+                            <span class="pill-icon">✨</span>
+                            <span class="pill-label">All Categories</span>
+                        </button>
+                    `;
+                    categories.forEach(cat => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = `category-pill ${currentFilters.category == cat.id ? 'active' : ''}`;
+                        btn.dataset.category = cat.id;
+                        btn.innerHTML = `
+                            <span class="pill-icon">${cat.icon || '🏷️'}</span>
+                            <span class="pill-label">${cat.name}</span>
+                        `;
+                        btn.addEventListener('click', () => {
+                            setCategoryFilter(cat.id);
+                        });
+                        stickyTrack.appendChild(btn);
+                    });
+                    stickyTrack.querySelector('[data-category=""]').addEventListener('click', () => {
+                        setCategoryFilter('');
+                    });
+                }
+
                 // 2. Render Desktop Sidebar Categories
                 const catContainer = document.getElementById('filter-categories');
                 if (catContainer) {
@@ -526,8 +564,8 @@
         }
 
         function syncAllFilterControls() {
-            // 1. Sync category pills
-            document.querySelectorAll('#category-pills .category-pill').forEach(pill => {
+            // 1. Sync category pills (main and sticky)
+            document.querySelectorAll('#category-pills .category-pill, #sticky-category-pills .category-pill').forEach(pill => {
                 const isMatch = (pill.dataset.category || '') == (currentFilters.category || '');
                 pill.classList.toggle('active', isMatch);
                 if (isMatch) {
