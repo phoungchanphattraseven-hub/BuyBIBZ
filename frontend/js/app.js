@@ -679,6 +679,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof i18n !== 'undefined') {
         i18n.applyTranslations();
     }
+
+    // ── Sticky back button ───────────────────────────────────
+    // Show .page-back as a fixed floating chip after the user scrolls
+    // past the navbar height. Works on every page that has the element.
+    const backBtn = document.querySelector('.page-back');
+    if (backBtn) {
+        const THRESHOLD = parseInt(
+            getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
+        ) || 72;
+
+        const toggleBack = () => {
+            if (window.scrollY > THRESHOLD) {
+                backBtn.classList.add('back-visible');
+            } else {
+                backBtn.classList.remove('back-visible');
+            }
+        };
+
+        window.addEventListener('scroll', toggleBack, { passive: true });
+        toggleBack(); // run once in case page loads already scrolled
+    }
 });
 
 // ── Render Mobile Bottom Navigation ─────────────────────────

@@ -23,7 +23,7 @@
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo.jpg">
-    <link rel="stylesheet" href="css/style.css?v=4.8">
+    <link rel="stylesheet" href="css/style.css?v=1789000665">
 </head>
 <body>
 
@@ -161,6 +161,19 @@
 
                     <div class="filter-section">
                         <div class="filter-section-header">
+                            <h3>Shipping</h3>
+                        </div>
+                        <label class="filter-option filter-option-toggle" id="sidebar-free-shipping-opt">
+                            <span>🚚 Free Shipping only</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="sidebar-free-shipping-cb">
+                                <span class="toggle-track"></span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-section-header">
                             <h3 data-i18n="products.price_range">Price Range</h3>
                         </div>
                         <label class="filter-option active" data-price="">
@@ -274,6 +287,16 @@
                     <button type="button" class="sheet-chip active" data-category="">✨ <span data-i18n="products.all_categories">All Categories</span></button>
                 </div>
             </div>
+
+            <!-- Free Shipping in Bottom Sheet -->
+            <div class="sheet-section">
+                <h4 class="sheet-section-title">Shipping</h4>
+                <div class="sheet-chips-grid">
+                    <button type="button" class="sheet-chip sheet-chip-fs" id="sheet-free-shipping-chip">
+                        🚚 Free Shipping only
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="filter-sheet-footer">
             <button type="button" class="btn btn-primary btn-block btn-apply-filter" id="apply-filters-btn" data-i18n="products.show_products">
@@ -288,7 +311,7 @@
     <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/app.js?v=4.8"></script>
+    <script src="js/app.js?v=1789000665"></script>
     <script src="js/pwa-install.js"></script>
     <script>
         let currentPage = 1;
@@ -299,6 +322,7 @@
             min_price: null,
             max_price: null,
             featured: null,
+            free_shipping: false,
         };
         let categoryList = [];
 
@@ -422,7 +446,20 @@
                             <span class="pill-icon">✨</span>
                             <span class="pill-label">All Categories</span>
                         </button>
+                        <button type="button" class="category-pill pill-free-shipping${currentFilters.free_shipping ? ' active' : ''}" data-free-shipping="true">
+                            <span class="pill-icon">🚚</span>
+                            <span class="pill-label">Free Shipping</span>
+                        </button>
                     `;
+
+                    // Add click listener for 'All Categories' pill
+                    pillsTrack.querySelector('[data-category=""]').addEventListener('click', () => {
+                        setCategoryFilter('');
+                    });
+
+                    // Add click listener for Free Shipping pill
+                    pillsTrack.querySelector('.pill-free-shipping').addEventListener('click', () => toggleFreeShipping());
+
                     categories.forEach(cat => {
                         const btn = document.createElement('button');
                         btn.type = 'button';
@@ -452,7 +489,18 @@
                             <span class="pill-icon">✨</span>
                             <span class="pill-label">All Categories</span>
                         </button>
+                        <button type="button" class="category-pill pill-free-shipping${currentFilters.free_shipping ? ' active' : ''}" data-free-shipping="true">
+                            <span class="pill-icon">🚚</span>
+                            <span class="pill-label">Free Shipping</span>
+                        </button>
                     `;
+
+                    stickyTrack.querySelector('[data-category=""]').addEventListener('click', () => {
+                        setCategoryFilter('');
+                    });
+
+                    stickyTrack.querySelector('.pill-free-shipping').addEventListener('click', () => toggleFreeShipping());
+
                     categories.forEach(cat => {
                         const btn = document.createElement('button');
                         btn.type = 'button';
@@ -537,6 +585,13 @@
             loadProducts();
         }
 
+        function toggleFreeShipping() {
+            currentFilters.free_shipping = !currentFilters.free_shipping;
+            currentPage = 1;
+            syncAllFilterControls();
+            loadProducts();
+        }
+
         function setPriceFilter(priceValue) {
             const [min, max] = priceValue ? priceValue.split('-').map(Number) : [null, null];
             currentFilters.min_price = min;
@@ -558,17 +613,19 @@
             currentFilters.min_price = null;
             currentFilters.max_price = null;
             currentFilters.sort = 'newest';
+            currentFilters.free_shipping = false;
             currentPage = 1;
             syncAllFilterControls();
             loadProducts();
         }
 
         function syncAllFilterControls() {
-            // 1. Sync category pills (main and sticky)
-            document.querySelectorAll('#category-pills .category-pill, #sticky-category-pills .category-pill').forEach(pill => {
+            // 1. Sync category pills (main and sticky) — exclude the free-shipping pill
+            document.querySelectorAll('#category-pills .category-pill:not(.pill-free-shipping), #sticky-category-pills .category-pill:not(.pill-free-shipping)').forEach(pill => {
                 const isMatch = (pill.dataset.category || '') == (currentFilters.category || '');
                 pill.classList.toggle('active', isMatch);
-                if (isMatch) {
+                // Only auto-scroll when a non-default category is active
+                if (isMatch && currentFilters.category) {
                     pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 }
             });
@@ -619,7 +676,16 @@
                 chip.classList.toggle('active', isMatch);
             });
 
-            // 6. Update Active Filters Tag Bar & Badge Counter
+            // 6. Sync free shipping — pills, sidebar checkbox, sheet chip
+            document.querySelectorAll('.pill-free-shipping').forEach(pill => {
+                pill.classList.toggle('active', currentFilters.free_shipping);
+            });
+            const fsCb = document.getElementById('sidebar-free-shipping-cb');
+            if (fsCb) fsCb.checked = currentFilters.free_shipping;
+            const fsChip = document.getElementById('sheet-free-shipping-chip');
+            if (fsChip) fsChip.classList.toggle('active', currentFilters.free_shipping);
+
+            // 7. Update Active Filters Tag Bar & Badge Counter
             updateFilterBadgeAndTags(currentPriceKey);
         }
 
@@ -660,6 +726,11 @@
                     label: sortLabels[currentFilters.sort] || currentFilters.sort,
                     onRemove: () => setSortFilter('newest')
                 });
+            }
+
+            if (currentFilters.free_shipping) {
+                activeCount++;
+                tags.push({ label: '🚚 Free Shipping', onRemove: () => toggleFreeShipping() });
             }
 
             // Update badge on mobile filters button
@@ -732,6 +803,20 @@
             resetBtn?.addEventListener('click', () => {
                 resetAllFilters();
             });
+
+            // Free shipping chip in bottom sheet
+            const fsChip = document.getElementById('sheet-free-shipping-chip');
+            if (fsChip) {
+                fsChip.classList.toggle('active', currentFilters.free_shipping);
+                fsChip.addEventListener('click', () => toggleFreeShipping());
+            }
+
+            // Sidebar free shipping checkbox
+            const fsCb = document.getElementById('sidebar-free-shipping-cb');
+            if (fsCb) {
+                fsCb.checked = currentFilters.free_shipping;
+                fsCb.addEventListener('change', () => toggleFreeShipping());
+            }
 
             // Listen to price chips inside sheet
             document.querySelectorAll('#sheet-price-chips .sheet-chip').forEach(chip => {
@@ -959,6 +1044,7 @@
                 if (currentFilters.min_price !== null) params.min_price = currentFilters.min_price;
                 if (currentFilters.max_price !== null) params.max_price = currentFilters.max_price;
                 if (currentFilters.featured !== null) params.featured = currentFilters.featured;
+                if (currentFilters.free_shipping) params.free_shipping = true;
 
                 const data = await api.getProducts(params);
 

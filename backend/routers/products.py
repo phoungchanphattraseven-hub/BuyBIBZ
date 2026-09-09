@@ -154,6 +154,7 @@ async def list_products(
     min_price: Optional[float] = Query(None),
     max_price: Optional[float] = Query(None),
     featured: Optional[bool] = Query(None),
+    free_shipping: Optional[bool] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(12, ge=1, le=50),
 ):
@@ -175,6 +176,9 @@ async def list_products(
             query = query.lte("price", max_price)
         if featured is not None:
             query = query.eq("is_featured", featured)
+        if free_shipping is True:
+            # attributes is a JSONB column; filter where free_shipping key is true
+            query = query.eq("attributes->>free_shipping", "true")
 
         # Sorting
         if sort == "price_asc":
@@ -204,6 +208,8 @@ async def list_products(
             count_query = count_query.lte("price", max_price)
         if featured is not None:
             count_query = count_query.eq("is_featured", featured)
+        if free_shipping is True:
+            count_query = count_query.eq("attributes->>free_shipping", "true")
 
         count_response = count_query.execute()
         total = count_response.count if count_response.count else len(response.data if response and response.data else [])
