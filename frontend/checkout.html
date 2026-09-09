@@ -1155,12 +1155,14 @@
         document.addEventListener('DOMContentLoaded', async () => {
             if (!requireAuth()) return;
 
-            // Check if we should show a recent order's payment screen
+            // Restore recent order success screen ONLY if this is a same-tab reload
+            // (not a fresh navigation from cart.html or any other page).
+            // sessionStorage is cleared on new navigations; localStorage persists across tabs.
             try {
+                const isReload = sessionStorage.getItem('buybibz_checkout_active') === '1';
                 const recentOrder = JSON.parse(localStorage.getItem('buybibz_recent_order') || 'null');
-                if (recentOrder && recentOrder.timestamp) {
+                if (isReload && recentOrder && recentOrder.timestamp) {
                     const ageMinutes = (Date.now() - recentOrder.timestamp) / 60000;
-                    // Show payment screen if order was placed within last 30 minutes
                     if (ageMinutes < 30) {
                         if (recentOrder.totalAmount && recentOrder.data && !recentOrder.data.total_price) {
                             recentOrder.data.total_price_formatted = recentOrder.totalAmount;
@@ -1168,11 +1170,17 @@
                         showOrderSuccessScreen(recentOrder.data, recentOrder.orderData);
                         return; // Don't load checkout form
                     } else {
-                        // Order too old, clear it
                         localStorage.removeItem('buybibz_recent_order');
                     }
+                } else {
+                    // Fresh navigation — always clear any stale recent order so the
+                    // checkout form is shown, not the old success screen.
+                    localStorage.removeItem('buybibz_recent_order');
                 }
             } catch (e) {}
+
+            // Mark this tab as having the checkout open (survives reloads but not new navigations)
+            try { sessionStorage.setItem('buybibz_checkout_active', '1'); } catch (e) {}
 
             // Initialize Cambodia cascading address pickers
             if (window.KHAddressUI) {
