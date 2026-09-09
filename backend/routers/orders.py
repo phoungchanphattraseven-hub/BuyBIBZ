@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from uuid import uuid4
 from core.config import get_supabase
 from core.auth import get_current_user, get_admin_user
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/orders", tags=["Orders"])
 
 
 @router.post("")
-async def create_order(order: OrderCreate, current_user=Depends(get_current_user)):
+async def create_order(order: OrderCreate, background_tasks: BackgroundTasks, current_user=Depends(get_current_user)):
     """Place a new order from the user's cart."""
     try:
         from core.config import get_authenticated_client
@@ -184,21 +184,20 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
                 }
                 for it in order_items_data
             ]
-            asyncio.ensure_future(
-                send_order_notification(
-                    order_id=order_id,
-                    order_uid=order_response.data[0]["order_uid"],
-                    customer_name=order.shipping_name or "Customer",
-                    customer_phone=order.shipping_phone or "",
-                    address_parts=address_parts,
-                    items=tg_items,
-                    subtotal=subtotal,
-                    shipping_fee=shipping_fee,
-                    transaction_fee=transaction_fee,
-                    total=total,
-                    notes=order.notes,
-                    payment_method=getattr(order, "payment_method", None),
-                )
+            background_tasks.add_task(
+                send_order_notification,
+                order_id=order_id,
+                order_uid=order_response.data[0]["order_uid"],
+                customer_name=order.shipping_name or "Customer",
+                customer_phone=order.shipping_phone or "",
+                address_parts=address_parts,
+                items=tg_items,
+                subtotal=subtotal,
+                shipping_fee=shipping_fee,
+                transaction_fee=transaction_fee,
+                total=total,
+                notes=order.notes,
+                payment_method=getattr(order, "payment_method", None),
             )
         except Exception as tg_err:
             # Never let Telegram failure affect the order response
