@@ -924,11 +924,10 @@
 
                 const data = await api.getProducts(params);
 
-                const countText = `${data.total} product${data.total !== 1 ? 's' : ''} found`;
                 const desktopCount = document.getElementById('results-count');
                 const mobileCount = document.getElementById('mobile-results-count');
-                if (desktopCount) desktopCount.textContent = countText;
-                if (mobileCount) mobileCount.textContent = countText;
+                if (desktopCount) desktopCount.textContent = `${data.total} product${data.total !== 1 ? 's' : ''} found`;
+                if (mobileCount) mobileCount.textContent = `${data.total} items`;
 
                 const applyBtn = document.getElementById('apply-filters-btn');
                 if (applyBtn) {
