@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
         })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Checkout Ã¢â‚¬â€ BuyBIBZ</title>
+    <title>Checkout â€” BuyBIBZ</title>
     <meta name="description" content="Secure checkout for your BuyBIBZ order.">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#06060a">
@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="css/style.css?v=1789004483">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* â”€â”€ Design tokens â”€â”€ */
+        /* ── Design tokens ── */
         :root {
             --brand-rgb: 27,140,61;
             --checkout-card-bg: #ffffff;
@@ -66,12 +66,12 @@
             box-sizing: border-box;
         }
         
-        /* .page-back Ã¢â‚¬â€ global sticky style handled by style.css */
+        /* .page-back â€” global sticky style handled by style.css */
         .page-back:hover {
             color: var(--text-primary, #111827);
         }
         
-        /* â”€â”€ Progress Steps â”€â”€ */
+        /* ── Progress Steps ── */
         .checkout-progress {
             display: flex;
             align-items: center;
@@ -166,7 +166,7 @@
             }
         }
         
-        /* â”€â”€ Main Form Card â”€â”€ */
+        /* ── Main Form Card ── */
         .checkout-card {
             background: var(--checkout-card-bg);
             border: 1px solid var(--checkout-card-border);
@@ -391,7 +391,7 @@
             border-color: var(--brand-primary, #1b8c3d);
         }
         
-        /* â”€â”€ Payment Option Cards â”€â”€ */
+        /* ── Payment Option Cards ── */
         .payment-options-grid {
             display: flex;
             flex-direction: column;
@@ -574,7 +574,7 @@
             cursor: not-allowed;
         }
         
-        /* â”€â”€ Order Summary Sticky Sidebar â”€â”€ */
+        /* ── Order Summary Sticky Sidebar ── */
         .summary-card {
             position: sticky;
             top: calc(var(--nav-height, 70px) + 1.5rem);
@@ -860,7 +860,7 @@
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* â”€â”€ Misc enhancements â”€â”€ */
+        /* ── Misc enhancements ── */
         .form-label {
             font-size: 0.8125rem;
             font-weight: 600;
@@ -882,7 +882,7 @@
         .form-input:focus, .form-textarea:focus {
             box-shadow: 0 0 0 4px rgba(27,140,61,0.18);
         }
-        /* Saved address phone icon via SVG data-uri free approach â€” no emoji */
+        /* Saved address phone icon via SVG data-uri free approach — no emoji */
         .addr-phone-icon { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; color: var(--text-tertiary, #9ca3af); }
     </style>
 </head>
@@ -932,7 +932,7 @@
                                 </div>
                             </div>
                             <div class="country-badge">
-                                <span>🇰🇭</span>
+                                <span>????</span>
                                 <span>Cambodia</span>
                             </div>
                         </div>
@@ -1027,7 +1027,7 @@
                         </div>
 
                         <div class="payment-options-grid">
-                            <!-- Manual Payment – available -->
+                            <!-- Manual Payment � available -->
                             <div class="payment-option-card" id="payment-option-manual" onclick="selectPayment('manual')">
                                 <div class="payment-left-group">
                                     <div class="payment-icon-box">
@@ -1044,7 +1044,7 @@
                                 <div class="radio-circle"></div>
                             </div>
 
-                            <!-- Cash on Delivery Ã¢â‚¬â€ unavailable -->
+                            <!-- Cash on Delivery â€” unavailable -->
                             <div class="payment-option-card payment-option-unavailable" id="payment-option-cod">
                                 <div class="payment-left-group">
                                     <div class="payment-icon-box">
@@ -1061,7 +1061,7 @@
                                 <div class="radio-circle"></div>
                             </div>
 
-                            <!-- KHQR Payment Ã¢â‚¬â€ unavailable -->
+                            <!-- KHQR Payment â€” unavailable -->
                             <div class="payment-option-card payment-option-unavailable" id="payment-option-khqr">
                                 <div class="payment-left-group">
                                     <div class="payment-icon-box">
@@ -1433,7 +1433,7 @@
         }
 
         async function loadCheckoutSummary() {
-            // Ã¢â€â‚¬Ã¢â€â‚¬ Step 1: render instantly from localStorage cache Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+            // â”€â”€ Step 1: render instantly from localStorage cache â”€â”€â”€â”€â”€â”€
             // Cart page stores cart data in 'buybibz_cart_cache' so we
             // can paint the summary immediately without waiting for the API.
             try {
@@ -1443,7 +1443,7 @@
                 }
             } catch (e) {}
 
-            // Ã¢â€â‚¬Ã¢â€â‚¬ Step 2: fetch fresh data and re-render if different Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+            // â”€â”€ Step 2: fetch fresh data and re-render if different â”€â”€â”€
             try {
                 const data = await api.getCart();
                 // Update cache
@@ -1661,7 +1661,7 @@
 
             const orderObj = (res && res.order) || res || {};
             const orderRef = (res && res.order_uid) || orderObj.order_uid || (res && res.order_id) || orderObj.id || 'N/A';
-            const shortRef = orderRef && orderRef !== 'N/A' ? String(orderRef).slice(0, 8).toUpperCase() : 'â€”';
+            const shortRef = orderRef && orderRef !== 'N/A' ? String(orderRef).slice(0, 8).toUpperCase() : '—';
             
             let totalAmount = '';
             const rawTotal = (res && res.total_price !== undefined) ? res.total_price : 
@@ -1718,7 +1718,7 @@
                 hour12: true 
             });
 
-            // Pre-filled Telegram message — Khmer or English based on user language
+            // Pre-filled Telegram message � Khmer or English based on user language
             let telegramMessage;
             if (isKhmer) {
                 telegramMessage =
@@ -1780,7 +1780,7 @@
                         50%      { opacity: 0.4; transform: scale(0.9); }
                     }
 
-                    /* â”€â”€ Main Receipt Card â”€â”€ */
+                    /* ── Main Receipt Card ── */
                     .csv-card {
                         background: var(--bg-card, #11131e);
                         border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
@@ -1793,7 +1793,7 @@
                         position: relative;
                     }
 
-                    /* â”€â”€ Top Bar inside Card â”€â”€ */
+                    /* ── Top Bar inside Card ── */
                     .csv-card-topbar {
                         display: flex;
                         align-items: center;
@@ -1843,7 +1843,7 @@
                         transform: scale(1.05);
                     }
 
-                    /* â”€â”€ Header â”€â”€ */
+                    /* ── Header ── */
                     .csv-header {
                         text-align: center;
                         margin: 0.25rem 0 0.1rem;
@@ -1881,7 +1881,7 @@
                         line-height: 1.4;
                     }
 
-                    /* â”€â”€ Invoice Row â”€â”€ */
+                    /* ── Invoice Row ── */
                     .csv-invoice-box {
                         display: flex;
                         align-items: center;
@@ -1932,7 +1932,7 @@
                         border-color: rgba(255, 255, 255, 0.2);
                     }
 
-                    /* â”€â”€ KHQR block â”€â”€ */
+                    /* ── KHQR block ── */
                     .csv-khqr-block {
                         display: flex;
                         flex-direction: column;
@@ -1980,7 +1980,7 @@
                         text-align: center;
                     }
 
-                    /* â”€â”€ Micro Steps Guide â”€â”€ */
+                    /* ── Micro Steps Guide ── */
                     .csv-steps-pill {
                         display: flex;
                         align-items: center;
@@ -2015,7 +2015,7 @@
                         font-size: 0.7rem;
                     }
 
-                    /* â”€â”€ Actions â”€â”€ */
+                    /* ── Actions ── */
                     .csv-actions {
                         display: flex;
                         flex-direction: column;
@@ -2114,7 +2114,7 @@
                         <div class="csv-invoice-box">
                             <div class="csv-invoice-item">
                                 <span class="csv-inv-lbl">${i18n.t('checkout.amount_due')}</span>
-                                <span class="csv-inv-val">${totalAmount || 'â€”'}</span>
+                                <span class="csv-inv-val">${totalAmount || '—'}</span>
                             </div>
                             <div class="csv-invoice-item right">
                                 <span class="csv-inv-lbl">${i18n.t('checkout.order_reference')}</span>
@@ -2130,7 +2130,7 @@
                             <div class="csv-khqr-card">
                                 <div class="csv-khqr-badge-bar">KHQR</div>
                                 <div class="csv-khqr-img-wrap">
-                                    <img src="../img/myqrcode.jpg" alt="KHQR Payment Code" class="csv-khqr-img">
+                                    <img src="img/myqrcode.jpg" alt="KHQR Payment Code" class="csv-khqr-img">
                                 </div>
                             </div>
                             <div class="csv-banks-row">
