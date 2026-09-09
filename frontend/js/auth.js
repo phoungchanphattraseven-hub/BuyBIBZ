@@ -85,8 +85,24 @@ function initAuth() {
                 return;
             }
 
-            if (password.length < 6) {
-                showToast(_t('auth.password_short'), 'error');
+            if (password.length < 8) {
+                showToast('Password must be at least 8 characters.', 'error');
+                return;
+            }
+            if (!/[A-Z]/.test(password)) {
+                showToast('Password must include at least one uppercase letter.', 'error');
+                return;
+            }
+            if (!/[a-z]/.test(password)) {
+                showToast('Password must include at least one lowercase letter.', 'error');
+                return;
+            }
+            if (!/[0-9]/.test(password)) {
+                showToast('Password must include at least one number.', 'error');
+                return;
+            }
+            if (!/[^A-Za-z0-9]/.test(password)) {
+                showToast('Password must include at least one special character (!@#$…).', 'error');
                 return;
             }
 

@@ -47,6 +47,10 @@ SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")
 ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
 
+# Telegram admin notifications
+TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_ADMIN_CHAT_ID: str = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "")
+
 if not SUPABASE_URL or not SUPABASE_ANON_KEY:
     raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in .env")
 

@@ -1289,6 +1289,7 @@ svg:not([class*="width"]):not([class*="size"]) {
     justify-content: center;
     padding: var(--nav-height) var(--space-lg) var(--space-2xl);
     position: relative;
+    overflow-x: hidden;
 }
 
 .auth-container {
@@ -1407,6 +1408,9 @@ svg:not([class*="width"]):not([class*="size"]) {
         gap: 0 14px;
     }
 
+    /* Password group + confirm password + submit always span full width */
+    #register-form-el .form-group:has(#register-password),
+    #register-form-el .form-group:has(#register-confirm-password),
     #register-form-el .btn {
         grid-column: 1 / -1;
     }

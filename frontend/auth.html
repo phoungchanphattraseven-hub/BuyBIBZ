@@ -15,6 +15,77 @@
     <style>
         html, body { background-color: #fcfdfb; }
         html[data-theme="dark"], html[data-theme="dark"] body { background-color: #101713; }
+
+        /* ── Password strength meter ── */
+        .pw-strength-wrap {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pw-strength-bars {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+        }
+        .pw-bar {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-default);
+            transition: background 0.25s ease;
+        }
+        .pw-bar.active-weak   { background: #ef4444; }
+        .pw-bar.active-fair   { background: #f59e0b; }
+        .pw-bar.active-good   { background: #3b82f6; }
+        .pw-bar.active-strong { background: #22c55e; }
+
+        .pw-strength-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 44px;
+            text-align: right;
+        }
+        .pw-strength-label.weak   { color: #ef4444; }
+        .pw-strength-label.fair   { color: #f59e0b; }
+        .pw-strength-label.good   { color: #3b82f6; }
+        .pw-strength-label.strong { color: #22c55e; }
+
+        /* ── Password rules checklist ── */
+        .pw-rules {
+            list-style: none;
+            margin: 8px 0 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .pw-rule {
+            font-size: 0.72rem;
+            color: var(--text-tertiary);
+            padding-left: 18px;
+            position: relative;
+            transition: color 0.2s;
+            white-space: normal;
+            word-break: break-word;
+        }
+        .pw-rule::before {
+            content: '✕';
+            position: absolute;
+            left: 0;
+            font-size: 0.65rem;
+            color: #ef4444;
+            transition: color 0.2s;
+        }
+        .pw-rule.passed {
+            color: #22c55e;
+        }
+        .pw-rule.passed::before {
+            content: '✓';
+            color: #22c55e;
+        }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sign In — BuyBIBZ</title>
@@ -23,7 +94,7 @@
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo.jpg">
-    <link rel="stylesheet" href="css/style.css?v=1789002951">
+    <link rel="stylesheet" href="css/style.css?v=1789005309">
 </head>
 <body>
 
@@ -98,7 +169,7 @@
                         <div class="form-group">
                             <label class="form-label" for="register-password" data-i18n="auth.password">Password</label>
                             <div class="password-input-wrapper">
-                                <input type="password" id="register-password" class="form-input" placeholder="Min. 6 characters" required minlength="6">
+                                <input type="password" id="register-password" class="form-input" placeholder="Min. 8 characters" required minlength="8">
                                 <button type="button" class="password-toggle" id="register-password-toggle" aria-label="Toggle password visibility">
                                     <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -110,6 +181,23 @@
                                     </svg>
                                 </button>
                             </div>
+                            <!-- Password strength meter -->
+                            <div class="pw-strength-wrap" id="pw-strength-wrap" style="display:none;">
+                                <div class="pw-strength-bars">
+                                    <span class="pw-bar" id="pw-bar-1"></span>
+                                    <span class="pw-bar" id="pw-bar-2"></span>
+                                    <span class="pw-bar" id="pw-bar-3"></span>
+                                    <span class="pw-bar" id="pw-bar-4"></span>
+                                </div>
+                                <span class="pw-strength-label" id="pw-strength-label"></span>
+                            </div>
+                            <ul class="pw-rules" id="pw-rules">
+                                <li class="pw-rule" id="rule-len">At least 8 characters</li>
+                                <li class="pw-rule" id="rule-upper">One uppercase letter (A–Z)</li>
+                                <li class="pw-rule" id="rule-lower">One lowercase letter (a–z)</li>
+                                <li class="pw-rule" id="rule-num">One number (0–9)</li>
+                                <li class="pw-rule" id="rule-special">One special character (!@#$…)</li>
+                            </ul>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="register-confirm-password" data-i18n="auth.confirm_password">Confirm Password</label>
@@ -144,8 +232,8 @@
     <script src="js/disable-zoom.js"></script>
     <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/app.js?v=1789001812"></script>
+    <script src="js/auth.js?v=1789003450"></script>
+    <script src="js/app.js?v=1789005309"></script>
     <script src="js/pwa-install.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -156,6 +244,60 @@
                 return;
             }
             initAuth();
+
+            // ── Password strength meter ──────────────────────────
+            const pwInput   = document.getElementById('register-password');
+            const pwWrap    = document.getElementById('pw-strength-wrap');
+            const pwLabel   = document.getElementById('pw-strength-label');
+            const bars      = [1,2,3,4].map(i => document.getElementById(`pw-bar-${i}`));
+            const rules     = {
+                len:     { el: document.getElementById('rule-len'),     test: v => v.length >= 8 },
+                upper:   { el: document.getElementById('rule-upper'),   test: v => /[A-Z]/.test(v) },
+                lower:   { el: document.getElementById('rule-lower'),   test: v => /[a-z]/.test(v) },
+                num:     { el: document.getElementById('rule-num'),     test: v => /[0-9]/.test(v) },
+                special: { el: document.getElementById('rule-special'), test: v => /[^A-Za-z0-9]/.test(v) },
+            };
+
+            const levels = [
+                { label: 'Weak',   cls: 'weak',   bars: 1 },
+                { label: 'Fair',   cls: 'fair',   bars: 2 },
+                { label: 'Good',   cls: 'good',   bars: 3 },
+                { label: 'Strong', cls: 'strong', bars: 4 },
+            ];
+
+            const barClasses = ['active-weak','active-fair','active-good','active-strong'];
+
+            pwInput?.addEventListener('input', () => {
+                const val = pwInput.value;
+                if (!val) {
+                    pwWrap.style.display = 'none';
+                    Object.values(rules).forEach(r => r.el.classList.remove('passed'));
+                    return;
+                }
+                pwWrap.style.display = 'flex';
+
+                // Count passed rules
+                let score = 0;
+                Object.values(rules).forEach(r => {
+                    const ok = r.test(val);
+                    r.el.classList.toggle('passed', ok);
+                    if (ok) score++;
+                });
+
+                // score 1=weak 2=fair 3=good 4-5=strong
+                const levelIdx = score <= 1 ? 0 : score === 2 ? 1 : score === 3 ? 2 : 3;
+                const level = levels[levelIdx];
+
+                // Update bars
+                bars.forEach((bar, i) => {
+                    bar.className = 'pw-bar';
+                    if (i < level.bars) bar.classList.add(`active-${level.cls}`);
+                });
+
+                // Update label
+                pwLabel.textContent = level.label;
+                pwLabel.className = `pw-strength-label ${level.cls}`;
+            });
         });
     </script>
 </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,91 +13,115 @@
         })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Checkout — BuyBIBZ</title>
+    <title>Checkout Ã¢â‚¬â€ BuyBIBZ</title>
     <meta name="description" content="Secure checkout for your BuyBIBZ order.">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#06060a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="../logo/logo.jpg">
-    <link rel="stylesheet" href="css/style.css?v=1789002951">
+    <link rel="stylesheet" href="css/style.css?v=1789004483">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* â”€â”€ Design tokens â”€â”€ */
+        :root {
+            --brand-rgb: 27,140,61;
+            --checkout-card-bg: #ffffff;
+            --checkout-card-border: rgba(0,0,0,0.07);
+            --checkout-card-shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+            --checkout-input-bg: #f9fafb;
+            --checkout-progress-bg: #ffffff;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        html[data-theme="dark"] {
+            --checkout-card-bg: #1a251e;
+            --checkout-card-border: rgba(255,255,255,0.07);
+            --checkout-card-shadow: 0 2px 16px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.2);
+            --checkout-input-bg: #1a251e;
+            --checkout-progress-bg: #1a251e;
+        }
+
         html {
-            background-color: var(--bg-primary, #fcfdfb);
+            background-color: var(--bg-primary, #f4f6f9);
             color: var(--text-primary, #111827);
             overflow-x: clip;
             overflow-y: auto;
         }
+        html[data-theme="dark"] { background-color: var(--bg-primary, #0a0a12); }
         body {
-            background-color: var(--bg-primary, #fcfdfb);
+            background-color: var(--bg-primary, #f4f6f9);
             color: var(--text-primary, #111827);
             overflow-x: clip;
             overflow-y: visible;
             min-height: 100vh;
             width: 100%;
         }
-        html[data-theme="dark"], html[data-theme="dark"] body {
-            background-color: var(--bg-primary, #06060a);
-        }
+        html[data-theme="dark"] body { background-color: var(--bg-primary, #0a0a12); }
         
         .checkout-page {
-            padding-top: calc(var(--nav-height, 70px) + 1.5rem);
-            padding-bottom: 3rem;
+            padding-top: calc(var(--nav-height, 70px) + 4rem);
+            padding-bottom: 5rem;
             min-height: 100vh;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
         }
         
-        /* .page-back — global sticky style handled by style.css */
+        /* .page-back Ã¢â‚¬â€ global sticky style handled by style.css */
         .page-back:hover {
             color: var(--text-primary, #111827);
         }
         
-        /* Checkout Header & Steps */
+        /* â”€â”€ Progress Steps â”€â”€ */
         .checkout-progress {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
-            margin: 1rem 0 2rem 0;
-            padding: 1rem;
-            background: var(--bg-card, #ffffff);
-            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
-            border-radius: 12px;
+            margin: 0 0 2rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--checkout-card-bg);
+            border: 1px solid var(--checkout-card-border);
+            border-radius: 14px;
+            box-shadow: var(--checkout-card-shadow);
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
         .progress-step {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.625rem;
             flex-shrink: 0;
         }
         .step-number {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: var(--bg-tertiary, #f3f4f6);
-            border: 1px solid var(--border-default, #e5e7eb);
+            border: 1.5px solid var(--border-default, #e5e7eb);
             color: var(--text-tertiary, #9ca3af);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.8125rem;
-            transition: all 0.25s ease;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
             flex-shrink: 0;
         }
         .progress-step-active .step-number {
-            background: var(--brand-primary, #1b8c3d);
-            border-color: var(--brand-primary, #1b8c3d);
+            background: linear-gradient(135deg, #1b8c3d, #27ae50);
+            border-color: #1b8c3d;
             color: #ffffff;
+            box-shadow: 0 4px 12px rgba(27,140,61,0.35);
+            transform: scale(1.1);
         }
         .step-label {
             font-size: 0.8125rem;
             font-weight: 500;
             color: var(--text-tertiary, #9ca3af);
+            letter-spacing: -0.01em;
         }
         .progress-step-active .step-label {
             color: var(--text-primary, #111827);
@@ -106,11 +130,16 @@
         .progress-line {
             flex: 1;
             min-width: 10px;
-            max-width: 40px;
+            max-width: 48px;
             height: 2px;
-            background: var(--border-subtle, #e5e7eb);
-            border-radius: 1px;
+            background: linear-gradient(90deg, var(--border-subtle, #e5e7eb) 0%, var(--border-subtle, #e5e7eb) 100%);
+            border-radius: 2px;
             flex-shrink: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-step-active + .progress-line {
+            background: linear-gradient(90deg, rgba(27,140,61,0.5), rgba(27,140,61,0.15));
         }
         
         /* Checkout Main Layout */
@@ -137,18 +166,22 @@
             }
         }
         
-        /* Main Form Card */
+        /* â”€â”€ Main Form Card â”€â”€ */
         .checkout-card {
-            background: var(--bg-card, #ffffff);
-            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+            background: var(--checkout-card-bg);
+            border: 1px solid var(--checkout-card-border);
             border-radius: 16px;
             padding: 1.75rem;
-            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
-            margin-bottom: 1.5rem;
+            box-shadow: var(--checkout-card-shadow);
+            margin-bottom: 1.25rem;
             width: 100%;
             max-width: 100%;
             min-width: 0;
             box-sizing: border-box;
+            transition: box-shadow 0.25s ease;
+        }
+        .checkout-card:hover {
+            box-shadow: 0 6px 24px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
         }
         
         .section-header-row {
@@ -157,11 +190,12 @@
             justify-content: space-between;
             margin-bottom: 1.25rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-subtle, #f3f4f6);
+            border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
             width: 100%;
             min-width: 0;
             box-sizing: border-box;
         }
+        html[data-theme="dark"] .section-header-row { border-bottom-color: rgba(255,255,255,0.07); }
         .section-title-group {
             display: flex;
             align-items: center;
@@ -169,10 +203,11 @@
             min-width: 0;
         }
         .section-icon-box {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: rgba(27, 140, 61, 0.1);
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, rgba(27,140,61,0.15), rgba(27,140,61,0.05));
+            border: 1px solid rgba(27,140,61,0.2);
             color: var(--brand-primary, #1b8c3d);
             display: flex;
             align-items: center;
@@ -180,28 +215,30 @@
             flex-shrink: 0;
         }
         .section-title-group h2 {
-            font-size: 1.125rem;
-            font-weight: 600;
+            font-size: 1.0625rem;
+            font-weight: 700;
             color: var(--text-primary, #111827);
             margin: 0;
             line-height: 1.3;
+            letter-spacing: -0.02em;
         }
         .section-subtitle {
             font-size: 0.8125rem;
             color: var(--text-tertiary, #9ca3af);
             margin: 0.125rem 0 0 0;
+            font-weight: 400;
         }
         .country-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.375rem;
-            padding: 0.375rem 0.75rem;
-            background: var(--bg-tertiary, #f3f4f6);
-            border: 1px solid var(--border-subtle, #e5e7eb);
+            gap: 0.5rem;
+            padding: 0.4rem 0.875rem;
+            background: rgba(27,140,61,0.06);
+            border: 1px solid rgba(27,140,61,0.18);
             border-radius: 20px;
             font-size: 0.8125rem;
-            font-weight: 500;
-            color: var(--text-secondary, #4b5563);
+            font-weight: 600;
+            color: #1b8c3d;
             flex-shrink: 0;
         }
         
@@ -216,12 +253,12 @@
 
         .saved-address-card {
             background: var(--bg-elevated, #f9fafb);
-            border: 2px solid var(--border-default, #e5e7eb);
-            border-radius: 12px;
+            border: 1.5px solid var(--border-default, #e5e7eb);
+            border-radius: 14px;
             padding: 1.25rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.875rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.22s ease;
             position: relative;
             width: 100%;
             max-width: 100%;
@@ -230,12 +267,15 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
+        html[data-theme="dark"] .saved-address-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
         .saved-address-card:hover {
             border-color: var(--brand-primary, #1b8c3d);
+            box-shadow: 0 0 0 3px rgba(27,140,61,0.1);
         }
         .saved-address-card.selected {
             border-color: var(--brand-primary, #1b8c3d);
-            background: rgba(27, 140, 61, 0.03);
+            background: rgba(27,140,61,0.03);
+            box-shadow: 0 0 0 3px rgba(27,140,61,0.12);
         }
         .saved-address-header,
         .saved-address-card .address-card-header {
@@ -311,32 +351,33 @@
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
-            padding: 0.875rem;
+            padding: 0.9375rem;
             background: transparent;
-            border: 2px dashed var(--border-default, #d1d5db);
+            border: 1.5px dashed rgba(27,140,61,0.4);
             border-radius: 12px;
             color: var(--brand-primary, #1b8c3d);
             font-weight: 600;
             font-size: 0.875rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.22s ease;
             margin-bottom: 1.5rem;
             white-space: normal;
             text-align: center;
             word-break: break-word;
         }
         .btn-add-address:hover {
-            background: rgba(27, 140, 61, 0.05);
+            background: rgba(27,140,61,0.06);
             border-color: var(--brand-primary, #1b8c3d);
+            box-shadow: 0 0 0 3px rgba(27,140,61,0.1);
         }
         
         .btn-back-saved {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 0.875rem;
-            background: var(--bg-tertiary, #f3f4f6);
-            border: 1px solid var(--border-default, #e5e7eb);
+            padding: 0.5rem 1rem;
+            background: rgba(27,140,61,0.07);
+            border: 1px solid rgba(27,140,61,0.2);
             border-radius: 8px;
             color: var(--brand-primary, #1b8c3d);
             font-size: 0.8125rem;
@@ -346,15 +387,15 @@
             transition: all 0.2s ease;
         }
         .btn-back-saved:hover {
-            background: rgba(27, 140, 61, 0.08);
+            background: rgba(27,140,61,0.12);
             border-color: var(--brand-primary, #1b8c3d);
         }
         
-        /* Payment Option Cards */
+        /* â”€â”€ Payment Option Cards â”€â”€ */
         .payment-options-grid {
             display: flex;
             flex-direction: column;
-            gap: 0.875rem;
+            gap: 0.75rem;
             margin-top: 0.75rem;
             width: 100%;
             max-width: 100%;
@@ -363,22 +404,25 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1.125rem;
+            padding: 1.125rem 1.25rem;
             background: var(--bg-elevated, #f9fafb);
-            border: 2px solid var(--border-default, #e5e7eb);
-            border-radius: 12px;
+            border: 1.5px solid var(--border-default, #e5e7eb);
+            border-radius: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.22s ease;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
         }
+        html[data-theme="dark"] .payment-option-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
         .payment-option-card:hover {
             border-color: var(--brand-primary, #1b8c3d);
+            box-shadow: 0 0 0 3px rgba(27,140,61,0.1);
         }
         .payment-option-card.selected {
             border-color: var(--brand-primary, #1b8c3d);
-            background: rgba(27, 140, 61, 0.03);
+            background: rgba(27,140,61,0.03);
+            box-shadow: 0 0 0 3px rgba(27,140,61,0.12);
         }
         .payment-left-group {
             display: flex;
@@ -388,10 +432,11 @@
             min-width: 0;
         }
         .payment-icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            background: var(--bg-tertiary, #e5e7eb);
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(27,140,61,0.12), rgba(27,140,61,0.04));
+            border: 1px solid rgba(27,140,61,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -406,26 +451,41 @@
         }
         .payment-name {
             font-size: 0.9375rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-primary, #111827);
             word-wrap: break-word;
             overflow-wrap: break-word;
+            letter-spacing: -0.01em;
         }
         .payment-badge {
             font-size: 0.6875rem;
             font-weight: 700;
-            padding: 0.125rem 0.5rem;
-            border-radius: 4px;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.04em;
         }
-        .badge-success {
-            background: rgba(34, 197, 94, 0.12);
-            color: #16a34a;
+        .badge-success { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .badge-warning { background: rgba(245,158,11,0.12); color: #d97706; }
+        .badge-unavailable { background: rgba(107,114,128,0.1); color: #6b7280; }
+        .payment-option-unavailable {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: not-allowed;
+            user-select: none;
         }
-        .badge-warning {
-            background: rgba(245, 158, 11, 0.12);
-            color: #d97706;
+        .payment-coming-soon {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.625rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary, #6b7280);
+            background: rgba(107,114,128,0.06);
+            border: 1px solid rgba(107,114,128,0.12);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin: 4px 0 0;
+            line-height: 1.55;
         }
         .payment-desc {
             font-size: 0.8125rem;
@@ -436,19 +496,21 @@
         }
         
         .radio-circle {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border: 2px solid var(--border-default, #d1d5db);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             flex-shrink: 0;
         }
         .payment-option-card.selected .radio-circle {
             border-color: var(--brand-primary, #1b8c3d);
             background: var(--brand-primary, #1b8c3d);
+            box-shadow: 0 0 0 3px rgba(27,140,61,0.2);
+            transform: scale(1.1);
         }
         .radio-circle::after {
             content: '';
@@ -459,9 +521,7 @@
             opacity: 0;
             transition: opacity 0.2s ease;
         }
-        .payment-option-card.selected .radio-circle::after {
-            opacity: 1;
-        }
+        .payment-option-card.selected .radio-circle::after { opacity: 1; }
 
         /* Form Inputs */
         .form-grid-2 {
@@ -492,15 +552,16 @@
         }
         .form-input, .form-textarea {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1.1rem;
             background: var(--bg-primary, #ffffff);
             border: 1px solid var(--border-default, #d1d5db);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text-primary, #111827);
             font-size: 0.875rem;
             transition: border-color 0.2s, box-shadow 0.2s;
             box-sizing: border-box;
             max-width: 100%;
+            box-shadow: inset 0 0 0 0 rgba(0,0,0,0);
         }
         .form-input:focus, .form-textarea:focus {
             outline: none;
@@ -513,27 +574,43 @@
             cursor: not-allowed;
         }
         
-        /* Order Summary Sticky Sidebar */
+        /* â”€â”€ Order Summary Sticky Sidebar â”€â”€ */
         .summary-card {
             position: sticky;
             top: calc(var(--nav-height, 70px) + 1.5rem);
-            background: var(--bg-card, #ffffff);
-            border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
-            border-radius: 16px;
+            background: var(--checkout-card-bg);
+            border: 1px solid var(--checkout-card-border);
+            border-radius: 18px;
             padding: 1.5rem;
-            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+            box-shadow: var(--checkout-card-shadow);
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
+            overflow: hidden;
+        }
+        .summary-card::before {
+            content: '';
+            display: block;
+            height: 4px;
+            margin: -1.5rem -1.5rem 1.5rem;
+            background: linear-gradient(90deg, #1b8c3d, #27ae50, #1b8c3d);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
         .summary-title {
-            font-size: 1.125rem;
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 700;
             color: var(--text-primary, #111827);
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.125rem;
             padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-subtle, #f3f4f6);
+            border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+            letter-spacing: -0.02em;
         }
+        html[data-theme="dark"] .summary-title { border-bottom-color: rgba(255,255,255,0.07); }
         
         .checkout-items-list {
             max-height: 300px;
@@ -650,27 +727,32 @@
         
         .btn-submit-order {
             width: 100%;
-            padding: 0.9375rem;
-            background: var(--brand-primary, #1b8c3d);
+            padding: 1rem;
+            background: linear-gradient(135deg, #1b8c3d 0%, #27ae50 50%, #1b8c3d 100%);
+            background-size: 200% 100%;
+            background-position: 0% 0%;
             color: #ffffff;
             border: none;
-            border-radius: 10px;
+            border-radius: 14px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: -0.01em;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 12px rgba(27, 140, 61, 0.25);
+            gap: 0.625rem;
+            box-shadow: 0 4px 16px rgba(27,140,61,0.35), 0 1px 4px rgba(27,140,61,0.2);
         }
-        .btn-submit-order:hover {
-            background: var(--brand-hover, #157332);
-            transform: translateY(-1px);
+        .btn-submit-order:hover:not(:disabled) {
+            background-position: 100% 0%;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(27,140,61,0.45);
         }
+        .btn-submit-order:active:not(:disabled) { transform: translateY(0); }
         .btn-submit-order:disabled {
-            opacity: 0.7;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
@@ -722,7 +804,7 @@
             .checkout-progress {
                 padding: 0.75rem 0.5rem;
                 gap: 0.25rem;
-                margin: 0.5rem 0 1.25rem 0;
+                margin: 3rem 0 1.25rem 0;
             }
             .progress-step {
                 gap: 0.25rem;
@@ -777,6 +859,31 @@
         }
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* â”€â”€ Misc enhancements â”€â”€ */
+        .form-label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            letter-spacing: -0.005em;
+        }
+        .form-input, .form-textarea {
+            font-family: inherit;
+            background: var(--checkout-input-bg);
+            border-color: var(--border-default, #e5e7eb);
+            border-radius: 10px;
+        }
+        html[data-theme="dark"] .form-input,
+        html[data-theme="dark"] .form-textarea {
+            background: #1a251e;
+            border-color: rgba(255,255,255,0.1);
+            color: var(--text-primary, #f0f0f5);
+        }
+        html[data-theme="dark"] .form-input:disabled { background: #111120; }
+        .form-input:focus, .form-textarea:focus {
+            box-shadow: 0 0 0 4px rgba(27,140,61,0.18);
+        }
+        /* Saved address phone icon via SVG data-uri free approach â€” no emoji */
+        .addr-phone-icon { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; color: var(--text-tertiary, #9ca3af); }
     </style>
 </head>
 <body>
@@ -920,8 +1027,25 @@
                         </div>
 
                         <div class="payment-options-grid">
-                            <!-- Cash on Delivery -->
-                            <div class="payment-option-card selected" id="payment-option-cod" onclick="selectPayment('cod')">
+                            <!-- Manual Payment – available -->
+                            <div class="payment-option-card" id="payment-option-manual" onclick="selectPayment('manual')">
+                                <div class="payment-left-group">
+                                    <div class="payment-icon-box">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>
+                                    </div>
+                                    <div>
+                                        <div class="payment-title-box">
+                                            <span class="payment-name" data-i18n="checkout.manual_payment">Manual Payment</span>
+                                            <span class="payment-badge badge-success">Available</span>
+                                        </div>
+                                        <p class="payment-desc" data-i18n="checkout.manual_payment_desc">We will contact you to arrange payment after placing your order</p>
+                                    </div>
+                                </div>
+                                <div class="radio-circle"></div>
+                            </div>
+
+                            <!-- Cash on Delivery Ã¢â‚¬â€ unavailable -->
+                            <div class="payment-option-card payment-option-unavailable" id="payment-option-cod">
                                 <div class="payment-left-group">
                                     <div class="payment-icon-box">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
@@ -929,7 +1053,7 @@
                                     <div>
                                         <div class="payment-title-box">
                                             <span class="payment-name" data-i18n="checkout.cod">Cash on Delivery (COD)</span>
-                                            <span class="payment-badge badge-success" data-i18n="checkout.cod_available">Popular</span>
+                                            <span class="payment-badge badge-unavailable">Unavailable</span>
                                         </div>
                                         <p class="payment-desc" data-i18n="checkout.cod_desc">Pay in cash when your package arrives</p>
                                     </div>
@@ -937,8 +1061,8 @@
                                 <div class="radio-circle"></div>
                             </div>
 
-                            <!-- KHQR Payment -->
-                            <div class="payment-option-card" id="payment-option-khqr" onclick="selectPayment('khqr')">
+                            <!-- KHQR Payment Ã¢â‚¬â€ unavailable -->
+                            <div class="payment-option-card payment-option-unavailable" id="payment-option-khqr">
                                 <div class="payment-left-group">
                                     <div class="payment-icon-box">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
@@ -946,13 +1070,19 @@
                                     <div>
                                         <div class="payment-title-box">
                                             <span class="payment-name" data-i18n="checkout.khqr">KHQR (Bakong)</span>
-                                            <span class="payment-badge badge-warning" data-i18n="checkout.khqr_instant">Instant QR</span>
+                                            <span class="payment-badge badge-unavailable">Unavailable</span>
                                         </div>
                                         <p class="payment-desc" data-i18n="checkout.khqr_desc">Scan QR code using ABA, Acleda, Sathapana or any KHQR app</p>
                                     </div>
                                 </div>
                                 <div class="radio-circle"></div>
                             </div>
+
+                            <!-- Coming soon notice -->
+                            <p class="payment-coming-soon" style="display: none;">
+                                <svg width="15" height="15" style="flex-shrink:0;margin-top:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <span>Payment methods are currently unavailable. We will contact you to arrange payment after your order is placed.</span>
+                            </p>
                         </div>
                     </div>
 
@@ -1000,28 +1130,49 @@
     <script src="js/disable-zoom.js"></script>
     <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/app.js?v=1789001812"></script>
+    <script src="js/auth.js?v=1789003450"></script>
+    <script src="js/app.js?v=1789003450"></script>
     <script src="js/kh-address-data.js"></script>
     <script src="js/kh-address.js"></script>
     <script src="js/pwa-install.js"></script>
 
     <script>
-        let selectedPaymentMethod = 'cod';
+        let selectedPaymentMethod = 'manual'; // manual payment is now available
         let savedAddresses = [];
         let selectedAddressIndex = 0;
         let isUsingSavedAddress = false;
         let addressPickers = null;
 
         function selectPayment(method) {
+            // Guard: do not allow selecting unavailable options
+            const card = document.getElementById(`payment-option-${method}`);
+            if (!card || card.classList.contains('payment-option-unavailable')) return;
             selectedPaymentMethod = method;
-            document.querySelectorAll('.payment-option-card').forEach(card => card.classList.remove('selected'));
-            const selectedCard = document.getElementById(`payment-option-${method}`);
-            if (selectedCard) selectedCard.classList.add('selected');
+            document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
+            if (card) card.classList.add('selected');
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!requireAuth()) return;
+
+            // Check if we should show a recent order's payment screen
+            try {
+                const recentOrder = JSON.parse(localStorage.getItem('buybibz_recent_order') || 'null');
+                if (recentOrder && recentOrder.timestamp) {
+                    const ageMinutes = (Date.now() - recentOrder.timestamp) / 60000;
+                    // Show payment screen if order was placed within last 30 minutes
+                    if (ageMinutes < 30) {
+                        if (recentOrder.totalAmount && recentOrder.data && !recentOrder.data.total_price) {
+                            recentOrder.data.total_price_formatted = recentOrder.totalAmount;
+                        }
+                        showOrderSuccessScreen(recentOrder.data, recentOrder.orderData);
+                        return; // Don't load checkout form
+                    } else {
+                        // Order too old, clear it
+                        localStorage.removeItem('buybibz_recent_order');
+                    }
+                }
+            } catch (e) {}
 
             // Initialize Cambodia cascading address pickers
             if (window.KHAddressUI) {
@@ -1111,7 +1262,7 @@
                         <div class="saved-address-header">
                             <div>
                                 <span class="address-user-name">${addr.full_name || api.getUser()?.full_name || 'Delivery Address'}</span>
-                                <span class="address-user-phone"> • 📞 ${addr.phone}</span>
+                                <span class="address-user-phone"> &bull; <svg style="display:inline;vertical-align:-0.15em" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4a2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ${addr.phone}</span>
                             </div>
                             <span class="badge-selected-address">Selected</span>
                         </div>
@@ -1201,7 +1352,7 @@
                     shipping_city: addr.province || addr.city || 'Phnom Penh',
                     shipping_postal: addr.postal_code || '12000',
                     notes: document.getElementById('checkout-notes').value || null,
-                    payment_method: selectedPaymentMethod,
+                    payment_method: selectedPaymentMethod || 'pending',
                 };
                 if (addr.province) orderData.shipping_province = addr.province;
                 if (addr.province_code) orderData.shipping_province_code = addr.province_code;
@@ -1253,7 +1404,7 @@
                     shipping_village: document.getElementById('shipping_village').value.trim() || null,
                     shipping_postal: document.getElementById('shipping_postal').value.trim() || null,
                     notes: document.getElementById('checkout-notes').value || null,
-                    payment_method: selectedPaymentMethod,
+                    payment_method: selectedPaymentMethod || 'pending',
                 };
             }
 
@@ -1272,11 +1423,7 @@
                 const res = await api.createOrder(orderData);
                 // Clear selection after successful order
                 localStorage.removeItem('buybibz_selected_cart_items');
-                if (selectedPaymentMethod === 'khqr') {
-                    showKHQRModal(res, orderData);
-                } else {
-                    showOrderSuccessScreen(res);
-                }
+                showOrderSuccessScreen(res, orderData);
                 if (window.updateCartBadge) updateCartBadge();
             } catch (err) {
                 showToast(err.message || 'Failed to place order', 'error');
@@ -1286,11 +1433,38 @@
         }
 
         async function loadCheckoutSummary() {
+            // Ã¢â€â‚¬Ã¢â€â‚¬ Step 1: render instantly from localStorage cache Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+            // Cart page stores cart data in 'buybibz_cart_cache' so we
+            // can paint the summary immediately without waiting for the API.
+            try {
+                const cached = JSON.parse(localStorage.getItem('buybibz_cart_cache') || 'null');
+                if (cached && cached.items && cached.items.length > 0) {
+                    renderCheckoutSummary(cached, false); // false = don't redirect on cache
+                }
+            } catch (e) {}
+
+            // Ã¢â€â‚¬Ã¢â€â‚¬ Step 2: fetch fresh data and re-render if different Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
             try {
                 const data = await api.getCart();
+                // Update cache
+                try { localStorage.setItem('buybibz_cart_cache', JSON.stringify(data)); } catch(e) {}
+                renderCheckoutSummary(data, true); // true = authoritative, redirect if empty
+            } catch (err) {
+                console.error('Failed to load cart summary:', err);
+                // Only show error if we have nothing cached to show
+                if (!document.getElementById('checkout-items').innerHTML.trim()) {
+                    showToast('Failed to load cart summary', 'error');
+                }
+            }
+        }
+
+        function renderCheckoutSummary(data, authoritative = true) {
+            try {
                 if (!data.items || data.items.length === 0) {
-                    showToast('Your cart is empty', 'warning');
-                    window.location.href = 'cart.html';
+                    if (authoritative) {
+                        showToast('Your cart is empty', 'warning');
+                        window.location.href = 'cart.html';
+                    }
                     return;
                 }
 
@@ -1298,16 +1472,20 @@
                 let selectedIds = null;
                 try {
                     const stored = JSON.parse(localStorage.getItem('buybibz_selected_cart_items') || '[]');
-                    if (stored.length > 0) selectedIds = new Set(stored);
+                    // Normalise to strings to avoid int/string mismatch between
+                    // localStorage values and the IDs returned by the cart API
+                    if (stored.length > 0) selectedIds = new Set(stored.map(String));
                 } catch (e) {}
 
                 const filteredItems = selectedIds
-                    ? data.items.filter(item => selectedIds.has(item.id))
+                    ? data.items.filter(item => selectedIds.has(String(item.id)))
                     : data.items;
 
                 if (filteredItems.length === 0) {
-                    showToast('No items selected for checkout', 'warning');
-                    window.location.href = 'cart.html';
+                    if (authoritative) {
+                        showToast('No items selected for checkout', 'warning');
+                        window.location.href = 'cart.html';
+                    }
                     return;
                 }
 
@@ -1346,17 +1524,14 @@
                     const effectivePrice = (item.unit_price != null && item.unit_price > 0)
                         ? parseFloat(item.unit_price)
                         : parseFloat(product.price || 0);
-                    
-                    const optionLabels = { colors: 'Color', sizes: 'Size', weight: 'Weight', dimensions: 'Dimensions', variant: 'Variant' };
                     const optionsText = Object.entries(selectedOptions)
-                        .filter(([key]) => key !== '_selected_image')
-                        .map(([key, value]) => `${optionLabels[key] || key}: ${value}`)
-                        .join(' · ');
-
+                        .filter(([k]) => !k.startsWith('_'))
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ');
                     return `
                         <div class="item-row">
                             <div class="item-thumb-wrapper">
-                                <img src="${selectedImage}" alt="${product.name || 'Product'}" class="item-thumb">
+                                <img src="${selectedImage}" alt="${product.name || 'Product'}" class="item-thumb" loading="lazy">
                                 <span class="item-qty-badge">${item.quantity}</span>
                             </div>
                             <div class="item-info">
@@ -1370,11 +1545,14 @@
                         </div>
                     `;
                 }).join('');
-
             } catch (err) {
-                console.error('Failed to load cart summary:', err);
-                showToast('Failed to load cart summary', 'error');
+                console.error('renderCheckoutSummary error:', err);
             }
+            
+            // Auto-select manual payment method
+            setTimeout(() => {
+                selectPayment('manual');
+            }, 100);
         }
 
         function playOrderSuccessSound() {
@@ -1458,27 +1636,548 @@
             window.scrollTo(0, 0);
         }
 
-        function showOrderSuccessScreen(res) {
+        function copyOrderId(id, btn) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(id).then(() => {
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+                    btn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    btn.style.color = '#10b981';
+                    setTimeout(() => {
+                        btn.innerHTML = orig;
+                        btn.style.borderColor = '';
+                        btn.style.color = '';
+                    }, 2000);
+                }).catch(() => {});
+            }
+        }
+
+        function showOrderSuccessScreen(res, orderData = null) {
             playOrderSuccessSound();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             window.scrollTo(0, 0);
             document.getElementById('step-2-indicator').classList.remove('progress-step-active');
             document.getElementById('step-3-indicator').classList.add('progress-step-active');
 
+            const orderObj = (res && res.order) || res || {};
+            const orderRef = (res && res.order_uid) || orderObj.order_uid || (res && res.order_id) || orderObj.id || 'N/A';
+            const shortRef = orderRef && orderRef !== 'N/A' ? String(orderRef).slice(0, 8).toUpperCase() : 'â€”';
+            
+            let totalAmount = '';
+            const rawTotal = (res && res.total_price !== undefined) ? res.total_price : 
+                             ((res && res.total !== undefined) ? res.total : 
+                             (orderObj.total_price !== undefined ? orderObj.total_price : orderObj.total));
+            if (rawTotal !== undefined && rawTotal !== null) {
+                totalAmount = typeof formatCurrency === 'function' ? formatCurrency(rawTotal) : ('$' + Number(rawTotal).toFixed(2));
+            } else if (res && res.total_price_formatted) {
+                totalAmount = res.total_price_formatted;
+            } else {
+                const totalEl = document.getElementById('summary-total');
+                totalAmount = totalEl ? totalEl.textContent.trim() : '';
+            }
+
+            // Save to localStorage so it persists on refresh with total amount
+            try {
+                localStorage.setItem('buybibz_recent_order', JSON.stringify({
+                    data: res,
+                    orderData: orderData || null,
+                    totalAmount: totalAmount,
+                    timestamp: Date.now()
+                }));
+            } catch (e) {}
+
+            // Customer Information for Telegram Auto-Fill
+            const user = (typeof api !== 'undefined' && api.getUser) ? api.getUser() : null;
+            const customerName = (orderData && orderData.shipping_name) || orderObj.shipping_name || (res && res.shipping_name) || (user && (user.full_name || user.name)) || document.getElementById('shipping_name')?.value || 'Customer';
+            const customerPhone = (orderData && orderData.shipping_phone) || orderObj.shipping_phone || (res && res.shipping_phone) || (user && user.phone) || document.getElementById('shipping_phone')?.value || 'N/A';
+            
+            const addressParts = [
+                (orderData && orderData.shipping_address) || orderObj.shipping_address || (res && res.shipping_address) || document.getElementById('shipping_address')?.value,
+                (orderData && orderData.shipping_village) || orderObj.shipping_village || (res && res.shipping_village),
+                (orderData && orderData.shipping_commune) || orderObj.shipping_commune || (res && res.shipping_commune),
+                (orderData && orderData.shipping_district) || orderObj.shipping_district || (res && res.shipping_district),
+                (orderData && orderData.shipping_city) || (orderData && orderData.shipping_province) || orderObj.shipping_city || orderObj.shipping_province || (res && (res.shipping_city || res.shipping_province))
+            ].filter(Boolean);
+            const shippingAddress = addressParts.length > 0 ? addressParts.join(', ') : 'Phnom Penh, Cambodia';
+
+            // Detect user language via i18n system
+            const currentLang = (typeof i18n !== 'undefined' && i18n.getLang) ? i18n.getLang() : (() => {
+                try {
+                    const prefs = JSON.parse(localStorage.getItem('buybibz-prefs') || '{}');
+                    return prefs.language || 'en';
+                } catch (e) { return 'en'; }
+            })();
+            const isKhmer = currentLang === 'km';
+
+            const orderDate = new Date().toLocaleString(isKhmer ? 'km-KH' : 'en-GB', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+
+            // Pre-filled Telegram message — Khmer or English based on user language
+            let telegramMessage;
+            if (isKhmer) {
+                telegramMessage =
+                    "\u179f\u17bd\u179f\u17d2\u178f\u17b8 Admin! " +
+                    "\u1781\u17d2\u1789\u17bb\u17c6\u1794\u17b6\u1793\u1794\u1789\u17d2\u1787\u17b6\u1791\u17b7\u1789\u1793\u17c5 BuyBIBZ " +
+                    "\u17a0\u17be\u1799\u1794\u17b6\u1793\u1794\u1784\u17cb\u1794\u17d2\u179a\u17b6\u1780\u17cb\u178f\u17b6\u1798 KHQR " +
+                    "\u179a\u17bd\u1785\u179a\u17b6\u179b\u17cb\u17a0\u17be\u1799\u17d4\n\n" +
+                    "\ud83d\udccb \u1796\u17d0\u178f\u17cc\u1798\u17b6\u1793\u1780\u17b6\u179a\u1794\u1789\u17d2\u1787\u17b6\u1791\u17b7\u1789\u17d6\n" +
+                    "\u2022 \u179b\u17c1\u1781\u1794\u1789\u17d2\u1787\u17b6\u1791\u17b7\u1789\u17d6 #" + shortRef + " (" + orderRef + ")\n" +
+                    "\u2022 \u1785\u17c6\u1793\u17bd\u1793\u178f\u17d2\u179a\u17bc\u179c\u1794\u1784\u17cb\u179f\u179a\u17bb\u1794\u17d6 " + totalAmount + "\n" +
+                    "\u2022 \u17a2\u1784\u17d2\u1780\u17b6\u179a\u179b\u17bd\u1780\u1780\u17d2\u179a\u17c0\u1798\u17d6 " + customerName + "\n" +
+                    "\u2022 \u179b\u17c1\u1781\u178f\u17bc\u179a\u179f\u17d0\u1796\u17d6 " + customerPhone + "\n" +
+                    "\u2022 \u17a2\u17b6\u179f\u1799\u178a\u17d2\u178f\u17b6\u1793\u178a\u17b9\u1780\u1787\u1789\u17d2\u1787\u17bc\u1793\u17d6 " + shippingAddress + "\n" +
+                    "\u2022 \u1780\u17b6\u179b\u1794\u179a\u17b7\u1785\u17d2\u1786\u17c2\u178f\u17d6 " + orderDate + "\n\n" +
+                    "\u1781\u17d2\u1789\u17bb\u17c6\u1794\u17b6\u1793\u1797\u17d2\u1787\u17b6\u1794\u1784\u17d2\u1780\u17b6\u1793\u17cb\u178a\u17be " +
+                    "\u179a\u17bc\u1794\u178f\u179f\u17d2\u1780\u17b6\u1793\u17cb\u179f\u17b7\u178f\u17d2\u1792\u17b7\u1794\u17d2\u179b " +
+                    "\u179f\u1780\u17b6\u179a\u1794\u1784\u17cb\u1794\u17d2\u179a\u17b6\u1780\u17cb KHQR " +
+                    "\u1787\u17b6\u1798\u17bd\u1799\u179f\u17b6\u179a\u1793\u17c1\u17d8\u17d4 " +
+                    "\u179f\u17bc\u1798 Admin \u1794\u1789\u17d2\u1787\u17b6\u1780\u17cb " +
+                    "\u1793\u17b7\u1784\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a " +
+                    "\u1780\u17b6\u179a\u1794\u1789\u17d2\u1787\u17b6\u1791\u17b7\u1789\u179a\u1794\u179f\u17cb\u1781\u17d2\u1789\u17bb\u17c6\u17d4 " +
+                    "\u17a2\u179a\u1782\u17bb\u178e!";
+            } else {
+                telegramMessage =
+                    "Hello Admin! I have placed an order on BuyBIBZ and completed my KHQR payment.\n\n" +
+                    "\ud83d\udccb ORDER DETAILS:\n" +
+                    "\u2022 Order ID: #" + shortRef + " (" + orderRef + ")\n" +
+                    "\u2022 Total Amount: " + totalAmount + "\n" +
+                    "\u2022 Customer Name: " + customerName + "\n" +
+                    "\u2022 Phone: " + customerPhone + "\n" +
+                    "\u2022 Address: " + shippingAddress + "\n" +
+                    "\u2022 Date: " + orderDate + "\n\n" +
+                    "I have attached my KHQR payment receipt screenshot to this message. Please confirm and process my order. Thank you!";
+            }
+            const telegramUrl = `https://t.me/Phoung_chan_phattra?text=${encodeURIComponent(telegramMessage)}`;
+
             document.getElementById('checkout-main').innerHTML = `
-                <div class="container">
-                    <div class="confirmation-card">
-                        <div class="success-icon-wrapper">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <style>
+                    .checkout-success-view {
+                        max-width: 440px;
+                        margin: 1.5rem auto;
+                        padding: 0 1rem calc(80px + env(safe-area-inset-bottom, 15px));
+                        animation: csv-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+                        position: relative;
+                    }
+
+                    @keyframes csv-fade-in {
+                        from { opacity: 0; transform: translateY(14px); }
+                        to   { opacity: 1; transform: translateY(0); }
+                    }
+
+                    @keyframes csv-check-draw {
+                        from { stroke-dashoffset: 24; }
+                        to   { stroke-dashoffset: 0; }
+                    }
+
+                    @keyframes csv-pulse {
+                        0%, 100% { opacity: 1; transform: scale(1); }
+                        50%      { opacity: 0.4; transform: scale(0.9); }
+                    }
+
+                    /* â”€â”€ Main Receipt Card â”€â”€ */
+                    .csv-card {
+                        background: var(--bg-card, #11131e);
+                        border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+                        border-radius: 22px;
+                        padding: 1.5rem 1.35rem;
+                        box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1.15rem;
+                        position: relative;
+                    }
+
+                    /* â”€â”€ Top Bar inside Card â”€â”€ */
+                    .csv-card-topbar {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        width: 100%;
+                    }
+
+                    .csv-status-pill {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.45rem;
+                        padding: 0.3rem 0.65rem;
+                        background: rgba(16, 185, 129, 0.1);
+                        border: 1px solid rgba(16, 185, 129, 0.25);
+                        border-radius: 20px;
+                        font-size: 0.725rem;
+                        font-weight: 600;
+                        color: #10b981;
+                        letter-spacing: 0.01em;
+                    }
+
+                    .csv-status-dot {
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 50%;
+                        background: #10b981;
+                        box-shadow: 0 0 8px #10b981;
+                        animation: csv-pulse 2s ease-in-out infinite;
+                    }
+
+                    .csv-close-btn {
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 50%;
+                        background: var(--bg-tertiary, rgba(255, 255, 255, 0.05));
+                        border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+                        color: var(--text-tertiary, #94a3b8);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+                    .csv-close-btn:hover {
+                        background: var(--bg-card-hover, rgba(255, 255, 255, 0.12));
+                        color: var(--text-primary, #ffffff);
+                        transform: scale(1.05);
+                    }
+
+                    /* â”€â”€ Header â”€â”€ */
+                    .csv-header {
+                        text-align: center;
+                        margin: 0.25rem 0 0.1rem;
+                    }
+                    .csv-check-wrap {
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 50%;
+                        margin: 0 auto 0.65rem;
+                        background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.05) 75%);
+                        border: 1.5px solid rgba(16, 185, 129, 0.35);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 0 20px rgba(16, 185, 129, 0.22);
+                    }
+                    .csv-check-svg {
+                        width: 26px;
+                        height: 26px;
+                        stroke-dasharray: 24;
+                        stroke-dashoffset: 24;
+                        animation: csv-check-draw 0.4s ease 0.15s forwards;
+                    }
+                    .csv-title {
+                        font-size: 1.35rem;
+                        font-weight: 800;
+                        letter-spacing: -0.02em;
+                        color: var(--text-primary, #f8fafc);
+                        margin: 0 0 0.25rem;
+                    }
+                    .csv-subtitle {
+                        font-size: 0.8125rem;
+                        color: var(--text-secondary, #94a3b8);
+                        margin: 0;
+                        line-height: 1.4;
+                    }
+
+                    /* â”€â”€ Invoice Row â”€â”€ */
+                    .csv-invoice-box {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0.875rem 1rem;
+                        background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+                        border: 1px solid var(--border-default, rgba(255, 255, 255, 0.06));
+                        border-radius: 14px;
+                    }
+                    .csv-invoice-item {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.2rem;
+                    }
+                    .csv-invoice-item.right {
+                        align-items: flex-end;
+                    }
+                    .csv-inv-lbl {
+                        font-size: 0.65rem;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.06em;
+                        color: var(--text-tertiary, #64748b);
+                    }
+                    .csv-inv-val {
+                        font-size: 1.35rem;
+                        font-weight: 800;
+                        color: var(--brand-primary-light, #10b981);
+                        letter-spacing: -0.01em;
+                    }
+                    .csv-copy-pill {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.35rem;
+                        background: rgba(255, 255, 255, 0.06);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 8px;
+                        padding: 0.25rem 0.55rem;
+                        font-size: 0.8125rem;
+                        font-weight: 700;
+                        color: var(--text-primary, #f8fafc);
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                        letter-spacing: 0.02em;
+                    }
+                    .csv-copy-pill:hover {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-color: rgba(255, 255, 255, 0.2);
+                    }
+
+                    /* â”€â”€ KHQR block â”€â”€ */
+                    .csv-khqr-block {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 0.75rem;
+                    }
+                    .csv-khqr-card {
+                        background: #fff;
+                        border-radius: 18px;
+                        padding: 0.85rem 0.85rem 0.6rem;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                        width: 100%;
+                        max-width: 200px;
+                    }
+                    .csv-khqr-badge-bar {
+                        background: linear-gradient(90deg, #0088cc, #229ED9);
+                        color: #fff;
+                        font-size: 0.65rem;
+                        font-weight: 900;
+                        letter-spacing: 0.15em;
+                        text-align: center;
+                        border-radius: 6px;
+                        padding: 0.2rem 0;
+                        margin-bottom: 0.6rem;
+                    }
+                    .csv-khqr-img-wrap {
+                        width: 100%;
+                        aspect-ratio: 1/1;
+                        border-radius: 10px;
+                        overflow: hidden;
+                    }
+                    .csv-khqr-img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        display: block;
+                    }
+                    .csv-banks-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.35rem;
+                        font-size: 0.725rem;
+                        font-weight: 500;
+                        color: var(--text-tertiary, #94a3b8);
+                        text-align: center;
+                    }
+
+                    /* â”€â”€ Micro Steps Guide â”€â”€ */
+                    .csv-steps-pill {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0.55rem 0.85rem;
+                        background: rgba(255, 255, 255, 0.02);
+                        border: 1px dashed var(--border-default, rgba(255, 255, 255, 0.08));
+                        border-radius: 10px;
+                        font-size: 0.725rem;
+                        color: var(--text-secondary, #94a3b8);
+                        gap: 0.25rem;
+                    }
+                    .csv-step-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.3rem;
+                    }
+                    .csv-step-num {
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: rgba(16, 185, 129, 0.18);
+                        color: #10b981;
+                        font-size: 0.65rem;
+                        font-weight: 800;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .csv-step-arrow {
+                        color: var(--text-tertiary, #64748b);
+                        font-size: 0.7rem;
+                    }
+
+                    /* â”€â”€ Actions â”€â”€ */
+                    .csv-actions {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.65rem;
+                        margin-top: 0.2rem;
+                    }
+                    .csv-tg-btn {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 0.6rem;
+                        width: 100%;
+                        padding: 0.85rem 1rem;
+                        border-radius: 12px;
+                        background: linear-gradient(135deg, #0088cc 0%, #229ED9 50%, #179cde 100%);
+                        color: #ffffff !important;
+                        font-size: 0.925rem;
+                        font-weight: 700;
+                        text-decoration: none;
+                        letter-spacing: -0.01em;
+                        box-shadow: 0 4px 16px rgba(34, 158, 217, 0.38);
+                        transition: transform 0.15s ease, box-shadow 0.15s ease;
+                    }
+                    .csv-tg-btn:hover {
+                        transform: translateY(-1.5px);
+                        box-shadow: 0 8px 24px rgba(34, 158, 217, 0.5);
+                    }
+                    .csv-tg-btn:active {
+                        transform: translateY(0);
+                    }
+                    .csv-secondary-row {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 0.5rem;
+                    }
+                    .csv-sec-btn {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 0.35rem;
+                        padding: 0.625rem 0.75rem;
+                        border-radius: 10px;
+                        font-size: 0.8rem;
+                        font-weight: 600;
+                        text-decoration: none;
+                        background: var(--bg-tertiary, rgba(255, 255, 255, 0.04));
+                        border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+                        color: var(--text-secondary, #94a3b8);
+                        transition: all 0.15s ease;
+                    }
+                    .csv-sec-btn:hover {
+                        background: var(--bg-card-hover, rgba(255, 255, 255, 0.08));
+                        color: var(--text-primary, #f8fafc);
+                        border-color: rgba(255, 255, 255, 0.15);
+                    }
+
+                    /* Desktop layout fine-tuning */
+                    @media (min-width: 640px) {
+                        .checkout-success-view {
+                            margin: 2.5rem auto;
+                            max-width: 440px;
+                        }
+                        .csv-card {
+                            padding: 1.75rem 1.5rem;
+                            border-radius: 24px;
+                        }
+                    }
+                </style>
+
+                <div class="checkout-success-view">
+                    <!-- Single Elevated Receipt Card -->
+                    <div class="csv-card">
+                        <!-- Card Top Bar with Status & Close -->
+                        <div class="csv-card-topbar">
+                            <div class="csv-status-pill">
+                                <span class="csv-status-dot"></span>
+                                <span>${i18n.t('checkout.awaiting_payment')}</span>
+                            </div>
+                            <button class="csv-close-btn" onclick="localStorage.removeItem('buybibz_recent_order'); window.location.reload();" title="${i18n.t('checkout.back_to_checkout')}">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                            </button>
                         </div>
-                        <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary);">Order Confirmed!</h1>
-                        <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 2rem; line-height: 1.5;">
-                            Thank you for shopping with BuyBIBZ.<br>
-                            Your order <strong>#${res.order_uid || res.order_id}</strong> has been successfully placed.
-                        </p>
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <a href="orders.html" class="btn btn-primary btn-lg" style="flex: 1; min-width: 160px; text-decoration: none;">View Orders</a>
-                            <a href="products.html" class="btn btn-secondary btn-lg" style="flex: 1; min-width: 160px; text-decoration: none;">Continue Shopping</a>
+
+                        <!-- Header -->
+                        <div class="csv-header">
+                            <div class="csv-check-wrap">
+                                <svg class="csv-check-svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <h1 class="csv-title">${i18n.t('checkout.order_placed_title')}</h1>
+                            <p class="csv-subtitle">${i18n.t('checkout.scan_khqr_hint')}</p>
+                        </div>
+
+                        <!-- Amount & Order ID Capsule -->
+                        <div class="csv-invoice-box">
+                            <div class="csv-invoice-item">
+                                <span class="csv-inv-lbl">${i18n.t('checkout.amount_due')}</span>
+                                <span class="csv-inv-val">${totalAmount || 'â€”'}</span>
+                            </div>
+                            <div class="csv-invoice-item right">
+                                <span class="csv-inv-lbl">${i18n.t('checkout.order_reference')}</span>
+                                <button type="button" class="csv-copy-pill" onclick="copyOrderId('${shortRef}', this)" title="${i18n.t('checkout.copy_order_id')}">
+                                    <span>#${shortRef}</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Authentic KHQR Card Frame -->
+                        <div class="csv-khqr-block">
+                            <div class="csv-khqr-card">
+                                <div class="csv-khqr-badge-bar">KHQR</div>
+                                <div class="csv-khqr-img-wrap">
+                                    <img src="../img/myqrcode.jpg" alt="KHQR Payment Code" class="csv-khqr-img">
+                                </div>
+                            </div>
+                            <div class="csv-banks-row">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                                <span>Bakong &middot; ABA &middot; ACLEDA &middot; Sathapana &middot; Wing</span>
+                            </div>
+                        </div>
+
+                        <!-- 3-Step Micro Flow -->
+                        <div class="csv-steps-pill">
+                            <div class="csv-step-item">
+                                <span class="csv-step-num">1</span>
+                                <span>${i18n.t('checkout.scan_qr_step')}</span>
+                            </div>
+                            <span class="csv-step-arrow">&rarr;</span>
+                            <div class="csv-step-item">
+                                <span class="csv-step-num">2</span>
+                                <span>${i18n.t('checkout.pay_step')} + ' ' + ${totalAmount || ''}</span>
+                            </div>
+                            <span class="csv-step-arrow">&rarr;</span>
+                            <div class="csv-step-item">
+                                <span class="csv-step-num">3</span>
+                                <span>${i18n.t('checkout.send_proof_step')}</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="csv-actions">
+                            <a href="${telegramUrl}" target="_blank" rel="noopener" class="csv-tg-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.9l-2.965-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.963.659z"/></svg>
+                                <span>${i18n.t('checkout.send_proof_btn')}</span>
+                            </a>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.725rem; color: var(--text-tertiary, #94a3b8); margin-top: -0.2rem;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                                <span>${i18n.t('checkout.autofill_hint').replace('{ref}', shortRef)}</span>
+                            </div>
+
+                            <div class="csv-secondary-row">
+                                <a href="orders.html" class="csv-sec-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                    <span>${i18n.t('checkout.view_orders')}</span>
+                                </a>
+                                <a href="products.html" class="csv-sec-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                    <span>${i18n.t('checkout.keep_shopping')}</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

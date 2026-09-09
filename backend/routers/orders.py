@@ -1,7 +1,9 @@
+import asyncio
 from fastapi import APIRouter, HTTPException, Depends
 from uuid import uuid4
 from core.config import get_supabase
 from core.auth import get_current_user, get_admin_user
+from core.telegram import send_order_notification
 from models.schemas import OrderCreate, OrderStatusUpdate
 
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
@@ -162,6 +164,46 @@ async def create_order(order: OrderCreate, current_user=Depends(get_current_user
         if order.cart_item_ids and len(order.cart_item_ids) > 0:
             del_query = del_query.in_("id", order.cart_item_ids)
         del_query.execute()
+
+        # 7. Fire Telegram notification to admin (fire-and-forget)
+        try:
+            address_parts = [
+                order.shipping_address or "",
+                getattr(order, "shipping_commune", None) or "",
+                getattr(order, "shipping_district", None) or "",
+                getattr(order, "shipping_province", None) or order.shipping_city or "",
+                "Cambodia",
+            ]
+            tg_items = [
+                {
+                    "name": it["product_name"],
+                    "qty": it["quantity"],
+                    "price": it["price"],
+                    "subtotal": it["subtotal"],
+                    "image_url": it.get("product_image") or "",
+                }
+                for it in order_items_data
+            ]
+            asyncio.ensure_future(
+                send_order_notification(
+                    order_id=order_id,
+                    order_uid=order_response.data[0]["order_uid"],
+                    customer_name=order.shipping_name or "Customer",
+                    customer_phone=order.shipping_phone or "",
+                    address_parts=address_parts,
+                    items=tg_items,
+                    subtotal=subtotal,
+                    shipping_fee=shipping_fee,
+                    transaction_fee=transaction_fee,
+                    total=total,
+                    notes=order.notes,
+                    payment_method=getattr(order, "payment_method", None),
+                )
+            )
+        except Exception as tg_err:
+            # Never let Telegram failure affect the order response
+            import logging
+            logging.getLogger(__name__).warning("Telegram notification error: %s", tg_err)
 
         return {
             "message": "Order placed successfully",
