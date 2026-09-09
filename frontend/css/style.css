@@ -4993,9 +4993,9 @@ a.order-item-name:hover {
 }
 
 .grid-toggle-btn.active {
-    background: var(--bg-card);
+    background: transparent;
     color: var(--brand-primary);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    box-shadow: none;
 }
 
 /* Mobile toggle: smaller buttons */
@@ -6154,13 +6154,13 @@ html[data-theme="light"] .products-grid.grid-cols-1 .product-card-image img {
     }
 
     .mobile-grid-toggle .grid-toggle-btn.active {
-        background: var(--brand-primary) !important;
-        color: #ffffff !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+        background: transparent !important;
+        color: var(--brand-primary) !important;
+        box-shadow: none !important;
     }
 
     .mobile-grid-toggle .grid-toggle-btn.active svg {
-        color: #ffffff !important;
+        color: var(--brand-primary) !important;
         fill: currentColor !important;
     }
 
