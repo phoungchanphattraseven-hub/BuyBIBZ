@@ -3440,6 +3440,13 @@ input:checked+.toggle-slider:before {
     height: 14px;
 }
 
+/* Hide back button on desktop */
+@media (min-width: 769px) {
+    .page-back {
+        display: none !important;
+    }
+}
+
 @media (max-width: 380px) {
     .page-back {
         left: 8px;

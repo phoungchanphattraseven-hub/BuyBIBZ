@@ -1219,6 +1219,11 @@
             }
             // Persist selection and navigate
             saveSelection();
+            // Clear checkout session flags to ensure fresh checkout page
+            try {
+                sessionStorage.removeItem('buybibz_checkout_active');
+                localStorage.removeItem('buybibz_recent_order');
+            } catch (e) {}
             window.location.href = 'checkout.html';
         }
 

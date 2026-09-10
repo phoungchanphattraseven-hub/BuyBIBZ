@@ -1161,7 +1161,10 @@
             try {
                 const isReload = sessionStorage.getItem('buybibz_checkout_active') === '1';
                 const recentOrder = JSON.parse(localStorage.getItem('buybibz_recent_order') || 'null');
-                if (isReload && recentOrder && recentOrder.timestamp) {
+                // Additional check: if coming from cart (has selected_cart_items), clear old order
+                const hasSelectedItems = localStorage.getItem('selected_cart_items');
+                
+                if (isReload && recentOrder && recentOrder.timestamp && !hasSelectedItems) {
                     const ageMinutes = (Date.now() - recentOrder.timestamp) / 60000;
                     if (ageMinutes < 30) {
                         if (recentOrder.totalAmount && recentOrder.data && !recentOrder.data.total_price) {
